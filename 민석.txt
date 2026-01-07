@@ -1,1 +1,3 @@
 이름: 오민석
+pull requests -> new -> 
+base: main <- compare부분에 내 brench기입하고 검수 받고 create pull requests 클릭
