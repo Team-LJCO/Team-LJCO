@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.korit.team_ljco.mapper.UserMapper">
+
+    <select id="findUsersByName" resultType="com.korit.team_ljco.entity.User">
+        SELECT
+            user_id,
+            email,
+            name,
+            role AS provider
+        FROM
+            users
+        WHERE name = #{userName}
+    </select>
+
+</mapper>

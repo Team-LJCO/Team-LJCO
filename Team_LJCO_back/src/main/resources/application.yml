@@ -44,7 +44,7 @@ springdoc:
 
 # MyBatis 설정
 mybatis:
-  mapper-locations: classpath:mappers/**/*.xml
+  mapper-locations: classpath:mapper/UserMapper.xml
   configuration:
     map-underscore-to-camel-case: true   # user_id -> userId 자동 변환
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # SQL 로그
