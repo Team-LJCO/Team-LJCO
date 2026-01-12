@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.korit.team_ljco.mapper.UserMapper">
+
+    <!-- User ResultMap -->
+    <resultMap id="UserResultMap" type="com.korit.team_ljco.entity.User">
+        <id property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userEmail" column="user_email"/>
+        <result property="userRole" column="user_role"/>
+        <result property="oauth2Provider" column="oauth2_provider"/>
+        <result property="oauth2Id" column="oauth2_id"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <!-- ID로 사용자 조회 -->
+    <select id="selectUserById" parameterType="long" resultMap="UserResultMap">
+        SELECT
+        user_id, user_name, user_email, user_role,
+        oauth2_provider, oauth2_id, created_at, updated_at
+        FROM users
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- OAuth2 ID로 사용자 조회 -->
+    <select id="selectUserByOauth2Id" parameterType="string" resultMap="UserResultMap">
+        SELECT
+        user_id, user_name, user_email, user_role,
+        oauth2_provider, oauth2_id, created_at, updated_at
+        FROM users
+        WHERE oauth2_id = #{oauth2Id}
+    </select>
+
+    <!-- 이메일로 사용자 조회 -->
+    <select id="selectUserByEmail" parameterType="string" resultMap="UserResultMap">
+        SELECT
+        user_id, user_name, user_email, user_role,
+        oauth2_provider, oauth2_id, created_at, updated_at
+        FROM users
+        WHERE user_email = #{email}
+    </select>
+
+    <!-- 사용자 등록 -->
+    <insert id="insertUser" parameterType="com.korit.team_ljco.entity.User"
+            useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO users (
+        user_name, user_email, user_role,
+        oauth2_provider, oauth2_id
+        ) VALUES (
+        #{userName}, #{userEmail}, #{userRole},
+        #{oauth2Provider}, #{oauth2Id}
+        )
+    </insert>
+
+    <!-- 사용자 정보 수정 -->
+    <update id="updateUser" parameterType="com.korit.team_ljco.entity.User">
+        UPDATE users
+        SET
+        user_name = #{userName},
+        user_email = #{userEmail},
+        user_role = #{userRole},
+        updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- 사용자 삭제 -->
+    <delete id="deleteUser" parameterType="long">
+        DELETE FROM users
+        WHERE user_id = #{userId}
+    </delete>
+
+</mapper>
