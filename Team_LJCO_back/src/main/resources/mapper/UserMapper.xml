@@ -11,7 +11,7 @@
         <result property="userName" column="user_name"/>
         <result property="userEmail" column="user_email"/>
         <result property="userRole" column="user_role"/>
-        <result property="oauth2Provider" column="auth2Provider"/>
+        <result property="oauth2Provider" column="oauth2Provider"/>
         <result property="oauth2Id" column="oauth2Id"/>
         <result property="createdAt" column="createdAt"/>
         <result property="updatedAt" column="updatedAt"/>
@@ -21,7 +21,7 @@
     <select id="selectUserById" parameterType="long" resultMap="UserResultMap">
         SELECT
         user_id, user_name, user_email, user_role,
-        auth2Provider, oauth2Id, createdAt, updatedAt
+        oauth2Provider, oauth2Id, createdAt, updatedAt
         FROM user
         WHERE user_id = #{userId}
     </select>
@@ -30,7 +30,7 @@
     <select id="selectUserByOauth2Id" parameterType="string" resultMap="UserResultMap">
         SELECT
         user_id, user_name, user_email, user_role,
-        auth2Provider, oauth2Id, createdAt, updatedAt
+        oauth2Provider, oauth2Id, createdAt, updatedAt
         FROM user
         WHERE oauth2Id = #{oauth2Id}
     </select>
@@ -39,7 +39,7 @@
     <select id="selectUserByEmail" parameterType="string" resultMap="UserResultMap">
         SELECT
         user_id, user_name, user_email, user_role,
-        auth2Provider, oauth2Id, createdAt, updatedAt
+        oauth2Provider, oauth2Id, createdAt, updatedAt
         FROM user
         WHERE user_email = #{email}
     </select>
@@ -49,7 +49,7 @@
             useGeneratedKeys="true" keyProperty="userId">
         INSERT INTO user (
         user_name, user_email, user_role,
-        auth2Provider, oauth2Id
+        oauth2Provider, oauth2Id
         ) VALUES (
         #{userName}, #{userEmail}, #{userRole},
         #{oauth2Provider}, #{oauth2Id}

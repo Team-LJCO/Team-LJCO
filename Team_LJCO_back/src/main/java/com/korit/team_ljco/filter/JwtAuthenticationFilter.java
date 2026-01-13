@@ -2,6 +2,7 @@ package com.korit.team_ljco.filter;
 
 import com.korit.team_ljco.entity.User;
 import com.korit.team_ljco.jwt.JwtTokenProvider;
+import com.korit.team_ljco.security.PrincipalUser;
 import com.korit.team_ljco.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,8 +18,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -27,31 +29,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
 
-    // JWT 인증을 건너뛸 경로 목록
-    private static final List<String> EXCLUDED_PATHS = Arrays.asList(
-            "/doc",
-            "/swagger-ui",
-            "/v3/api-docs",
-            "/api-docs",
-            "/swagger-resources",
-            "/webjars",
-            "/api/auth",
-            "/oauth2",
-            "/login",
-            "/api/ingredients",
-            "/api/recipes"
-    );
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-
-        // 공개 경로는 JWT 검증 건너뛰기
-        String requestPath = request.getRequestURI();
-        if (isPublicPath(requestPath)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         // 요청 헤더에서 JWT 토큰 추출
         String token = getTokenFromRequest(request);
@@ -65,12 +45,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             User user = userService.findUserById(userId);
 
             if (user != null) {
+                // JWT 인증용 더미 attributes (PrincipalUser는 attributes가 비어있으면 안 됨)
+                Map<String, Object> attributes = new HashMap<>();
+                attributes.put("sub", String.valueOf(user.getUserId()));
+                attributes.put("name", user.getUserName());
+                attributes.put("email", user.getUserEmail());
+
+                // PrincipalUser 객체 생성 (OAuth2와 일관성 유지)
+                PrincipalUser principalUser = new PrincipalUser(
+                        Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getUserRole())),
+                        attributes, // 더미 attributes 제공
+                        "sub", // nameAttributeKey
+                        user
+                );
+
+
                 // Spring Security 인증 객체 생성
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
-                                user,
+                                principalUser, // PrincipalUser 사용
                                 null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + user.getUserRole()))
+                                principalUser.getAuthorities()
                         );
 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -81,14 +76,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
-    }
-
-    /**
-     * 공개 경로인지 확인
-     */
-    private boolean isPublicPath(String requestPath) {
-        return EXCLUDED_PATHS.stream()
-                .anyMatch(requestPath::startsWith);
     }
 
     /**
