@@ -23,7 +23,7 @@
         <result property="ingName" column="ing_name"/>
     </resultMap>
 
-//유저아이디
+    //유저아이디
     //레시피재료개수컬럼추가
     //유저레시피재료개수추가 - update set으로 설정해서 업데이트
     <select id="getRecipes" resultMap="RecipeListWithIngredientsMap">
@@ -45,13 +45,22 @@
 
     <select id="getMatchRate" resultMap="MatchRateMap">
         select
-
+            count(rcp_ing.ing_id),
+        (
+        select
+            count(ri.ing_id)
         from
             rcp_ing ri
-        join user_ingredients ui
+        join
+            user_ingredients ui
             on ui.ing_id = ri.ing_id
             and ui.user_id = #{userId}
-        where ri.rcp_id in
+        where
+            ri.rcp_id = ui.ing_id
+        )
+        from
+            rcp_ing
+        where rcp_ing.rcp_id= #{rcp_id}
     </select>
 
 </mapper>

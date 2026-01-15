@@ -20,9 +20,9 @@ public class RecipeController {
 
     //레시피 목록 조회 컨트롤러
     @GetMapping("/all")
-    public ResponseEntity<List<RecipeListResponse>> getAllRecipes(
-            @RequestParam(defaultValue = "1" )int page) {
-        return ResponseEntity.ok(recipeService.findRecipes(page));
+    public List<RecipeListResponse> getAllRecipes(
+            @RequestParam(defaultValue = "1" )int page, @RequestParam int userId) {
+        return recipeService.findRecipes(page);
     }
 
 }
