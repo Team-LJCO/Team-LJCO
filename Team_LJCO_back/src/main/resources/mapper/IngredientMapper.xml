@@ -31,11 +31,11 @@
 
     <!-- ID로 재료 조회 -->
     <select id="selectIngredientById" parameterType="int" resultMap="IngredientResultMap">
-        SELECT 
-            i.ing_id, i.ing_name, i.ing_cat_id, i.ing_img_url, 
+        SELECT
+            i.ing_id, i.ing_name, i.ing_cat_id, i.ing_img_url,
             i.created_at, i.updated_at,
             c.ing_cat_name, c.ing_cat_img_url
-        FROM ing i
+        FROM ingredients i
         LEFT JOIN ingredient_categories c ON i.ing_cat_id = c.ing_cat_id
         WHERE i.ing_id = #{ingId}
     </select>

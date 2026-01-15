@@ -22,6 +22,14 @@ spring:
       max-request-size: 100MB
       file-size-threshold: 2MB
 
+file:
+  upload-dir: ./uploads/images
+  base-url: http://localhost:8080
+
+
+
+
+
 # 서버 설정
 server:
   port: 8080
