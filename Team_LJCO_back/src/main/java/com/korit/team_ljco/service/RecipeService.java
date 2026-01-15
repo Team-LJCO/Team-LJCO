@@ -1,5 +1,7 @@
 package com.korit.team_ljco.service;
 
+import com.korit.team_ljco.dto.RecipeCount;
+import com.korit.team_ljco.dto.RecipeCountRow;
 import com.korit.team_ljco.dto.RecipeIngredientResponse;
 import com.korit.team_ljco.dto.RecipeListResponse;
 import com.korit.team_ljco.entity.Ingredient;
@@ -32,6 +34,25 @@ public class RecipeService {
 
         //화면에 출력할것만
         return recipeMapper.getRecipes(pageSize, offset);
+
+    }
+
+    public List<RecipeCountRow> findMateRate(int userId, List<Integer> rcpIds) {
+        List<RecipeCount> countAll =  recipeMapper.getMatchRate(userId,rcpIds);
+        List<RecipeCountRow> recipeRowsList = new ArrayList<>();
+        //내 재료 겹치는 개수, 재료 레시피 개수 구하기
+        for(RecipeCount cnt : countAll) {
+            int recipeCount = cnt.getRecipeCount();
+            int myCount = cnt.getMyCount();
+
+            int recipeMatchRate = (int) ((double) myCount / recipeCount * 100);
+
+            RecipeCountRow recipeRow = RecipeCountRow.builder()
+                    .Rate(recipeMatchRate)
+                    .build();
+            recipeRowsList.add(recipeRow);
+        }
+        return  recipeRowsList;
 
     }
 }

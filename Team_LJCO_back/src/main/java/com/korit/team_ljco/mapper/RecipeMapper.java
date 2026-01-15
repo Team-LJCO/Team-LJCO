@@ -1,6 +1,7 @@
 package com.korit.team_ljco.mapper;
 
 
+import com.korit.team_ljco.dto.RecipeCount;
 import com.korit.team_ljco.dto.RecipeCountRow;
 import com.korit.team_ljco.dto.RecipeListResponse;
 import com.korit.team_ljco.entity.Ingredient;
@@ -18,8 +19,8 @@ public interface RecipeMapper {
                                         @Param("offset") int offset);
     //일치율
     //한 사람에 대한 레시피라서 userid는 하나 rcpids는 여러개라 리스트
-    List<RecipeCountRow> getMatchRate(@Param("userId") Long userId,
-                                      @Param("rcpIds") Long<List> rcpIds);
+    List<RecipeCount> getMatchRate(@Param("userId") int userId,
+                                   @Param("rcpIds") List<Integer> rcpIds);
 
     //며칠남았는지
     int getDaysLeft();

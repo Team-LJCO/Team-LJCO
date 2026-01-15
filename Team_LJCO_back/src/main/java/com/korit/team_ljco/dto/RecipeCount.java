@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RecipeCountRow {
-    private int Rate;
-
+public class RecipeCount {
+    private int recipeCount;
+    private int myCount;
 }

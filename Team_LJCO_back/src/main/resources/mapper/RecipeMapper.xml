@@ -45,22 +45,22 @@
 
     <select id="getMatchRate" resultMap="MatchRateMap">
         select
-            count(rcp_ing.ing_id),
+        count(ri.ing_id),
         (
         select
-            count(ri.ing_id)
+            count(*) as result
         from
             rcp_ing ri
         join
             user_ingredients ui
             on ui.ing_id = ri.ing_id
+        where ri.rcp_id = #{rcpId}
             and ui.user_id = #{userId}
-        where
-            ri.rcp_id = ui.ing_id
         )
         from
-            rcp_ing
-        where rcp_ing.rcp_id= #{rcp_id}
+            rcp_ing ri
+        where
+            ri.rcp_id = #{rcpId};
     </select>
 
 </mapper>

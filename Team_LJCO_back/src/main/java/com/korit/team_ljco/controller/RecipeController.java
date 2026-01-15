@@ -1,5 +1,6 @@
 package com.korit.team_ljco.controller;
 
+import com.korit.team_ljco.dto.RecipeCountRow;
 import com.korit.team_ljco.dto.RecipeListResponse;
 import com.korit.team_ljco.service.RecipeService;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -22,7 +24,11 @@ public class RecipeController {
     @GetMapping("/all")
     public List<RecipeListResponse> getAllRecipes(
             @RequestParam(defaultValue = "1" )int page, @RequestParam int userId) {
-        return recipeService.findRecipes(page);
+        List<RecipeListResponse> recipeListSelect = recipeService.findRecipes(page);
+        List<Integer> rcpIds = new ArrayList<>();
+        List<RecipeCountRow> rateList = recipeService.findMateRate(userId,rcpIds);
+
+         return "";
     }
 
 }
