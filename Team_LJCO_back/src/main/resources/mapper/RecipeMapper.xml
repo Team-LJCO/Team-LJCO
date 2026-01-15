@@ -9,10 +9,11 @@
     <resultMap id="RecipeResultMap" type="com.korit.team_ljco.entity.Recipe">
         <id property="rcpId" column="rcp_id"/>
         <result property="rcpName" column="rcp_name"/>
-        <result property="rcpDesc" column="rcp_desc"/>
         <result property="rcpImgUrl" column="rcp_img_url"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
+        <result property="rcpViewCount" column="rcp_view_count"/>
+        <result property="level" column="level"/>
         <collection property="ingredients" ofType="com.korit.team_ljco.entity.RecipeIngredient">
             <id property="rcpIngId" column="rcp_ing_id"/>
             <result property="rcpId" column="rcp_id"/>
@@ -79,7 +80,7 @@
     <select id="selectAllRecipes" resultMap="RecipeResultMap">
         SELECT
         rcp_id, rcp_name, rcp_img_url,
-        created_at, updated_at
+        created_at, updated_at, rcp_view_count, level
         FROM rcp
         ORDER BY created_at DESC
     </select>
@@ -209,9 +210,5 @@
         SELECT 1
     </update>
 
-    <!-- 전체 레시피 수 -->
-    <select id="countAllRecipes" resultType="int">
-        SELECT COUNT(*) FROM rcp
-    </select>
 
 </mapper>

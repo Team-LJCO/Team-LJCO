@@ -24,6 +24,8 @@ public class RecipeResponse {
     private String rcpImgUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private int rcpViewCount;
+    private int level;
     private List<RecipeIngredientDto> ingredients;
     private List<RecipeStepDto> steps;
     
@@ -50,8 +52,7 @@ public class RecipeResponse {
         private String stepDesc;
         private String stepImgUrl;
     }
-    
-    // Entity to DTO 변환
+
     public static RecipeResponse from(Recipe recipe) {
         return RecipeResponse.builder()
                 .rcpId(recipe.getRcpId())
@@ -59,6 +60,8 @@ public class RecipeResponse {
                 .rcpImgUrl(recipe.getRcpImgUrl())
                 .createdAt(recipe.getCreatedAt())
                 .updatedAt(recipe.getUpdatedAt())
+                .rcpViewCount(recipe.getRcpViewCount())
+                .level(recipe.getRcpViewCount())
                 .ingredients(recipe.getIngredients() != null ? 
                         recipe.getIngredients().stream()
                                 .map(ri -> RecipeIngredientDto.builder()
