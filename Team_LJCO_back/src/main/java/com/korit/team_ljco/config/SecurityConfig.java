@@ -59,6 +59,8 @@ public class SecurityConfig {
                                 "/oauth2/**",
                                 "/login/**"
                         ).permitAll()
+                        .requestMatchers("/image/**").permitAll()
+                        .requestMatchers("/api/images/upload").authenticated()
 
                         // 3. 공개 API - 재료, 레시피 (인증 불필요)
                         .requestMatchers(

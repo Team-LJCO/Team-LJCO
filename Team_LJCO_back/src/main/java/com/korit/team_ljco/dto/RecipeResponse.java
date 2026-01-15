@@ -61,7 +61,7 @@ public class RecipeResponse {
                 .createdAt(recipe.getCreatedAt())
                 .updatedAt(recipe.getUpdatedAt())
                 .rcpViewCount(recipe.getRcpViewCount())
-                .level(recipe.getRcpViewCount())
+                .level(recipe.getLevel())
                 .ingredients(recipe.getIngredients() != null ? 
                         recipe.getIngredients().stream()
                                 .map(ri -> RecipeIngredientDto.builder()
