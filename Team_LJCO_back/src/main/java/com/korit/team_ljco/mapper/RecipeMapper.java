@@ -18,6 +18,8 @@ public interface RecipeMapper {
     List<Recipe> selectAllRecipes();
     
     List<Recipe> searchRecipesByName(@Param("keyword") String keyword);
+
+
     
     // 레시피 등록/수정/삭제
     int insertRecipe(Recipe recipe);

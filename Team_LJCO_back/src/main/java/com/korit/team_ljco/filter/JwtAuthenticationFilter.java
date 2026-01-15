@@ -33,54 +33,75 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // 요청 헤더에서 JWT 토큰 추출
         String token = getTokenFromRequest(request);
 
-        // 토큰 유효성 검증
         if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
-            // 토큰에서 사용자 ID 추출
             Long userId = jwtTokenProvider.getUserIdFromToken(token);
 
-            // DB에서 사용자 조회
-            User user = userService.findUserById(userId);
-
-            if (user != null) {
-                // JWT 인증용 더미 attributes (PrincipalUser는 attributes가 비어있으면 안 됨)
+            // 관리자 토큰 처리 (userId == 0)
+            if (userId == 0L) {
                 Map<String, Object> attributes = new HashMap<>();
-                attributes.put("sub", String.valueOf(user.getUserId()));
-                attributes.put("name", user.getUserName());
-                attributes.put("email", user.getUserEmail());
+                attributes.put("sub", "0");
+                attributes.put("name", "admin");
+                attributes.put("email", "admin@system.com");
 
-                // PrincipalUser 객체 생성 (OAuth2와 일관성 유지)
+                User adminUser = User.builder()
+                        .userId(0L)
+                        .userName("admin")
+                        .userEmail("admin@system.com")
+                        .userRole("ADMIN")
+                        .build();
+
                 PrincipalUser principalUser = new PrincipalUser(
-                        Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getUserRole())),
-                        attributes, // 더미 attributes 제공
-                        "sub", // nameAttributeKey
-                        user
+                        Collections.singleton(new SimpleGrantedAuthority("ROLE_ADMIN")),
+                        attributes,
+                        "sub",
+                        adminUser
                 );
 
-
-                // Spring Security 인증 객체 생성
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
-                                principalUser, // PrincipalUser 사용
+                                principalUser,
                                 null,
                                 principalUser.getAuthorities()
                         );
 
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                // SecurityContext에 인증 정보 설정
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+            // 일반 사용자 처리
+            else {
+                User user = userService.findUserById(userId);
+
+                if (user != null) {
+                    Map<String, Object> attributes = new HashMap<>();
+                    attributes.put("sub", String.valueOf(user.getUserId()));
+                    attributes.put("name", user.getUserName());
+                    attributes.put("email", user.getUserEmail());
+
+                    PrincipalUser principalUser = new PrincipalUser(
+                            Collections.singleton(new SimpleGrantedAuthority("ROLE_" + user.getUserRole())),
+                            attributes,
+                            "sub",
+                            user
+                    );
+
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    principalUser,
+                                    null,
+                                    principalUser.getAuthorities()
+                            );
+
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
         }
 
         filterChain.doFilter(request, response);
     }
 
-    /**
-     * HTTP 요청 헤더에서 Bearer 토큰 추출
-     */
     private String getTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
 

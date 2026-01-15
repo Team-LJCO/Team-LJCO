@@ -7,6 +7,7 @@ import com.korit.team_ljco.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -21,6 +22,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity  // ← @PreAuthorize 활성화!
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -64,10 +66,16 @@ public class SecurityConfig {
                                 "/api/recipes/**"
                         ).permitAll()
 
-                        // 4. 사용자 전용 API - 인증 필요
+                        // 4. 관리자 로그인 - 누구나 접근
+                        .requestMatchers("/api/admin/login").permitAll()
+
+                        // 5. 관리자 API - ADMIN 역할만
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // 6. 사용자 전용 API - 인증 필요
                         .requestMatchers("/api/user/**").authenticated()
 
-                        // 5. 그 외 모든 요청은 인증 필요
+                        // 7. 그 외 모든 요청은 인증 필요
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2

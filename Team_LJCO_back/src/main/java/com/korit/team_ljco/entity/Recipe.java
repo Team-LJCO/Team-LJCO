@@ -19,6 +19,8 @@ public class Recipe {
     private String rcpImgUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private int rcpViewCount;
+    private int level;
 
     private List<RecipeStep> steps;
     private List<RecipeIngredient> ingredients;

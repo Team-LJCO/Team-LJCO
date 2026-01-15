@@ -165,6 +165,22 @@ public class RecipeService {
         recipeMapper.deleteRecipe(rcpId);
     }
 
+    // RecipeService.java에 추가
+    public List<Recipe> searchRecipesByName(String keyword) {
+        return recipeMapper.searchRecipesByName(keyword);
+    }
+
+    public Recipe updateRecipeBasicInfo(Long rcpId, Recipe recipe) {
+        Recipe existing = recipeMapper.selectRecipeById(rcpId);
+        if (existing == null) {
+            throw new RuntimeException("Recipe not found");
+        }
+        existing.setRcpName(recipe.getRcpName());
+        existing.setRcpImgUrl(recipe.getRcpImgUrl());
+        recipeMapper.updateRecipe(existing);
+        return recipeMapper.selectRecipeById(rcpId);
+    }
+
     /**
      * 추천 레시피 조회 (사용자 재료 기반)
      */

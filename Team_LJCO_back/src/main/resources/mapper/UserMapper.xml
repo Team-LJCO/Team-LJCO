@@ -73,4 +73,46 @@
         WHERE user_id = #{userId}
     </delete>
 
+    <!-- 전체 사용자 수 조회 -->
+    <select id="selectTotalUserCount" resultType="int">
+        SELECT COUNT(*) FROM user
+    </select>
+
+    <!-- 전체 사용자 목록 조회 -->
+    <select id="selectAllUsers" resultMap="UserResultMap">
+        SELECT
+        user_id, user_name, user_email, user_role,
+        oauth2Provider, oauth2Id, createdAt, updatedAt
+        FROM user
+        ORDER BY createdAt DESC
+    </select>
+
+    <!-- 사용자 검색 (동적 쿼리) -->
+    <select id="searchUsers" parameterType="map" resultMap="UserResultMap">
+        SELECT
+        user_id, user_name, user_email, user_role,
+        oauth2Provider, oauth2Id, createdAt, updatedAt
+        FROM user
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (user_name LIKE CONCAT('%', #{keyword}, '%')
+                OR user_email LIKE CONCAT('%', #{keyword}, '%')
+                OR oauth2Provider LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="role != null and role != ''">
+                AND user_role = #{role}
+            </if>
+            <if test="provider != null and provider != ''">
+                AND oauth2Provider = #{provider}
+            </if>
+            <if test="startDate != null">
+                AND createdAt &gt;= #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND createdAt &lt;= #{endDate}
+            </if>
+        </where>
+        ORDER BY createdAt DESC
+    </select>
+
 </mapper>
