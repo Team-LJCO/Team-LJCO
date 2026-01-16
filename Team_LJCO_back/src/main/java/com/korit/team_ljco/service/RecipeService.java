@@ -1,19 +1,18 @@
 package com.korit.team_ljco.service;
 
-import com.korit.team_ljco.dto.RecipeRequest;
-import com.korit.team_ljco.dto.RecipeResponse;
+import com.korit.team_ljco.dto.RecipeCount;
+import com.korit.team_ljco.dto.RecipeCountRow;
+import com.korit.team_ljco.dto.RecipeIngredientResponse;
+import com.korit.team_ljco.dto.RecipeListResponse;
+import com.korit.team_ljco.entity.Ingredient;
 import com.korit.team_ljco.entity.Recipe;
-import com.korit.team_ljco.entity.RecipeIngredient;
-import com.korit.team_ljco.entity.RecipeStep;
 import com.korit.team_ljco.mapper.RecipeMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -21,27 +20,39 @@ import java.util.stream.Collectors;
 public class RecipeService {
 
     private final RecipeMapper recipeMapper;
+    //일치율
+    private Integer matchRate;
 
-    /**
-     * 레시피 전체 조회
-     */
-    public List<RecipeResponse> getAllRecipes() {
-        List<Recipe> recipes = recipeMapper.selectAllRecipes();
-        return recipes.stream()
-                .map(RecipeResponse::from)
-                .collect(Collectors.toList());
+    //등록 후 경과일
+    private Integer daysPassed;
+
+
+    //전체 레시피 조회
+    public List<RecipeListResponse> findRecipes(int page,int userId) {
+        int pageSize = 10;
+        int offset = (page - 1) * pageSize;
+
+        //화면에 출력할것만
+        return recipeMapper.getRecipes(pageSize, offset, userId);
+
     }
 
-    /**
-     * 레시피 ID로 상세 조회
-     */
-    public RecipeResponse getRecipeById(Long rcpId) {
-        Recipe recipe = recipeMapper.selectRecipeById(rcpId);
-        if (recipe == null) {
-            throw new RuntimeException("레시피를 찾을 수 없습니다. ID: " + rcpId);
+    public List<RecipeCountRow> findMateRate(int userId, List<Integer> rcpIds) {
+        List<RecipeCount> countAll =  recipeMapper.getMatchRate(userId,rcpIds);
+        List<RecipeCountRow> recipeRowsList = new ArrayList<>();
+        //내 재료 겹치는 개수, 재료 레시피 개수 구하기
+        for(RecipeCount cnt : countAll) {
+            int recipeCount = cnt.getRecipeCount();
+            int myCount = cnt.getMyCount();
+
+            int recipeMatchRate = (int) ((double) myCount / recipeCount * 100);
+
+            RecipeCountRow recipeRow = RecipeCountRow.builder()
+                    .Rate(recipeMatchRate)
+                    .build();
+            recipeRowsList.add(recipeRow);
         }
-        return RecipeResponse.from(recipe);
-    }
+        return  recipeRowsList;
 
     /**
      * 레시피 검색
@@ -205,3 +216,7 @@ public class RecipeService {
         return recipeMapper.countAllRecipes();
     }
 }
+
+
+
+

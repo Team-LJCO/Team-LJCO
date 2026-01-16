@@ -1,17 +1,15 @@
-package com.korit.team_ljco.entity;
+package com.korit.team_ljco.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RecipeIngredient {
-    private int ingId;
-    private String ingName;
+public class RecipeCountRow {
+    private int Rate;
+
 }
