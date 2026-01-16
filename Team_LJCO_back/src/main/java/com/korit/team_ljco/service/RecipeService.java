@@ -55,7 +55,7 @@ public class RecipeService {
             int recipeMatchRate = (int) ((double) myCount / recipeCount * 100);
 
             RecipeCountRow recipeRow = RecipeCountRow.builder()
-                    .Rate(recipeMatchRate)
+                    .rate(recipeMatchRate)
                     .build();
             recipeRowsList.add(recipeRow);
         }

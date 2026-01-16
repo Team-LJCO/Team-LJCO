@@ -32,6 +32,6 @@ public class NaverOAuth2UserInfo implements OAuth2UserInfo {
 
     @Override
     public String getNameAttributeKey() {
-        return "id";
+        return "response";
     }
 }

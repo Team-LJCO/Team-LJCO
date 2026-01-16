@@ -20,20 +20,27 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtTokenProvider jwtTokenProvider;
 
-    @Value("${app.oauth2.redirect-uri:http://localhost:3000/auth/oauth2/callback}")
+    @Value("${app.oauth2.redirect-uri:http://localhost:5173/auth/oauth2/callback}")
     private String redirectUri;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
-        // PrincipalUser에서 User 객체 추출
+        // 1. PrincipalUser에서 User 객체 추출
         PrincipalUser principalUser = (PrincipalUser) authentication.getPrincipal();
         User user = principalUser.getUser();
 
-        // JWT 토큰 생성
+        // 2. JWT 토큰 생성
         String accessToken = jwtTokenProvider.createAccessToken(user);
 
-        // 프론트엔드로 리다이렉트 (토큰 전달)
-        response.sendRedirect(redirectUri + "?accessToken=" + accessToken);
+        // ★ 여기에 로그를 넣어주세요 ★
+        System.out.println("OAuth2 로그인 성공: " + user.getUserEmail());
+        System.out.println("설정된 Redirect URI: " + redirectUri);
+
+        String finalTargetUrl = redirectUri + "?accessToken=" + accessToken;
+        System.out.println("최종 이동 주소: " + finalTargetUrl);
+
+        // 3. 프론트엔드로 리다이렉트
+        response.sendRedirect(finalTargetUrl);
     }
 }

@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RecipeCountRow {
-    private int Rate;
+    private int rate;
 
 }
