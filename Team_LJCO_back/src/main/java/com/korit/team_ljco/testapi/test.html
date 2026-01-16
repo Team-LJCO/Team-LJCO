@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <title>FoodSafety API Test</title>
+    <style>
+        body { font-family: system-ui, sans-serif; padding: 16px; }
+        pre { white-space: pre-wrap; word-break: break-word; background:#f6f6f6; padding:12px; border-radius:8px; }
+        .row { border:1px solid #ddd; border-radius:10px; padding:12px; margin:12px 0; }
+        img { max-width: 280px; border-radius: 10px; display:block; margin-top:8px; }
+        h2 { margin: 0 0 6px; }
+        small { color:#666; }
+    </style>
+</head>
+<body>
+<h1>레시피 미리보기</h1>
+<div id="app">불러오는 중...</div>
+
+<script>
+    const serviceKey = "161778d13da04f1782f8";
+    const url = `https://openapi.foodsafetykorea.go.kr/api/${serviceKey}/COOKRCP01/json/1/5`;
+
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            const rows = data?.COOKRCP01?.row ?? [];
+            const app = document.getElementById("app");
+            if (rows.length === 0) {
+                app.innerHTML = "<p>데이터가 없습니다.</p>";
+                return;
+            }
+
+            app.innerHTML = rows.map(r => `
+          <div class="row">
+            <h2>${r.RCP_NM}</h2>
+            <small>${r.RCP_PAT2 ?? ""} · ${r.RCP_WAY2 ?? ""}</small>
+            <div><b>재료</b><pre>${r.RCP_PARTS_DTLS ?? ""}</pre></div>
+            <div><b>조리</b><pre>${[r.MANUAL01,r.MANUAL02,r.MANUAL03,r.MANUAL04,r.MANUAL05].filter(Boolean).join("\n")}</pre></div>
+            ${r.ATT_FILE_NO_MAIN ? `<img src="${r.ATT_FILE_NO_MAIN}" alt="main">` : ""}
+          </div>
+        `).join("");
+        })
+        .catch(err => {
+            document.getElementById("app").innerHTML =
+                `<p>에러: ${err}</p><p>※ 브라우저에서 fetch가 막히면(서버 CORS), 아래 ‘대안’ 방법을 써줘.</p>`;
+        });
+</script>
+</body>
+</html>

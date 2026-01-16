@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class IngredientCategory {
-
     private Integer ingCatId;
     private String ingCatName;
     private String ingCatImgUrl;
