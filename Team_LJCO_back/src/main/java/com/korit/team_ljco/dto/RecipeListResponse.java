@@ -28,8 +28,6 @@ public class RecipeListResponse {
     //일치율
     private Integer matchRate;
 
-    //등록 후 경과일
-    private Integer daysPassed;
 
 
 }

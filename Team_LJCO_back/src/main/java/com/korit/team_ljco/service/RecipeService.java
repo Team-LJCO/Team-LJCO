@@ -4,15 +4,22 @@ import com.korit.team_ljco.dto.RecipeCount;
 import com.korit.team_ljco.dto.RecipeCountRow;
 import com.korit.team_ljco.dto.RecipeIngredientResponse;
 import com.korit.team_ljco.dto.RecipeListResponse;
+import com.korit.team_ljco.dto.RecipeRequest;
+import com.korit.team_ljco.dto.RecipeResponse;
 import com.korit.team_ljco.entity.Ingredient;
 import com.korit.team_ljco.entity.Recipe;
+import com.korit.team_ljco.entity.RecipeIngredient;
+import com.korit.team_ljco.entity.RecipeStep;
 import com.korit.team_ljco.mapper.RecipeMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -37,10 +44,10 @@ public class RecipeService {
     }
 
     public List<RecipeCountRow> findMateRate(int userId, List<Integer> rcpIds) {
-        List<RecipeCount> countAll =  recipeMapper.getMatchRate(userId,rcpIds);
+        List<RecipeCount> countAll = recipeMapper.getMatchRate(userId, rcpIds);
         List<RecipeCountRow> recipeRowsList = new ArrayList<>();
         //내 재료 겹치는 개수, 재료 레시피 개수 구하기
-        for(RecipeCount cnt : countAll) {
+        for (RecipeCount cnt : countAll) {
             int recipeCount = cnt.getRecipeCount();
             int myCount = cnt.getMyCount();
 
@@ -51,7 +58,8 @@ public class RecipeService {
                     .build();
             recipeRowsList.add(recipeRow);
         }
-        return  recipeRowsList;
+        return recipeRowsList;
+    }
 
     /**
      * 레시피 검색
@@ -73,7 +81,7 @@ public class RecipeService {
                 .rcpName(request.getRcpName())
                 .rcpImgUrl(request.getRcpImgUrl())
                 .build();
-        
+
         recipeMapper.insertRecipe(recipe);
         Long rcpId = recipe.getRcpId();
 
