@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Ingredient {
-
     private Integer ingId;
     private String ingName;
     private Integer ingCatId;
