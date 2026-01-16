@@ -25,7 +25,7 @@ public class RecipeController {
     public List<RecipeListResponse> getAllRecipes(
             @RequestParam(defaultValue = "1" )int page, @RequestParam int userId) {
         List<RecipeListResponse> recipeListSelect = recipeService.findRecipes(page,userId);
-         return recipeListSelect;
+        return recipeListSelect;
     }
 
     @GetMapping("/MatchRate")

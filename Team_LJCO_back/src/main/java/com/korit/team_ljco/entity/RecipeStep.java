@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RecipeStep {
-
     private Long stepId;
     private Long rcpId;
     private Integer stepNo;
