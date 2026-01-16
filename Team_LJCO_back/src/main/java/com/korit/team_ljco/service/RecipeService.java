@@ -28,12 +28,12 @@ public class RecipeService {
 
 
     //전체 레시피 조회
-    public List<RecipeListResponse> findRecipes(int page) {
+    public List<RecipeListResponse> findRecipes(int page,int userId) {
         int pageSize = 10;
         int offset = (page - 1) * pageSize;
 
         //화면에 출력할것만
-        return recipeMapper.getRecipes(pageSize, offset);
+        return recipeMapper.getRecipes(pageSize, offset, userId);
 
     }
 

@@ -24,11 +24,16 @@ public class RecipeController {
     @GetMapping("/all")
     public List<RecipeListResponse> getAllRecipes(
             @RequestParam(defaultValue = "1" )int page, @RequestParam int userId) {
-        List<RecipeListResponse> recipeListSelect = recipeService.findRecipes(page);
-        List<Integer> rcpIds = new ArrayList<>();
-        List<RecipeCountRow> rateList = recipeService.findMateRate(userId,rcpIds);
+        List<RecipeListResponse> recipeListSelect = recipeService.findRecipes(page,userId);
 
-         return "";
+
+         return recipeListSelect;
+    }
+
+    @GetMapping("/MatchRate")
+    public List<RecipeCountRow> getMatchRate(
+            @RequestParam int userId, @RequestParam List<Integer> rcpIds) {
+        return recipeService.findMateRate(userId,rcpIds);
     }
 
 }
