@@ -9,14 +9,14 @@ import { RiKakaoTalkFill } from "react-icons/ri";
 function LoginPage() {
     const navigate = useNavigate();
 
-    const handleNaverLogin = () => {
-        window.location.href = "http://localhost:8080/oauth2/authorization/naver";
-    };
-    
     const handleGoogleLogin = () => {
         window.location.href = "http://localhost:8080/oauth2/authorization/google";
     };
- 
+
+    const handleNaverLogin = () => {
+        window.location.href = "http://localhost:8080/oauth2/authorization/naver";
+    };
+
     const handleKakaoLogin = () => {
         window.location.href = "http://localhost:8080/oauth2/authorization/kakao";
     };
