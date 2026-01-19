@@ -24,7 +24,7 @@ function LoginPage() {
     return (
         <div css={s.wrapper}>
             <div css={s.container}>
-                <button css={s.backBtn} onClick={() => navigate("/")}>
+                <button css={s.backBtn} onClick={() => navigate("/home")}>
                     ◀ 돌아가기
                 </button>
 

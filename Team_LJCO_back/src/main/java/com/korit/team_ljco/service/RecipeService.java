@@ -44,6 +44,14 @@ public class RecipeService {
         return recipeMapper.getRecipes(pageSize, offset, userId);
     }
 
+    // 검색 기능을 위한 메서드 추가
+    public List<RecipeListResponse> searchRecipesByKeyword(int page, int userId, String keyword) {
+        int pageSize = 10;
+        int offset = (page - 1) * pageSize;
+
+        // 우리가 Mapper에 새로 만든 메서드를 호출합니다.
+        return recipeMapper.searchRecipesByKeyword(pageSize, offset, userId, keyword);
+    }
     public List<RecipeCountRow> findMateRate(int userId, List<Integer> rcpIds) {
         List<RecipeCount> countAll =  recipeMapper.getMatchRate(userId,rcpIds);
         List<RecipeCountRow> recipeRowsList = new ArrayList<>();

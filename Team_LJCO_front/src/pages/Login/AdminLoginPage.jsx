@@ -1,11 +1,11 @@
 /** @jsxImportSource @emotion/react */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useAuthStore from '../stores/authStore';
-import { useLoginMutation } from '../queries';
-import * as S from '../styles/pages/LoginPage.style';
+import useAuthStore from '../../stores/authStore';
+import { useLoginMutation } from '../../queries';
+import * as S from '../../styles/pages/LoginPage.style';
 
-const LoginPage = () => {
+const AdminLoginPage = () => {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
   const [formData, setFormData] = useState({
@@ -97,4 +97,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default AdminLoginPage;

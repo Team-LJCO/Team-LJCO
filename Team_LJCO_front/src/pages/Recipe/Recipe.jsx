@@ -1,5 +1,5 @@
 /** @jsxImportSource @emotion/react */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Global } from "@emotion/react"; 
@@ -9,23 +9,46 @@ import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
 
 function Recipe() {
     const navigate = useNavigate();
-    const [isLogin] = useState(!!localStorage.getItem("AccessToken"));
+    const [isLogin] = useState(!!localStorage.getItem("accessToken")); // 대소문자 주의: accessToken
     const [recipes, setRecipes] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1); // 💡 페이지 상태 추가
+    const [hasMore, setHasMore] = useState(true); // 💡 더 불러올 데이터가 있는지 확인
 
     const [recipeSearchTerm, setRecipeSearchTerm] = useState("");
     const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
 
-    // 💡 데이터베이스 정보 호출
+    // 💡 무한 스크롤 관찰을 위한 Ref
+    const observer = useRef();
+    const lastRecipeElementRef = useCallback(node => {
+        if (loading) return;
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasMore) {
+                setPage(prevPage => prevPage + 1); // 바닥에 닿으면 페이지 증가
+            }
+        });
+        if (node) observer.current.observe(node);
+    }, [loading, hasMore]);
+
+    // 💡 데이터 페칭 로직 수정
     useEffect(() => {
         const fetchRecipes = async () => {
-            const token = localStorage.getItem("AccessToken");
+            setLoading(true);
+            const token = localStorage.getItem("accessToken");
             try {
-                // 추천 레시피 API 호출 (백엔드의 rcp 테이블 데이터)
-                const res = await axios.get("http://localhost:8080/api/recipes", {
+                const res = await axios.get(`http://localhost:8080/api/recipes`, {
+                    params: { page: page, userId: 0 }, // 페이지 번호 전달
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                setRecipes(res.data);
+                
+                // 💡 핵심: 기존 데이터에 새 데이터를 합쳐야 함 (concat)
+                setRecipes(prev => [...prev, ...res.data]);
+                
+                // 불러온 데이터가 10개 미만이면 더 이상 데이터가 없는 것으로 판단
+                if (res.data.length < 10) {
+                    setHasMore(false);
+                }
             } catch (err) {
                 console.error("레시피 로딩 실패:", err);
             } finally {
@@ -33,7 +56,7 @@ function Recipe() {
             }
         };
         fetchRecipes();
-    }, []);
+    }, [page]); // 💡 페이지가 바뀔 때마다 실행
 
     const handleRecipeSearch = () => {
         if (!recipeSearchTerm.trim()) return;
@@ -45,12 +68,11 @@ function Recipe() {
             <Global styles={fontImport} /> 
             <div css={commonS.wrapper}>
                 <div css={commonS.container}>
-                    {/* 상단 헤더 */}
+                    {/* 상단 헤더 (변화 없음) */}
                     <div css={commonS.headerCard}>
                         <div css={commonS.logo} onClick={() => navigate("/home")}>
                             <div className="logo-box">🧊</div> 냉장고 파먹기
                         </div>
-                        
                         <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <input 
                                 css={commonS.recipeSearch} 
@@ -61,7 +83,6 @@ function Recipe() {
                                 onKeyDown={(e) => e.key === 'Enter' && handleRecipeSearch()}
                             />
                         </div>
-
                         <div css={commonS.navGroup}>
                             <button css={commonS.pillBtn(false)} onClick={() => navigate("/home")}>🏠 식재료</button>
                             <button css={commonS.pillBtn(true)} onClick={() => navigate("/recipe")}>📖 레시피</button>
@@ -76,54 +97,56 @@ function Recipe() {
                         <h2>냉장고 재료로 만드는<br/>특별한 요리</h2>
                     </div>
 
-                    {/* 레시피 그리드: DB 테이블 컬럼명 매칭 */}
                     <div css={recipeS.recipeGrid}>
-                        {loading ? (
-                            <div style={{gridColumn: '1/-1', textAlign: 'center', padding: '100px', color: '#999'}}>레시피를 찾는 중...</div>
-                        ) : (
-                            recipes.map(recipe => (
-                                <div key={recipe.rcpId} css={recipeS.recipeCard}>
-                                    <div className="stats">
-                                        {/* DB의 matchRate와 level 사용 */}
-                                        <span className="match">일치율 {recipe.matchRate}%</span>
-                                        <span className="level">난이도 {recipe.level}</span>
+                        {recipes.map((recipe, index) => {
+                            // 💡 마지막 요소에 Ref를 달아줍니다.
+                            if (recipes.length === index + 1) {
+                                return (
+                                    <div ref={lastRecipeElementRef} key={recipe.rcpId} css={recipeS.recipeCard}>
+                                        <RecipeCardContent recipe={recipe} />
                                     </div>
-                                    <div className="thumb">
-                                        <img 
-                                            src={recipe.rcpImgUrl} 
-                                            alt={recipe.rcpName}
-                                            onError={(e) => { e.target.src = "https://via.placeholder.com/300x200?text=No+Image"; }}
-                                        />
+                                );
+                            } else {
+                                return (
+                                    <div key={recipe.rcpId} css={recipeS.recipeCard}>
+                                        <RecipeCardContent recipe={recipe} />
                                     </div>
-                                    <h3>{recipe.rcpName}</h3>
-                                    
-                                    <div className="meta">
-                                        <span>⏰ {recipe.cookingTime || '15분'}</span>
-                                        <span>👥 {recipe.servings || '2인분'}</span>
-                                    </div>
-
-                                    {/* 💡 재료 목록 (에러 방지를 위해 문자열 속성 추출) */}
-                                    <div className="ingredients">
-                                        <div className="label">필요한 재료</div>
-                                        {recipe.ingredients && recipe.ingredients.map((ing, idx) => (
-                                            <span key={idx} className="ing">
-                                                {/* ing가 객체 {ingName: '...'}라면 ingName을 출력 */}
-                                                {typeof ing === 'object' ? ing.ingName : ing}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))
-                        )}
+                                );
+                            }
+                        })}
+                        {loading && <div style={{gridColumn: '1/-1', textAlign: 'center', padding: '20px'}}>추가 레시피 로딩 중...</div>}
                     </div>
                 </div>
 
-                {isRecipeModalOpen && (
-                    <RecipeSearchModal 
-                        keyword={recipeSearchTerm} 
-                        onClose={() => setIsRecipeModalOpen(false)} 
-                    />
-                )}
+                {isRecipeModalOpen && <RecipeSearchModal keyword={recipeSearchTerm} onClose={() => setIsRecipeModalOpen(false)} />}
+            </div>
+        </>
+    );
+}
+
+// 💡 반복되는 카드 내용을 별도 컴포넌트로 분리
+function RecipeCardContent({ recipe }) {
+    return (
+        <>
+            <div className="stats">
+                <span className="match">일치율 {recipe.matchRate || 0}%</span>
+                <span className="level">난이도 {recipe.level}</span>
+            </div>
+            <div className="thumb">
+                <img src={recipe.rcpImgUrl} alt={recipe.rcpName} onError={(e) => { e.target.src = "https://via.placeholder.com/300x200?text=No+Image"; }} />
+            </div>
+            <h3>{recipe.rcpName}</h3>
+            <div className="meta">
+                <span>⏰ {recipe.cookingTime || '15분'}</span>
+                <span>👥 {recipe.servings || '2인분'}</span>
+            </div>
+            <div className="ingredients">
+                <div className="label">필요한 재료</div>
+                {recipe.ingredients && recipe.ingredients.map((ing, idx) => (
+                    <span key={idx} className="ing">
+                        {typeof ing === 'object' ? ing.ingName : ing}
+                    </span>
+                ))}
             </div>
         </>
     );

@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminLayout from '../components/layout/AdminLayout';
-import LoginPage from '../pages/LoginPage';
+import LoginPage from '../pages/Login/AdminLoginPage';
 import { UserManagement, IngredientManagement, RecipeManagement } from '../pages/admin';
 import useAuthStore from '../stores/authStore';
 

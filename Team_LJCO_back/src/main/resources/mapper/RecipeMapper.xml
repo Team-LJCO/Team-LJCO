@@ -59,21 +59,25 @@
 
     <!-- getRecipes 쿼리 수정 (컬럼명 오류 수정) -->
     <select id="getRecipes" resultMap="RecipeListWithIngredientsMap">
-        select
-        r.rcp_id,
-        r.rcp_name,
-        r.rcp_img_url,
-        r.rcp_view_count,
-        r.level,
-        i.ing_id,
-        i.ing_name
-        from
-        rcp r
-        left join rcp_ing ri on r.rcp_id = ri.rcp_id
-        left join ing i on ri.ing_id = i.ing_id
-        order by
-        r.rcp_id desc
-        limit #{pageSize} offset #{offset}
+        SELECT
+            r.rcp_id,
+            r.rcp_name,
+            r.rcp_img_url,
+            r.rcp_view_count,
+            r.level,
+            i.ing_id,
+            i.ing_name
+        FROM (
+            /* 1. 먼저 레시피 테이블에서 중복 없이 10개만 가져옵니다 */
+            SELECT rcp_id, rcp_name, rcp_img_url, rcp_view_count, level
+            FROM rcp
+            ORDER BY rcp_id DESC
+            LIMIT #{pageSize} OFFSET #{offset}
+        ) r
+        /* 2. 잘라낸 10개 레시피에 대해서만 재료를 조인합니다 */
+        LEFT JOIN rcp_ing ri ON r.rcp_id = ri.rcp_id
+        LEFT JOIN ingredients i ON ri.ing_id = i.ing_id
+        ORDER BY r.rcp_id DESC
     </select>
 
     <!-- selectRecipeById 쿼리 추가 (누락되어 있었음!) -->
@@ -186,19 +190,19 @@
     <!-- 추천 레시피 (사용자 재료 기반) -->
     <select id="selectRecommendedRecipes" parameterType="long" resultType="map">
         SELECT
-        r.rcp_id AS recipeId,
-        r.rcp_name AS recipeName,
-        r.rcp_img_url AS recipeImgUrl,
-        COUNT(DISTINCT ri.ing_id) AS totalIngredients,
-        COUNT(DISTINCT ui.ing_id) AS matchedIngredients,
-        ROUND(COUNT(DISTINCT ui.ing_id) * 100.0 / COUNT(DISTINCT ri.ing_id), 2) AS matchPercentage
+            r.rcp_id AS recipeId,
+            r.rcp_name AS recipeName,
+            r.rcp_img_url AS recipeImgUrl,
+            COUNT(DISTINCT ri.ing_id) AS totalIngredients,
+            COUNT(DISTINCT ui.ing_id) AS matchedIngredients,
+            ROUND(COUNT(DISTINCT ui.ing_id) * 100.0 / COUNT(DISTINCT ri.ing_id), 2) AS matchPercentage
         FROM rcp r
-        INNER JOIN rcp_ing ri ON r.rcp_id = ri.rcp_id
-        LEFT JOIN user_ing ui ON ri.ing_id = ui.ing_id AND ui.user_id = #{userId}
-        GROUP BY r.rcp_id
-        HAVING matchedIngredients > 0
-        ORDER BY matchPercentage DESC, matchedIngredients DESC
-        LIMIT 20
+            INNER JOIN rcp_ing ri ON r.rcp_id = ri.rcp_id
+            LEFT JOIN user_ing ui ON ri.ing_id = ui.ing_id AND ui.user_id = #{userId}
+            GROUP BY r.rcp_id
+            HAVING matchedIngredients > 0
+            ORDER BY matchPercentage DESC, matchedIngredients DESC
+            LIMIT 20
     </select>
 
     <!-- 인기 레시피 조회 (조회수 기준) -->
@@ -255,5 +259,16 @@
         GROUP BY ri.rcp_id
         ) user_counts ON recipe_counts.rcp_id = user_counts.rcp_id
     </select>
-
+    <select id="searchRecipesByKeyword" resultMap="RecipeListWithIngredientsMap">
+        SELECT
+        rcp_id,
+        rcp_name,
+        rcp_img_url,
+        rcp_view_count,
+        level
+        FROM rcp
+        WHERE rcp_name LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY rcp_id DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
 </mapper>

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { s } from "./styles";
+import { api } from "../../../configs/axiosConfig";
 
 function AddIngredientModal({ onClose }) {
     const [keyword, setKeyword] = useState("");
@@ -20,11 +21,9 @@ function AddIngredientModal({ onClose }) {
 
     // 💡 재료 클릭 시 바로 등록 (수량/날짜 입력 없이)
     const handleAdd = async (ingId) => {
-        const token = localStorage.getItem("AccessToken");
         try {
-            await axios.post("http://localhost:8080/api/user/ingredients", 
+            await api.post("/api/user/ingredients", 
                 { ingId: ingId }, // 수량이나 기한 없이 ID만 전송
-                { headers: { Authorization: `Bearer ${token}` } }
             );
             alert("냉장고에 쏙 넣었습니다!");
             onClose(); // 모달 닫고 새로고침
