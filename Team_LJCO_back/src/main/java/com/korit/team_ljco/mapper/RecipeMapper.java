@@ -3,7 +3,6 @@ package com.korit.team_ljco.mapper;
 import com.korit.team_ljco.dto.RecipeCount;
 import com.korit.team_ljco.dto.RecipeCountRow;
 import com.korit.team_ljco.dto.RecipeListResponse;
-import com.korit.team_ljco.entity.Ingredient;
 import com.korit.team_ljco.entity.Recipe;
 import com.korit.team_ljco.entity.RecipeIngredient;
 import com.korit.team_ljco.entity.RecipeStep;
@@ -71,4 +70,10 @@ public interface RecipeMapper {
 
     // 전체 레시피 수
     int countAllRecipes();
+    // 검색 결과를 RecipeListResponse DTO 리스트로 반환하도록 정의
+    List<RecipeListResponse> searchRecipesByKeyword(@Param("pageSize") int pageSize,
+                                                    @Param("offset") int offset,
+                                                    @Param("userId") int userId,
+                                                    @Param("keyword") String keyword);
 }
+

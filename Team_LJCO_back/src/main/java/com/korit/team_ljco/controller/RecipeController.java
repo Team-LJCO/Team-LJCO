@@ -33,4 +33,15 @@ public class RecipeController {
             @RequestParam List<Integer> rcpIds) {
         return recipeService.findMateRate(userId, rcpIds);
     }
+    // RecipeController.java
+    @GetMapping("/search")
+    public List<RecipeListResponse> searchRecipes(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam int userId,
+            @RequestParam String keyword) { // 프론트에서 넘어올 검색어
+
+        // 서비스의 새로운 검색 메서드 호출
+        return recipeService.searchRecipesByKeyword(page, userId, keyword);
+    }
+
 }

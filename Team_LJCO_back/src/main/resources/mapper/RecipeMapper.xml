@@ -259,5 +259,16 @@
         GROUP BY ri.rcp_id
         ) user_counts ON recipe_counts.rcp_id = user_counts.rcp_id
     </select>
-
+    <select id="searchRecipesByKeyword" resultMap="RecipeListWithIngredientsMap">
+        SELECT
+        rcp_id,
+        rcp_name,
+        rcp_img_url,
+        rcp_view_count,
+        level
+        FROM rcp
+        WHERE rcp_name LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY rcp_id DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
 </mapper>

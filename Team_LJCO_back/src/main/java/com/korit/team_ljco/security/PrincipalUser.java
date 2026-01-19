@@ -17,9 +17,9 @@ public class PrincipalUser extends DefaultOAuth2User {
     private User user;
 
     public PrincipalUser(Collection<? extends GrantedAuthority> authorities,
-                         Map<String, Object> attributes,
-                         String nameAttributeKey,
-                         User user) {
+                            Map<String, Object> attributes,
+                            String nameAttributeKey,
+                            User user) {
         super(authorities, attributes, nameAttributeKey);
         this.user = user;
     }
