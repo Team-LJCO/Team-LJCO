@@ -9,12 +9,16 @@ import { RiKakaoTalkFill } from "react-icons/ri";
 function LoginPage() {
     const navigate = useNavigate();
 
+    const handleGoogleLogin = () => {
+        window.location.href = "http://localhost:8080/oauth2/authorization/google";
+    };
+
     const handleNaverLogin = () => {
         window.location.href = "http://localhost:8080/oauth2/authorization/naver";
     };
 
-    const handleDeveloping = (platform) => {
-        alert(`${platform} 로그인은 현재 개발 중입니다! 🧊`);
+    const handleKakaoLogin = () => {
+        window.location.href = "http://localhost:8080/oauth2/authorization/kakao";
     };
 
     return (
@@ -30,7 +34,7 @@ function LoginPage() {
 
                     <div css={s.btnList}>
                         {/* 💡 구글 아이콘 적용 */}
-                        <button css={s.socialBtn} onClick={() => handleDeveloping("Google")}>
+                        <button css={s.socialBtn} onClick={handleGoogleLogin}>
                             <FcGoogle size={30} />
                             Google로 계속하기
                         </button>
@@ -42,7 +46,7 @@ function LoginPage() {
                         </button>
 
                         {/* 💡 카카오 아이콘 적용 */}
-                        <button css={s.socialBtn} onClick={() => handleDeveloping("Kakao")}>
+                        <button css={s.socialBtn} onClick={handleKakaoLogin}>
                             <RiKakaoTalkFill size={30} color="#3C1E1E" />
                             Kakao로 계속하기
                         </button>
