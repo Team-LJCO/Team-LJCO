@@ -9,8 +9,6 @@ import { RiKakaoTalkFill } from "react-icons/ri";
 function LoginPage() {
     const navigate = useNavigate();
 
-
-
     const handleGoogleLogin = () => {
         window.location.href = "http://localhost:8080/oauth2/authorization/google";
     };
@@ -18,7 +16,15 @@ function LoginPage() {
     const handleNaverLogin = () => {
         window.location.href = "http://localhost:8080/oauth2/authorization/naver";
     };
+<<<<<<< HEAD
+    
+    const handleGoogleLogin = () => {
+        window.location.href = "http://localhost:8080/oauth2/authorization/google";
+    };
+ 
+=======
 
+>>>>>>> origin/32-프로젝트-파일-및-폴더-정리
     const handleKakaoLogin = () => {
         window.location.href = "http://localhost:8080/oauth2/authorization/kakao";
     };

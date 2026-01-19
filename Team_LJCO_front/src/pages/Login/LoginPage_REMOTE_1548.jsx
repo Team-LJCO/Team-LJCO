@@ -9,8 +9,6 @@ import { RiKakaoTalkFill } from "react-icons/ri";
 function LoginPage() {
     const navigate = useNavigate();
 
-
-
     const handleGoogleLogin = () => {
         window.location.href = "http://localhost:8080/oauth2/authorization/google";
     };
@@ -26,7 +24,7 @@ function LoginPage() {
     return (
         <div css={s.wrapper}>
             <div css={s.container}>
-                <button css={s.backBtn} onClick={() => navigate("/home")}>
+                <button css={s.backBtn} onClick={() => navigate("/")}>
                     ◀ 돌아가기
                 </button>
 
