@@ -261,14 +261,30 @@
     </select>
     <select id="searchRecipesByKeyword" resultMap="RecipeListWithIngredientsMap">
         SELECT
-        rcp_id,
-        rcp_name,
-        rcp_img_url,
-        rcp_view_count,
-        level
+        r.rcp_id,
+        r.rcp_name,
+        r.rcp_img_url,
+        r.rcp_view_count,
+        r.level,
+        i.ing_id,
+        i.ing_name
+        FROM (
+        /* 1. 검색 조건에 맞는 레시피 ID들을 먼저 뽑습니다. */
+        SELECT rcp_id, rcp_name, rcp_img_url, rcp_view_count, level
         FROM rcp
         WHERE rcp_name LIKE CONCAT('%', #{keyword}, '%')
-        ORDER BY rcp_id DESC
+        ORDER BY
+        CASE
+        WHEN rcp_name = #{keyword} THEN 1
+        WHEN rcp_name LIKE CONCAT(#{keyword}, '%') THEN 2
+        ELSE 3
+        END,
+        rcp_id DESC
         LIMIT #{pageSize} OFFSET #{offset}
+        ) r
+        /* 2. 뽑힌 레시피들에 대해 재료 정보를 합칩니다. (이게 있어야 화면에 재료가 뜹니다) */
+        LEFT JOIN rcp_ing ri ON r.rcp_id = ri.rcp_id
+        LEFT JOIN ingredients i ON ri.ing_id = i.ing_id
+        ORDER BY r.rcp_id DESC
     </select>
 </mapper>

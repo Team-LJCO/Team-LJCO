@@ -59,8 +59,10 @@ public class SecurityConfig {
 // 3. 공개 API - 재료, 레시피 (인증 불필요)
                                 .requestMatchers(
                                         "/api/ingredients/**",
-                                        "/api/recipes/**", // 기존 경로
-                                        "/recipes/**"      // ← 이 줄을 추가하세요! (컨트롤러 주소와 일치시킴)
+                                        "/api/recipes/**", // 이 부분이 /api/recipes/search를 포함해야 합니다.
+                                        "/recipes/**",
+                                        "/images/**",
+                                        "/error"
                                 ).permitAll()
 
                         // 2. OAuth2 및 인증 관련 경로

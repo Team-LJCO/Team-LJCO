@@ -109,8 +109,21 @@ function Home() {
               <div className="logo-box">🧊</div> 냉장고 파먹기
             </div>
             <div style={{ position: "relative", flex: 1, display: "flex", alignItems: "center", gap: "10px" }}>
-              <input css={s.recipeSearch} placeholder="오늘은 뭐 해먹지?" value={recipeSearchTerm} onChange={(e) => setRecipeSearchTerm(e.target.value)} onKeyDown={(e) => e.key === "Enter" && setIsRecipeModalOpen(true)} />
-              <button onClick={() => setIsRecipeModalOpen(true)} css={searchBtnStyle}>🔍</button>
+              <input 
+                css={s.recipeSearch} 
+                placeholder="오늘은 뭐 해먹지?" 
+                value={recipeSearchTerm} 
+                onChange={(e) => setRecipeSearchTerm(e.target.value)} 
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && recipeSearchTerm.trim()) {
+                    navigate(`/recipe?keyword=${encodeURIComponent(recipeSearchTerm)}`);
+                  }
+                }} 
+              />
+              <button 
+                onClick={() => recipeSearchTerm.trim() && navigate(`/recipe?keyword=${encodeURIComponent(recipeSearchTerm)}`)} 
+                css={searchBtnStyle}
+              >🔍</button>
             </div>
             <div css={s.navGroup}>
               <button css={s.pillBtn(true)} onClick={() => navigate("/home")}>🏠 식재료</button>

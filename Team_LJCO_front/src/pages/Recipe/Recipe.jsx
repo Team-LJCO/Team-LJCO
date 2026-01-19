@@ -1,14 +1,16 @@
 /** @jsxImportSource @emotion/react */
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Global } from "@emotion/react"; 
 import { fontImport, s as commonS } from "../Home/styles"; 
 import { s as recipeS } from "./styles"; 
 import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
+import { useNavigate, useLocation } from "react-router-dom"; // 💡 useLocation 추가
 
 function Recipe() {
     const navigate = useNavigate();
+    const location = useLocation();
+
     const [isLogin] = useState(!!localStorage.getItem("accessToken")); // 대소문자 주의: accessToken
     const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -17,6 +19,8 @@ function Recipe() {
 
     const [recipeSearchTerm, setRecipeSearchTerm] = useState("");
     const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
+    const [selectedRecipe, setSelectedRecipe] = useState(null);
+    
 
     // 💡 무한 스크롤 관찰을 위한 Ref
     const observer = useRef();
@@ -32,37 +36,60 @@ function Recipe() {
     }, [loading, hasMore]);
 
     // 💡 데이터 페칭 로직 수정
-    useEffect(() => {
-        const fetchRecipes = async () => {
-            setLoading(true);
-            const token = localStorage.getItem("accessToken");
-            try {
-                const res = await axios.get(`http://localhost:8080/api/recipes`, {
-                    params: { page: page, userId: 0 }, // 페이지 번호 전달
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                
-                // 💡 핵심: 기존 데이터에 새 데이터를 합쳐야 함 (concat)
-                setRecipes(prev => [...prev, ...res.data]);
-                
-                // 불러온 데이터가 10개 미만이면 더 이상 데이터가 없는 것으로 판단
-                if (res.data.length < 10) {
-                    setHasMore(false);
+   useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const keywordParam = params.get("keyword");
+        
+        if (keywordParam) {
+            setRecipeSearchTerm(keywordParam); // 검색창에 글자 넣기
+            
+            // 💡 자동으로 검색 API 호출 로직 실행
+            const fetchFromUrl = async () => {
+                setLoading(true);
+                const token = localStorage.getItem("accessToken");
+                try {
+                    const res = await axios.get(`http://localhost:8080/api/recipes/search`, {
+                        params: { page: 1, userId: 0, keyword: keywordParam },
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    setRecipes(res.data); // 결과 뿌리기
+                    setHasMore(false);    // 추가 로딩 차단
+                } catch (err) {
+                    console.error("URL 검색 로드 실패:", err);
+                } finally {
+                    setLoading(false);
                 }
-            } catch (err) {
-                console.error("레시피 로딩 실패:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchRecipes();
-    }, [page]); // 💡 페이지가 바뀔 때마다 실행
+            };
+            fetchFromUrl();
+        }
+    }, [location.search]); // 💡 페이지가 바뀔 때마다 실행
 
-    const handleRecipeSearch = () => {
-        if (!recipeSearchTerm.trim()) return;
-        setIsRecipeModalOpen(true);
-    };
-
+    const handleRecipeSearch = async () => {
+    if (!recipeSearchTerm.trim()) return;
+    
+    setLoading(true);
+    setPage(1); // 검색 시 페이지 초기화
+    const token = localStorage.getItem("accessToken");
+    
+    try {
+        // 💡 모달을 여는 대신, 검색 API를 직접 호출해서 목록을 갈아끼웁니다.
+        const res = await axios.get(`http://localhost:8080/api/recipes/search`, {
+            params: { 
+                page: 1, 
+                userId: 0, 
+                keyword: recipeSearchTerm 
+            },
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        setRecipes(res.data); // 💡 기존 목록을 지우고 검색 결과로 덮어씌움
+        setHasMore(false);    // 검색 결과에서는 무한 스크롤을 일단 끔 (필요 시 로직 추가)
+    } catch (err) {
+        console.error("검색 실패:", err);
+    } finally {
+        setLoading(false);
+    }
+};
     return (
         <>
             <Global styles={fontImport} /> 
@@ -99,26 +126,34 @@ function Recipe() {
 
                     <div css={recipeS.recipeGrid}>
                         {recipes.map((recipe, index) => {
-                            // 💡 마지막 요소에 Ref를 달아줍니다.
-                            if (recipes.length === index + 1) {
-                                return (
-                                    <div ref={lastRecipeElementRef} key={recipe.rcpId} css={recipeS.recipeCard}>
-                                        <RecipeCardContent recipe={recipe} />
-                                    </div>
-                                );
-                            } else {
-                                return (
-                                    <div key={recipe.rcpId} css={recipeS.recipeCard}>
-                                        <RecipeCardContent recipe={recipe} />
-                                    </div>
-                                );
-                            }
+                            const isLast = recipes.length === index + 1;
+                            return (
+                                <div 
+                                    ref={isLast ? lastRecipeElementRef : null} 
+                                    key={`${recipe.rcpId}-${index}`} // 💡 중복 키 에러 방지를 위해 index 조합
+                                    css={recipeS.recipeCard}
+                                    onClick={() => {
+                                        // 💡 카드를 클릭했을 때만 모달이 뜨게 합니다.
+                                        setSelectedRecipe(recipe); 
+                                        setIsRecipeModalOpen(true);
+                                    }}
+                                    style={{ cursor: 'pointer' }} // 클릭 가능하다는 시각적 표시
+                                >
+                                    <RecipeCardContent recipe={recipe} />
+                                </div>
+                            );
                         })}
                         {loading && <div style={{gridColumn: '1/-1', textAlign: 'center', padding: '20px'}}>추가 레시피 로딩 중...</div>}
                     </div>
                 </div>
 
-                {isRecipeModalOpen && <RecipeSearchModal keyword={recipeSearchTerm} onClose={() => setIsRecipeModalOpen(false)} />}
+                {isRecipeModalOpen && <RecipeSearchModal 
+        recipe={selectedRecipe} // 💡 검색어가 아니라 선택된 '레시피 객체'를 넘김
+        onClose={() => {
+            setIsRecipeModalOpen(false);
+            setSelectedRecipe(null);
+        }} 
+    />}
             </div>
         </>
     );
