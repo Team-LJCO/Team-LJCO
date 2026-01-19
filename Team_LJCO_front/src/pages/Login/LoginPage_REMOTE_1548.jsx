@@ -16,15 +16,7 @@ function LoginPage() {
     const handleNaverLogin = () => {
         window.location.href = "http://localhost:8080/oauth2/authorization/naver";
     };
-<<<<<<< HEAD
-    
-    const handleGoogleLogin = () => {
-        window.location.href = "http://localhost:8080/oauth2/authorization/google";
-    };
- 
-=======
 
->>>>>>> origin/32-프로젝트-파일-및-폴더-정리
     const handleKakaoLogin = () => {
         window.location.href = "http://localhost:8080/oauth2/authorization/kakao";
     };
@@ -32,7 +24,7 @@ function LoginPage() {
     return (
         <div css={s.wrapper}>
             <div css={s.container}>
-                <button css={s.backBtn} onClick={() => navigate("/home")}>
+                <button css={s.backBtn} onClick={() => navigate("/")}>
                     ◀ 돌아가기
                 </button>
 
