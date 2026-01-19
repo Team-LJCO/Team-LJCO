@@ -60,7 +60,7 @@ public class RecipeService {
             recipeRowsList.add(recipeRow);
         }
         return  recipeRowsList;
-    } // ← 이 중괄호가 누락되어 있었습니다!
+    }
 
     /**
      * 레시피 검색
