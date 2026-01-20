@@ -18,6 +18,8 @@ public class RecipeIngredient {
     private String rcpIngAmt;
     private Integer rcpIngOrd;
     private LocalDateTime createdAt;
+    private Integer dDay;   // 💡 MyBatis의 d_day와 매핑
+    private boolean hasIng; // 💡 MyBatis의 has_ing와 매핑 (1이면 true, 0이면 false)
 
     // 재료 정보 (JOIN용)
     private Ingredient ingredient;

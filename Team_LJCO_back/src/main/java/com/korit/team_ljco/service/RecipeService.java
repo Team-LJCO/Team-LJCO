@@ -36,7 +36,7 @@ public class RecipeService {
     }
 
     //전체 레시피 조회
-    public List<RecipeListResponse> findRecipes(int page, int userId) {
+    public List<RecipeListResponse> findRecipes(int page, Long userId) {
         int pageSize = 10;
         int offset = (page - 1) * pageSize;
 
@@ -45,14 +45,14 @@ public class RecipeService {
     }
 
     // 검색 기능을 위한 메서드 추가
-    public List<RecipeListResponse> searchRecipesByKeyword(int page, int userId, String keyword) {
+    public List<RecipeListResponse> searchRecipesByKeyword(int page, Long userId, String keyword) {
         int pageSize = 10;
         int offset = (page - 1) * pageSize;
 
         // 우리가 Mapper에 새로 만든 메서드를 호출합니다.
         return recipeMapper.searchRecipesByKeyword(pageSize, offset, userId, keyword);
     }
-    public List<RecipeCountRow> findMateRate(int userId, List<Integer> rcpIds) {
+    public List<RecipeCountRow> findMateRate(Long userId, List<Integer> rcpIds) {
         List<RecipeCount> countAll =  recipeMapper.getMatchRate(userId,rcpIds);
         List<RecipeCountRow> recipeRowsList = new ArrayList<>();
         //내 재료 겹치는 개수, 재료 레시피 개수 구하기

@@ -18,11 +18,11 @@ public interface RecipeMapper {
     //페이지 넘김을 고려한 pagesize 생성 => 서비스에서 계산함
     List<RecipeListResponse> getRecipes(@Param("pageSize") int pageSize,
                                         @Param("offset") int offset,
-                                        @Param("userId") int userId);
+                                        @Param("userId") Long userId);
 
     //일치율
     //한 사람에 대한 레시피라서 userid는 하나 rcpids는 여러개라 리스트
-    List<RecipeCount> getMatchRate(@Param("userId") int userId,
+    List<RecipeCount> getMatchRate(@Param("userId") Long userId,
                                     @Param("rcpIds") List<Integer> rcpIds);
 
     //며칠남았는지
@@ -73,8 +73,8 @@ public interface RecipeMapper {
     // 검색 결과를 RecipeListResponse DTO 리스트로 반환하도록 정의
     List<RecipeListResponse> searchRecipesByKeyword(@Param("pageSize") int pageSize,
                                                     @Param("offset") int offset,
-                                                    @Param("userId") int userId,
+                                                    @Param("userId") Long userId,
                                                     @Param("keyword") String keyword);
-   
+
 }
 
