@@ -242,4 +242,8 @@ public class RecipeService {
     public int getTotalRecipeCount() {
         return recipeMapper.countAllRecipes();
     }
+
+    public List<RecipeStep> getRecipeSteps(Long rcpId) {
+        return recipeMapper.selectRecipeSteps(rcpId);
+    }
 }

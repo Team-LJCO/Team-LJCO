@@ -1,12 +1,10 @@
 package com.korit.team_ljco.controller;
 import com.korit.team_ljco.dto.RecipeCountRow;
 import com.korit.team_ljco.dto.RecipeListResponse;
+import com.korit.team_ljco.entity.RecipeStep;
 import com.korit.team_ljco.service.RecipeService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -42,6 +40,12 @@ public class RecipeController {
 
         // 서비스의 새로운 검색 메서드 호출
         return recipeService.searchRecipesByKeyword(page, userId, keyword);
+    }
+
+    // RecipeController.java 파일에 추가
+    @GetMapping("/{rcpId}/steps")
+    public List<RecipeStep> getRecipeSteps(@PathVariable Long rcpId) {
+        return recipeService.getRecipeSteps(rcpId); // 서비스 호출
     }
 
 }

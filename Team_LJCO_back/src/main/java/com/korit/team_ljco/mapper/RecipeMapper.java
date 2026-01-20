@@ -75,5 +75,6 @@ public interface RecipeMapper {
                                                     @Param("offset") int offset,
                                                     @Param("userId") int userId,
                                                     @Param("keyword") String keyword);
+   
 }
 

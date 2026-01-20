@@ -1,5 +1,6 @@
 package com.korit.team_ljco.service;
 
+import com.korit.team_ljco.entity.RecipeStep;
 import com.korit.team_ljco.entity.User;
 import com.korit.team_ljco.jwt.JwtTokenProvider;
 import com.korit.team_ljco.mapper.UserMapper;
@@ -118,4 +119,6 @@ public class UserServiceImpl implements UserService {
     public List<User> searchUsers(Map<String, Object> params) {
         return userMapper.searchUsers(params);
     }
+    // RecipeServiceImpl.java 파일에 삭제
+
 }

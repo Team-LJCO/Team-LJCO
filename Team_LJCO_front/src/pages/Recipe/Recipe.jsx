@@ -36,33 +36,50 @@ function Recipe() {
     }, [loading, hasMore]);
 
     // 💡 데이터 페칭 로직 수정
-   useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        const keywordParam = params.get("keyword");
+   // Recipe.jsx 내부의 useEffect를 이 내용으로 교체하세요.
+useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const keywordParam = params.get("keyword");
+    
+    const fetchRecipes = async () => {
+        setLoading(true);
+        const token = localStorage.getItem("accessToken");
         
-        if (keywordParam) {
-            setRecipeSearchTerm(keywordParam); // 검색창에 글자 넣기
+        try {
+            // 💡 검색어가 있으면 search API, 없으면 기본 목록 API 호출
+            const url = keywordParam 
+                ? `http://localhost:8080/api/recipes/search` 
+                : `http://localhost:8080/api/recipes`;
+
+            const res = await axios.get(url, {
+                // 💡 검색어가 없을 때는 keyword를 보내지 않도록 설정
+                params: { 
+                    page: page, 
+                    userId: 0, 
+                    keyword: keywordParam || undefined 
+                },
+                headers: { Authorization: `Bearer ${token}` }
+            });
             
-            // 💡 자동으로 검색 API 호출 로직 실행
-            const fetchFromUrl = async () => {
-                setLoading(true);
-                const token = localStorage.getItem("accessToken");
-                try {
-                    const res = await axios.get(`http://localhost:8080/api/recipes/search`, {
-                        params: { page: 1, userId: 0, keyword: keywordParam },
-                        headers: { Authorization: `Bearer ${token}` }
-                    });
-                    setRecipes(res.data); // 결과 뿌리기
-                    setHasMore(false);    // 추가 로딩 차단
-                } catch (err) {
-                    console.error("URL 검색 로드 실패:", err);
-                } finally {
-                    setLoading(false);
-                }
-            };
-            fetchFromUrl();
+            // 💡 페이지가 1이면(검색이나 첫 진입) 리스트를 새로 만들고, 
+            // 💡 페이지가 2 이상(무한 스크롤)이면 기존 리스트에 추가합니다.
+            setRecipes(prev => page === 1 ? res.data : [...prev, ...res.data]);
+            
+            // 데이터가 10개 미만이면 더 이상 가져올 데이터가 없다고 판단
+            if (res.data.length < 10) setHasMore(false);
+            
+            // 입력창에 현재 검색어 표시 (없으면 빈 칸)
+            if (keywordParam) setRecipeSearchTerm(keywordParam);
+
+        } catch (err) {
+            console.error("데이터 로딩 실패:", err);
+        } finally {
+            setLoading(false);
         }
-    }, [location.search]); // 💡 페이지가 바뀔 때마다 실행
+    };
+
+    fetchRecipes();
+}, [page, location.search]); // ✅ 페이지 번호나 주소(검색어)가 바뀔 때마다 실행
 
     const handleRecipeSearch = async () => {
     if (!recipeSearchTerm.trim()) return;
