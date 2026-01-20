@@ -12,6 +12,7 @@ import java.util.List;
 @RequestMapping("/api/recipes") // 앞에 / 추가
 @RequiredArgsConstructor
 public class RecipeController {
+
     private final RecipeService recipeService;
 
     // 레시피 목록 조회 컨트롤러
