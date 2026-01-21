@@ -26,6 +26,9 @@
         <result property="createdAt" column="created_at"/>
         <result property="ingName" column="ing_name"/>
         <result property="ingImgUrl" column="ing_img_url"/>
+
+        <result property="dDay" column="d_day"/>
+        <result property="hasIng" column="has_ing"/>
     </resultMap>
 
     <!-- RecipeStep ResultMap 추가 (누락되어 있었음!) -->
@@ -305,5 +308,25 @@
         AND ui.user_id = #{userId}
         GROUP BY ri.rcp_id
         ) user_counts ON recipe_counts.rcp_id = user_counts.rcp_id
+    </select>
+    <select id="searchRecipesByKeyword" resultMap="RecipeListWithIngredientsMap">
+        SELECT
+        r.rcp_id, r.rcp_name, r.rcp_img_url, r.rcp_view_count, r.level,
+        i.ing_id, i.ing_name,
+        /* 💡 추가된 부분: 사용자의 냉장고와 대조하여 D-Day 계산 */
+        DATEDIFF(CURRENT_TIMESTAMP, ui.created_at) AS d_day,
+        CASE WHEN ui.user_ing_id IS NOT NULL THEN 1 ELSE 0 END AS has_ing
+        FROM (
+        SELECT rcp_id, rcp_name, rcp_img_url, rcp_view_count, level
+        FROM rcp
+        WHERE rcp_name LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY rcp_id DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+        ) r
+        LEFT JOIN rcp_ing ri ON r.rcp_id = ri.rcp_id
+        LEFT JOIN ingredients i ON ri.ing_id = i.ing_id
+        /* 💡 사용자의 냉장고 재료와 조인 */
+        LEFT JOIN user_ingredients ui ON i.ing_id = ui.ing_id AND ui.user_id = #{userId}
+        ORDER BY r.rcp_id DESC
     </select>
 </mapper>

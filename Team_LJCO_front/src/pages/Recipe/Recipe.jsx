@@ -6,6 +6,7 @@ import { fontImport, s as commonS } from "../Home/styles";
 import { s as recipeS } from "./styles"; 
 import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
 import { useNavigate, useLocation } from "react-router-dom"; // 💡 useLocation 추가
+import { getColorByDay } from "../../utils/colorUtils";
 
 function Recipe() {
     const navigate = useNavigate();
@@ -45,30 +46,25 @@ useEffect(() => {
         setLoading(true);
         const token = localStorage.getItem("accessToken");
         
+        // 💡 로그인한 유저의 실제 ID를 가져옵니다. (자동 연동)
+        const currentUserId = localStorage.getItem("userId") || 32;
+
         try {
-            // 💡 검색어가 있으면 search API, 없으면 기본 목록 API 호출
             const url = keywordParam 
                 ? `http://localhost:8080/api/recipes/search` 
                 : `http://localhost:8080/api/recipes`;
 
             const res = await axios.get(url, {
-                // 💡 검색어가 없을 때는 keyword를 보내지 않도록 설정
                 params: { 
                     page: page, 
-                    userId: 0, 
+                    userId: currentUserId, // 💡 이제 자동화된 ID가 전달됩니다!
                     keyword: keywordParam || undefined 
                 },
                 headers: { Authorization: `Bearer ${token}` }
             });
             
-            // 💡 페이지가 1이면(검색이나 첫 진입) 리스트를 새로 만들고, 
-            // 💡 페이지가 2 이상(무한 스크롤)이면 기존 리스트에 추가합니다.
             setRecipes(prev => page === 1 ? res.data : [...prev, ...res.data]);
-            
-            // 데이터가 10개 미만이면 더 이상 가져올 데이터가 없다고 판단
             if (res.data.length < 10) setHasMore(false);
-            
-            // 입력창에 현재 검색어 표시 (없으면 빈 칸)
             if (keywordParam) setRecipeSearchTerm(keywordParam);
 
         } catch (err) {
@@ -79,28 +75,29 @@ useEffect(() => {
     };
 
     fetchRecipes();
-}, [page, location.search]); // ✅ 페이지 번호나 주소(검색어)가 바뀔 때마다 실행
+}, [page, location.search]);
 
     const handleRecipeSearch = async () => {
     if (!recipeSearchTerm.trim()) return;
     
     setLoading(true);
-    setPage(1); // 검색 시 페이지 초기화
+    setPage(1); 
     const token = localStorage.getItem("accessToken");
+    // 💡 여기서도 동일하게 실제 유저 ID 또는 테스트용 32를 가져옵니다.
+    const currentUserId = localStorage.getItem("userId") || 32;
     
     try {
-        // 💡 모달을 여는 대신, 검색 API를 직접 호출해서 목록을 갈아끼웁니다.
         const res = await axios.get(`http://localhost:8080/api/recipes/search`, {
             params: { 
                 page: 1, 
-                userId: 0, 
+                userId: currentUserId, // 💡 0에서 currentUserId로 수정!
                 keyword: recipeSearchTerm 
             },
             headers: { Authorization: `Bearer ${token}` }
         });
         
-        setRecipes(res.data); // 💡 기존 목록을 지우고 검색 결과로 덮어씌움
-        setHasMore(false);    // 검색 결과에서는 무한 스크롤을 일단 끔 (필요 시 로직 추가)
+        setRecipes(res.data);
+        setHasMore(false); 
     } catch (err) {
         console.error("검색 실패:", err);
     } finally {
@@ -177,30 +174,106 @@ useEffect(() => {
 }
 
 // 💡 반복되는 카드 내용을 별도 컴포넌트로 분리
+// Recipe.jsx 내 수정된 부분 확인
+// 💡 누락되었던 카드 상세 정보(사진, 일치율, 난이도 등)를 다시 포함한 컴포넌트입니다.
 function RecipeCardContent({ recipe }) {
+    // 💡 데이터 로직 유지
+    const totalIng = recipe.ingredients?.length || 0;
+    const myIng = recipe.ingredients?.filter(ing => ing.hasIng === true || ing.hasIng === 1)?.length || 0;
+    const matchRate = totalIng > 0 ? Math.round((myIng / totalIng) * 100) : 0;
+
     return (
-        <>
-            <div className="stats">
-                <span className="match">일치율 {recipe.matchRate || 0}%</span>
-                <span className="level">난이도 {recipe.level}</span>
-            </div>
-            <div className="thumb">
-                <img src={recipe.rcpImgUrl} alt={recipe.rcpName} onError={(e) => { e.target.src = "https://via.placeholder.com/300x200?text=No+Image"; }} />
-            </div>
-            <h3>{recipe.rcpName}</h3>
-            <div className="meta">
-                <span>⏰ {recipe.cookingTime || '15분'}</span>
-                <span>👥 {recipe.servings || '2인분'}</span>
-            </div>
-            <div className="ingredients">
-                <div className="label">필요한 재료</div>
-                {recipe.ingredients && recipe.ingredients.map((ing, idx) => (
-                    <span key={idx} className="ing">
-                        {typeof ing === 'object' ? ing.ingName : ing}
+        <div style={{ borderRadius: '30px', overflow: 'hidden' }}>
+            {/* 1. 사진 영역 (상단 배치 및 꽉 채우기) */}
+            <div className="thumb" style={{ 
+                position: 'relative', 
+                width: '100%', 
+                height: '240px', 
+                margin: 0, 
+                borderRadius: '0' // 부모에서 제어하므로 0으로 설정
+            }}>
+                <img 
+                    src={recipe.rcpImgUrl} 
+                    alt={recipe.rcpName} 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
+                
+                {/* 💡 사진 위에 뜨는 배지 그룹 (일치율, 난이도) */}
+                <div style={{ 
+                    position: 'absolute', 
+                    top: '15px', 
+                    left: '15px', 
+                    right: '15px', 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    zIndex: 10
+                }}>
+                    <span style={{ 
+                        background: '#FF7043', 
+                        color: 'white', 
+                        padding: '6px 14px', 
+                        borderRadius: '12px', 
+                        fontSize: '12px', 
+                        fontWeight: '800',
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+                    }}>
+                        일치율 {matchRate}%
                     </span>
-                ))}
+                    <span style={{ 
+                        background: 'rgba(255, 112, 67, 0.9)', 
+                        color: 'white', 
+                        padding: '6px 14px', 
+                        borderRadius: '12px', 
+                        fontSize: '12px', 
+                        fontWeight: '800',
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+                    }}>
+                        난이도 {recipe.level === 1 ? '쉬움' : recipe.level === 2 ? '보통' : '어려움'}
+                    </span>
+                </div>
             </div>
-        </>
+
+            {/* 2. 카드 하단 텍스트 정보 */}
+            <div style={{ padding: '20px 5px' }}>
+                <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px' }}>{recipe.rcpName}</h3>
+                <div className="meta" style={{ display: 'flex', gap: '15px', fontSize: '12px', color: '#FF7043', fontWeight: '700', marginBottom: '15px' }}>
+                    <span>👁️ {recipe.rcpViewCount?.toLocaleString()}</span>
+                    <span>⏱️ 15분</span>
+                    <span>👥 2인분</span>
+                </div>
+
+                {/* 3. 재료 리스트 */}
+                <div className="ingredients">
+                    <div className="label" style={{ fontSize: '11px', color: '#999', marginBottom: '8px' }}>필요한 재료</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {recipe.ingredients && recipe.ingredients.map((ing, idx) => {
+                            const hasIngredient = ing.hasIng === true || ing.hasIng === 1 || ing.has_ing === 1;
+                            const dDayValue = ing.dDay !== undefined && ing.dDay !== null ? ing.dDay : ing.dday;
+
+                            const bgColor = hasIngredient ? getColorByDay(dDayValue) : "#F0F0F0";
+                            const textColor = hasIngredient ? "#000" : "#999";
+
+                            return (
+                                <span 
+                                    key={idx} 
+                                    style={{ 
+                                        backgroundColor: bgColor, 
+                                        color: textColor,
+                                        fontWeight: hasIngredient ? 'bold' : 'normal',
+                                        padding: '4px 10px',
+                                        borderRadius: '8px',
+                                        fontSize: '11px',
+                                        border: hasIngredient ? 'none' : '1px solid #eee'
+                                    }}
+                                >
+                                    {ing.ingName}
+                                </span>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }
 

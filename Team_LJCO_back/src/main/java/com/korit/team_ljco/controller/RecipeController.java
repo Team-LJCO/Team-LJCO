@@ -19,16 +19,15 @@ public class RecipeController {
     @GetMapping
     public List<RecipeListResponse> getAllRecipes(
             @RequestParam(defaultValue = "1") int page,
-            // required = false를 추가하여 userId가 없어도 요청을 허용합니다.
-            @RequestParam(required = false, defaultValue = "0") int userId) {
+            // int -> Long으로 변경하여 더 큰 범위를 수용하고 DB 타입과 맞춥니다.
+            @RequestParam(required = false, defaultValue = "0") Long userId) {
 
-        List<RecipeListResponse> recipeListSelect = recipeService.findRecipes(page, userId);
-        return recipeListSelect;
+        return recipeService.findRecipes(page, userId);
     }
 
     @GetMapping("/MatchRate")
     public List<RecipeCountRow> getMatchRate(
-            @RequestParam(required = false, defaultValue = "0") int userId,
+            @RequestParam(required = false, defaultValue = "0") Long userId,
             @RequestParam List<Integer> rcpIds) {
         return recipeService.findMateRate(userId, rcpIds);
     }
@@ -36,10 +35,9 @@ public class RecipeController {
     @GetMapping("/search")
     public List<RecipeListResponse> searchRecipes(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam int userId,
-            @RequestParam String keyword) { // 프론트에서 넘어올 검색어
+            @RequestParam Long userId, // 여기도 Long으로 변경
+            @RequestParam String keyword) {
 
-        // 서비스의 새로운 검색 메서드 호출
         return recipeService.searchRecipesByKeyword(page, userId, keyword);
     }
 
