@@ -1,10 +1,7 @@
 package com.korit.team_ljco.service;
 
 import com.korit.team_ljco.dto.*;
-import com.korit.team_ljco.entity.Ingredient;
-import com.korit.team_ljco.entity.Recipe;
-import com.korit.team_ljco.entity.RecipeIngredient;
-import com.korit.team_ljco.entity.RecipeStep;
+import com.korit.team_ljco.entity.*;
 import com.korit.team_ljco.mapper.RecipeMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +38,25 @@ public class RecipeService {
         int offset = (page - 1) * pageSize;
 
         //화면에 출력할것만
-        return recipeMapper.getRecipes(pageSize, offset, userId);
+        List<RecipeListResponse> recipesList = recipeMapper.getRecipes(pageSize, offset, userId);
+        for (RecipeListResponse r : recipesList) {
+            List<RecipeIngredientMatch> ingredients = r.getIngredients();
+            for (RecipeIngredientMatch m : ingredients) {
+                if(m.getMatchedIngId() == null) {
+                    m.setMatchedColor("N");
+                } else if (m.getMatchedIngId() != null) {
+                    m.setMatchedColor("G");
+                    if(m.getRedMatchedIng() != null) {
+                        m.setMatchedColor("R");
+                    }
+                }
+
+            }
+
+        }
+        return recipesList;
+
+
     }
 
     // 검색 기능을 위한 메서드 추가
@@ -49,7 +64,6 @@ public class RecipeService {
         int pageSize = 10;
         int offset = (page - 1) * pageSize;
 
-        // 우리가 Mapper에 새로 만든 메서드를 호출합니다.
         return recipeMapper.searchRecipesByKeyword(pageSize, offset, userId, keyword);
     }
     public List<RecipeCountRow> findMateRate(Long userId, List<Integer> rcpIds) {
