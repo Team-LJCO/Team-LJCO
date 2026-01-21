@@ -37,8 +37,7 @@
         <result property="stepImgUrl" column="step_img_url"/>
         <result property="createdAt" column="created_at"/>
     </resultMap>
-
-    <resultMap id="RecipeListMap"
+    <resultMap id="RecipeListWithIngredientsMap"
                type="com.korit.team_ljco.dto.RecipeListResponse">
         <id property="rcpId" column="rcp_id"/>
         <result property="rcpName" column="rcp_name"/>
@@ -47,8 +46,27 @@
         <result property="level" column="level"/>
         <collection property="ingredients" ofType="com.korit.team_ljco.entity.RecipeIngredient">
             <result property="ingId" column="ing_id"/>
+            <result property="ingName" column="ing_name"/>
+        </collection>
+    </resultMap>
+    <!-- MatchRate용 ResultMap 수정 -->
+    <resultMap id="MatchRateMap" type="com.korit.team_ljco.dto.RecipeCount">
+        <result property="recipeCount" column="recipe_count"/>
+        <result property="myCount" column="my_count"/>
+    </resultMap>
+
+
+    <resultMap id="RecipeListMap"
+               type="com.korit.team_ljco.dto.RecipeListResponse">
+        <id property="rcpId" column="rcp_id"/>
+        <result property="rcpName" column="rcp_name"/>
+        <result property="rcpImgUrl" column="rcp_img_url"/>
+        <result property="rcpViewCount" column="rcp_view_count"/>
+        <result property="level" column="level"/>
+        <collection property="ingredients" ofType="com.korit.team_ljco.entity.RecipeIngredientMatch">
+            <result property="ingId" column="ing_id"/>
             <result property="matchedIngId" column="matched_ing_id"/>
-            <result property="redMatchedIng" column="redMatched_ing"/>
+            <result property="redMatchedIng" column="redmatched_ing"/>
         </collection>
     </resultMap>
 
@@ -61,11 +79,12 @@
             r.rcp_view_count,
             r.level,
             i.ing_id,
-            ui.ing_id as matchedIngId,
-            ui2.ing_id as redMatchedIng
+            ui.ing_id as matched_ing_id,
+            ui2.ing_id as redmatched_ing
         from (
             select rcp_id, rcp_name, rcp_img_url, rcp_view_count,level
         from rcp
+        limit #{pageSize} offset #{offset}
         ) r
         join rcp_ing ri
         on ri.rcp_id = r.rcp_id
@@ -228,6 +247,34 @@
         FROM rcp
     </select>
 
+    <select id="searchRecipesByKeyword" resultMap="RecipeListWithIngredientsMap">
+        SELECT
+        r.rcp_id,
+        r.rcp_name,
+        r.rcp_img_url,
+        r.rcp_view_count,
+        r.level,
+        i.ing_id,
+        i.ing_name
+        FROM (
+        /* 1. 검색 조건에 맞는 레시피 ID들을 먼저 뽑습니다. */
+        SELECT rcp_id, rcp_name, rcp_img_url, rcp_view_count, level
+        FROM rcp
+        WHERE rcp_name LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY
+        CASE
+        WHEN rcp_name = #{keyword} THEN 1
+        WHEN rcp_name LIKE CONCAT(#{keyword}, '%') THEN 2
+        ELSE 3
+        END,
+        rcp_id DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+        ) r
+        /* 2. 뽑힌 레시피들에 대해 재료 정보를 합칩니다. (이게 있어야 화면에 재료가 뜹니다) */
+        LEFT JOIN rcp_ing ri ON r.rcp_id = ri.rcp_id
+        LEFT JOIN ingredients i ON ri.ing_id = i.ing_id
+        ORDER BY r.rcp_id DESC
+    </select>
     <!-- getMatchRate 쿼리 수정 (foreach 추가하여 여러 rcpIds 처리) -->
     <select id="getMatchRate" resultMap="MatchRateMap">
         SELECT
@@ -258,33 +305,5 @@
         AND ui.user_id = #{userId}
         GROUP BY ri.rcp_id
         ) user_counts ON recipe_counts.rcp_id = user_counts.rcp_id
-    </select>
-    <select id="searchRecipesByKeyword" resultMap="RecipeListWithIngredientsMap">
-        SELECT
-        r.rcp_id,
-        r.rcp_name,
-        r.rcp_img_url,
-        r.rcp_view_count,
-        r.level,
-        i.ing_id,
-        i.ing_name
-        FROM (
-        /* 1. 검색 조건에 맞는 레시피 ID들을 먼저 뽑습니다. */
-        SELECT rcp_id, rcp_name, rcp_img_url, rcp_view_count, level
-        FROM rcp
-        WHERE rcp_name LIKE CONCAT('%', #{keyword}, '%')
-        ORDER BY
-        CASE
-        WHEN rcp_name = #{keyword} THEN 1
-        WHEN rcp_name LIKE CONCAT(#{keyword}, '%') THEN 2
-        ELSE 3
-        END,
-        rcp_id DESC
-        LIMIT #{pageSize} OFFSET #{offset}
-        ) r
-        /* 2. 뽑힌 레시피들에 대해 재료 정보를 합칩니다. (이게 있어야 화면에 재료가 뜹니다) */
-        LEFT JOIN rcp_ing ri ON r.rcp_id = ri.rcp_id
-        LEFT JOIN ingredients i ON ri.ing_id = i.ing_id
-        ORDER BY r.rcp_id DESC
     </select>
 </mapper>

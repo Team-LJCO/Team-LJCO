@@ -1,6 +1,7 @@
 package com.korit.team_ljco.dto;
 
 import com.korit.team_ljco.entity.RecipeIngredient;
+import com.korit.team_ljco.entity.RecipeIngredientMatch;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +24,7 @@ public class RecipeListResponse {
     private Integer level;
 
 
-    private List<RecipeIngredient> ingredients;
+    private List<RecipeIngredientMatch> ingredients;
 
 
 }
