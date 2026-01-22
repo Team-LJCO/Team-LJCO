@@ -20,10 +20,12 @@ public interface RecipeMapper {
                                         @Param("offset") int offset,
                                         @Param("userId") Long userId);
 
-    //일치율
-    //한 사람에 대한 레시피라서 userid는 하나 rcpids는 여러개라 리스트
-    List<RecipeCount> getMatchRate(@Param("userId") Long userId,
-                                    @Param("rcpIds") List<Integer> rcpIds);
+
+    List<RecipeListResponse> getRecipesByKeyword(@Param("pageSize") int pageSize,
+                                        @Param("offset") int offset,
+                                        @Param("userId") Long userId,
+                                        @Param("keyword") String keyword);
+
 
     //며칠남았는지
     int getDaysLeft();

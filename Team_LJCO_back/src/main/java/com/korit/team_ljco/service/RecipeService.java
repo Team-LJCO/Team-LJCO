@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -33,12 +32,16 @@ public class RecipeService {
     }
 
     //전체 레시피 조회
-    public List<RecipeListResponse> findRecipes(int page, Long userId) {
+    public List<RecipeListResponse> findRecipes(int page, Long userId,String keyword) {
         int pageSize = 10;
         int offset = (page - 1) * pageSize;
+        List<RecipeListResponse> recipesList;
 
-        //화면에 출력할것만
-        List<RecipeListResponse> recipesList = recipeMapper.getRecipes(pageSize, offset, userId);
+        if (keyword == null || keyword.isEmpty()) {
+            recipesList = recipeMapper.getRecipes(pageSize, offset, userId);
+        } else {
+            recipesList = recipeMapper.getRecipesByKeyword(pageSize, offset, userId, keyword);
+        }
 
         for (RecipeListResponse r : recipesList) {
             List<RecipeIngredientMatch> ingredients = r.getIngredients();
@@ -57,41 +60,13 @@ public class RecipeService {
                 }
 
             }
-            int total=recipesList.size();
+            int total=ingredients.size();
             int rate = (int)(total == 0 ? 0 : (count * 100.0) / total) ;
             r.setMatchRate(rate);
         }
-
-
         return recipesList;
-
-
     }
 
-    // 검색 기능을 위한 메서드 추가
-    public List<RecipeListResponse> searchRecipesByKeyword(int page, Long userId, String keyword) {
-        int pageSize = 10;
-        int offset = (page - 1) * pageSize;
-
-        return recipeMapper.searchRecipesByKeyword(pageSize, offset, userId, keyword);
-    }
-    public List<RecipeCountRow> findMateRate(Long userId, List<Integer> rcpIds) {
-        List<RecipeCount> countAll =  recipeMapper.getMatchRate(userId,rcpIds);
-        List<RecipeCountRow> recipeRowsList = new ArrayList<>();
-        //내 재료 겹치는 개수, 재료 레시피 개수 구하기
-        for(RecipeCount cnt : countAll) {
-            int recipeCount = cnt.getRecipeCount();
-            int myCount = cnt.getMyCount();
-
-            int recipeMatchRate = (int) ((double) myCount / recipeCount * 100);
-
-            RecipeCountRow recipeRow = RecipeCountRow.builder()
-                    .rate(recipeMatchRate)
-                    .build();
-            recipeRowsList.add(recipeRow);
-        }
-        return  recipeRowsList;
-    }
 
     /**
      * 레시피 검색
