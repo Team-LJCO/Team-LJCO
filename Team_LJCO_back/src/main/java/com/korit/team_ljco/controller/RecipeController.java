@@ -21,7 +21,6 @@ public class RecipeController {
             @RequestParam(defaultValue = "1") int page,
             // int -> Long으로 변경하여 더 큰 범위를 수용하고 DB 타입과 맞춥니다.
             @RequestParam(required = false, defaultValue = "0") Long userId) {
-
         return recipeService.findRecipes(page, userId);
     }
 
