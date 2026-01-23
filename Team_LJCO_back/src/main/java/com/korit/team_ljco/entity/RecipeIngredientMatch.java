@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RecipeIngredientMatch {
     private Integer ingId;
+    private String ingName;
     private Integer matchedIngId;
     private Integer redMatchedIng;
     private String matchedColor;

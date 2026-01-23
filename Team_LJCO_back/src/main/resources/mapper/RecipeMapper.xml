@@ -63,6 +63,7 @@
         <result property="level" column="level"/>
         <collection property="ingredients" ofType="com.korit.team_ljco.entity.RecipeIngredientMatch">
             <id property="ingId" column="ing_id"/>
+            <result property="ingName" column="ing_name"/>
             <result property="matchedIngId" column="matched_ing_id"/>
             <result property="redMatchedIng" column="redmatched_ing"/>
         </collection>
@@ -76,7 +77,9 @@
             r.rcp_img_url,
             r.rcp_view_count,
             r.level,
+
             i.ing_id,
+            i.ing_name,
             ui.ing_id as matched_ing_id,
             ui2.ing_id as redmatched_ing
         from (
@@ -105,6 +108,7 @@
             r.rcp_view_count,
             r.level,
             i.ing_id,
+            i.ing_name,
             ui.ing_id as matched_ing_id,
             ui2.ing_id as redmatched_ing
         from (

@@ -23,21 +23,8 @@ function Recipe() {
     const [selectedRecipe, setSelectedRecipe] = useState(null);
     
 
-    // 💡 무한 스크롤 관찰을 위한 Ref
-    const observer = useRef();
-    const lastRecipeElementRef = useCallback(node => {
-        if (loading) return;
-        if (observer.current) observer.current.disconnect();
-        observer.current = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting && hasMore) {
-                setPage(prevPage => prevPage + 1); // 바닥에 닿으면 페이지 증가
-            }
-        });
-        if (node) observer.current.observe(node);
-    }, [loading, hasMore]);
 
-    // 💡 데이터 페칭 로직 수정
-   // Recipe.jsx 내부의 useEffect를 이 내용으로 교체하세요.
+
 useEffect(() => {
     const params = new URLSearchParams(location.search);
     const keywordParam = params.get("keyword");
@@ -46,18 +33,16 @@ useEffect(() => {
         setLoading(true);
         const token = localStorage.getItem("accessToken");
         
-        // 💡 로그인한 유저의 실제 ID를 가져옵니다. (자동 연동)
+        // 유저 없을시 32번 유저로 로그인(비로그인 기능 만들어야함)
         const currentUserId = localStorage.getItem("userId") || 32;
 
         try {
-            const url = keywordParam 
-                ? `http://localhost:8080/api/recipes/search` 
-                : `http://localhost:8080/api/recipes`;
+            const url = `http://localhost:8080/api/recipes`;
 
             const res = await axios.get(url, {
                 params: { 
                     page: page, 
-                    userId: currentUserId, // 💡 이제 자동화된 ID가 전달됩니다!
+                    userId: currentUserId, 
                     keyword: keywordParam || undefined 
                 },
                 headers: { Authorization: `Bearer ${token}` }
@@ -83,11 +68,10 @@ useEffect(() => {
     setLoading(true);
     setPage(1); 
     const token = localStorage.getItem("accessToken");
-    // 💡 여기서도 동일하게 실제 유저 ID 또는 테스트용 32를 가져옵니다.
     const currentUserId = localStorage.getItem("userId") || 32;
     
     try {
-        const res = await axios.get(`http://localhost:8080/api/recipes/search`, {
+        const res = await axios.get(`http://localhost:8080/api/recipes`, {
             params: { 
                 page: 1, 
                 userId: currentUserId, // 💡 0에서 currentUserId로 수정!
@@ -143,7 +127,7 @@ useEffect(() => {
                             const isLast = recipes.length === index + 1;
                             return (
                                 <div 
-                                    ref={isLast ? lastRecipeElementRef : null} 
+                                   
                                     key={`${recipe.rcpId}-${index}`} // 💡 중복 키 에러 방지를 위해 index 조합
                                     css={recipeS.recipeCard}
                                     onClick={() => {
@@ -162,7 +146,7 @@ useEffect(() => {
                 </div>
 
                 {isRecipeModalOpen && <RecipeSearchModal 
-        recipe={selectedRecipe} // 💡 검색어가 아니라 선택된 '레시피 객체'를 넘김
+        recipe={selectedRecipe} 
         onClose={() => {
             setIsRecipeModalOpen(false);
             setSelectedRecipe(null);
@@ -173,24 +157,28 @@ useEffect(() => {
     );
 }
 
-// 💡 반복되는 카드 내용을 별도 컴포넌트로 분리
-// Recipe.jsx 내 수정된 부분 확인
-// 💡 누락되었던 카드 상세 정보(사진, 일치율, 난이도 등)를 다시 포함한 컴포넌트입니다.
+
+
 function RecipeCardContent({ recipe }) {
-    // 💡 데이터 로직 유지
-    const totalIng = recipe.ingredients?.length || 0;
-    const myIng = recipe.ingredients?.filter(ing => ing.hasIng === true || ing.hasIng === 1)?.length || 0;
-    const matchRate = totalIng > 0 ? Math.round((myIng / totalIng) * 100) : 0;
+
+    const matchRate = recipe.matchRate ?? 0;
+
+    const getMatchRateText = (rate) => {
+        if(rate === 0) return '재료를 구매하셔야 해요!';
+        if(rate <50) return '조금만 더 있으면 돼요';
+        if(rate < 70) return '거의 만들 수 있어요';
+        return '지금 바로 도전 가능!';
+    };
 
     return (
         <div style={{ borderRadius: '30px', overflow: 'hidden' }}>
-            {/* 1. 사진 영역 (상단 배치 및 꽉 채우기) */}
+            
             <div className="thumb" style={{ 
                 position: 'relative', 
                 width: '100%', 
                 height: '240px', 
                 margin: 0, 
-                borderRadius: '0' // 부모에서 제어하므로 0으로 설정
+                borderRadius: '0' 
             }}>
                 <img 
                     src={recipe.rcpImgUrl} 
@@ -198,7 +186,7 @@ function RecipeCardContent({ recipe }) {
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                 />
                 
-                {/* 💡 사진 위에 뜨는 배지 그룹 (일치율, 난이도) */}
+                
                 <div style={{ 
                     position: 'absolute', 
                     top: '15px', 
@@ -217,7 +205,7 @@ function RecipeCardContent({ recipe }) {
                         fontWeight: '800',
                         boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
                     }}>
-                        일치율 {matchRate}%
+                        {getMatchRateText(matchRate)}{'\u00A0\u00A0'}{matchRate}%
                     </span>
                     <span style={{ 
                         background: 'rgba(255, 112, 67, 0.9)', 
@@ -228,12 +216,11 @@ function RecipeCardContent({ recipe }) {
                         fontWeight: '800',
                         boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
                     }}>
-                        난이도 {recipe.level === 1 ? '쉬움' : recipe.level === 2 ? '보통' : '어려움'}
+                         {recipe.level === 1 ? '쉬움' : recipe.level === 2 ? '보통' :  recipe.level === 2 ? '중급' : '어려움'}
                     </span>
                 </div>
             </div>
 
-            {/* 2. 카드 하단 텍스트 정보 */}
             <div style={{ padding: '20px 5px' }}>
                 <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px' }}>{recipe.rcpName}</h3>
                 <div className="meta" style={{ display: 'flex', gap: '15px', fontSize: '12px', color: '#FF7043', fontWeight: '700', marginBottom: '15px' }}>

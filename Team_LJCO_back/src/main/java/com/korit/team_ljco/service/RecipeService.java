@@ -63,8 +63,12 @@ public class RecipeService {
             int total=ingredients.size();
             int rate = (int)(total == 0 ? 0 : (count * 100.0) / total) ;
             r.setMatchRate(rate);
+            log.info("recipesList size = {}", recipesList.size());
+            log.info("first matchRate before/after = {}", recipesList.get(0).getMatchRate());
+
         }
         return recipesList;
+
     }
 
 
