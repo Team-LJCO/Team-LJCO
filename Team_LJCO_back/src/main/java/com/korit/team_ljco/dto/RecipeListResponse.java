@@ -22,6 +22,7 @@ public class RecipeListResponse {
     //난이도 출력
     private Integer level;
     private int matchRate;
+    private Integer totalCount;
 
 
     private List<RecipeIngredientMatch> ingredients;

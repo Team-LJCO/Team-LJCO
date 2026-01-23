@@ -1,22 +1,27 @@
 /** @jsxImportSource @emotion/react */
 import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
-import { Global } from "@emotion/react"; 
+import { Global, keyframes } from "@emotion/react"; 
 import { fontImport, s as commonS } from "../Home/styles"; 
 import { s as recipeS } from "./styles"; 
 import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
 import { useNavigate, useLocation } from "react-router-dom"; // 💡 useLocation 추가
 import { getColorByDay } from "../../utils/colorUtils";
+import Pagination from "../../components/common/Pagination";
+import RecipeIngredientMark from "./RacipeIngredientMark";
+
 
 function Recipe() {
     const navigate = useNavigate();
     const location = useLocation();
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
 
     const [isLogin] = useState(!!localStorage.getItem("accessToken")); // 대소문자 주의: accessToken
     const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [page, setPage] = useState(1); // 💡 페이지 상태 추가
-    const [hasMore, setHasMore] = useState(true); // 💡 더 불러올 데이터가 있는지 확인
+
+
 
     const [recipeSearchTerm, setRecipeSearchTerm] = useState("");
     const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
@@ -47,10 +52,10 @@ useEffect(() => {
                 },
                 headers: { Authorization: `Bearer ${token}` }
             });
-            
-            setRecipes(prev => page === 1 ? res.data : [...prev, ...res.data]);
-            if (res.data.length < 10) setHasMore(false);
-            if (keywordParam) setRecipeSearchTerm(keywordParam);
+                setRecipes(res.data);
+                const totalCount = res.data?.[0].totalCount ?? 0;
+                setTotalPages(Math.ceil(totalCount/10));
+
 
         } catch (err) {
             console.error("데이터 로딩 실패:", err);
@@ -66,7 +71,6 @@ useEffect(() => {
     if (!recipeSearchTerm.trim()) return;
     
     setLoading(true);
-    setPage(1); 
     const token = localStorage.getItem("accessToken");
     const currentUserId = localStorage.getItem("userId") || 32;
     
@@ -74,20 +78,22 @@ useEffect(() => {
         const res = await axios.get(`http://localhost:8080/api/recipes`, {
             params: { 
                 page: 1, 
-                userId: currentUserId, // 💡 0에서 currentUserId로 수정!
-                keyword: recipeSearchTerm 
+                userId: currentUserId, 
+                keyword: recipeSearchTerm,
             },
             headers: { Authorization: `Bearer ${token}` }
         });
-        
+
         setRecipes(res.data);
-        setHasMore(false); 
-    } catch (err) {
-        console.error("검색 실패:", err);
-    } finally {
-        setLoading(false);
-    }
-};
+        const totalCount = res.data?.[0].totalCount ?? 0;
+        setTotalPages(Math.ceil(totalCount/9));
+        setPage(1);
+        } catch(err) {
+
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <>
             <Global styles={fontImport} /> 
@@ -141,8 +147,14 @@ useEffect(() => {
                                 </div>
                             );
                         })}
-                        {loading && <div style={{gridColumn: '1/-1', textAlign: 'center', padding: '20px'}}>추가 레시피 로딩 중...</div>}
+                        {loading && <div style={{gridColumn: '1/-1', textAlign: 'center', padding: '20px'}}>
+                        추가 레시피 로딩 중...</div>}
                     </div>
+                    <Pagination
+                    page={page}
+                    totalPages={totalPages}
+                    onChange={(p) => setPage(p)}
+                    />
                 </div>
 
                 {isRecipeModalOpen && <RecipeSearchModal 
@@ -161,10 +173,10 @@ useEffect(() => {
 
 function RecipeCardContent({ recipe }) {
 
-    const matchRate = recipe.matchRate ?? 0;
+    const matchRate = Number(recipe.matchRate ?? 0);
 
     const getMatchRateText = (rate) => {
-        if(rate === 0) return '재료를 구매하셔야 해요!';
+        if(rate <= 0) return '재료를 구매하셔야 해요!';
         if(rate <50) return '조금만 더 있으면 돼요';
         if(rate < 70) return '거의 만들 수 있어요';
         return '지금 바로 도전 가능!';
@@ -231,32 +243,14 @@ function RecipeCardContent({ recipe }) {
 
                 {/* 3. 재료 리스트 */}
                 <div className="ingredients">
-                    <div className="label" style={{ fontSize: '11px', color: '#999', marginBottom: '8px' }}>필요한 재료</div>
+                    <div className="label" style={{ fontSize: '11px', color: '#999', marginBottom: '8px' }}>
+                        필요한 재료</div>
+
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {recipe.ingredients && recipe.ingredients.map((ing, idx) => {
-                            const hasIngredient = ing.hasIng === true || ing.hasIng === 1 || ing.has_ing === 1;
-                            const dDayValue = ing.dDay !== undefined && ing.dDay !== null ? ing.dDay : ing.dday;
-
-                            const bgColor = hasIngredient ? getColorByDay(dDayValue) : "#F0F0F0";
-                            const textColor = hasIngredient ? "#000" : "#999";
-
-                            return (
-                                <span 
-                                    key={idx} 
-                                    style={{ 
-                                        backgroundColor: bgColor, 
-                                        color: textColor,
-                                        fontWeight: hasIngredient ? 'bold' : 'normal',
-                                        padding: '4px 10px',
-                                        borderRadius: '8px',
-                                        fontSize: '11px',
-                                        border: hasIngredient ? 'none' : '1px solid #eee'
-                                    }}
-                                >
-                                    {ing.ingName}
-                                </span>
-                            );
-                        })}
+                        {recipe.ingredients?.map((ingredients, idx) => (
+                            <RecipeIngredientMark key={idx} ingredients={ingredients} 
+                            />
+                        ))}
                     </div>
                 </div>
             </div>

@@ -1,5 +1,6 @@
 package com.korit.team_ljco.controller;
 import com.korit.team_ljco.dto.RecipeListResponse;
+import com.korit.team_ljco.dto.RecipePageResponseDTO;
 import com.korit.team_ljco.entity.RecipeStep;
 import com.korit.team_ljco.service.RecipeService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ public class RecipeController {
 
     // 레시피 목록 조회 컨트롤러
     @GetMapping
-    public List<RecipeListResponse> getAllRecipes(
+    public RecipePageResponseDTO getAllRecipes(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "0") Long userId,
             @RequestParam(required = false) String keyword) {

@@ -61,6 +61,8 @@
         <result property="rcpImgUrl" column="rcp_img_url"/>
         <result property="rcpViewCount" column="rcp_view_count"/>
         <result property="level" column="level"/>
+        <result property="totalCount" column="total_count"/>
+
         <collection property="ingredients" ofType="com.korit.team_ljco.entity.RecipeIngredientMatch">
             <id property="ingId" column="ing_id"/>
             <result property="ingName" column="ing_name"/>
@@ -77,13 +79,13 @@
             r.rcp_img_url,
             r.rcp_view_count,
             r.level,
-
+            r.total_count,
             i.ing_id,
             i.ing_name,
             ui.ing_id as matched_ing_id,
             ui2.ing_id as redmatched_ing
         from (
-            select rcp_id, rcp_name, rcp_img_url, rcp_view_count,level
+            select rcp_id, rcp_name, rcp_img_url, rcp_view_count,level, count(*) over() as total_count
         from rcp
         limit #{pageSize} offset #{offset}
         ) r
@@ -107,12 +109,13 @@
             r.rcp_img_url,
             r.rcp_view_count,
             r.level,
+            r.total_count,
             i.ing_id,
             i.ing_name,
             ui.ing_id as matched_ing_id,
             ui2.ing_id as redmatched_ing
         from (
-        select rcp_id, rcp_name, rcp_img_url, rcp_view_count,level
+        select rcp_id, rcp_name, rcp_img_url, rcp_view_count,level, count(*) over() as total_count
         from rcp
         where rcp_name like concat('%', #{keyword}, '%')
         limit #{pageSize} offset #{offset}

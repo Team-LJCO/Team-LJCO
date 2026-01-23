@@ -31,9 +31,9 @@ public class RecipeService {
                 .collect(Collectors.toList());
     }
 
-    //전체 레시피 조회
-    public List<RecipeListResponse> findRecipes(int page, Long userId,String keyword) {
-        int pageSize = 10;
+    //페이징된 레시피 조회
+    public RecipePageResponseDTO findRecipes(int page, Long userId, String keyword) {
+        int pageSize = 9;
         int offset = (page - 1) * pageSize;
         List<RecipeListResponse> recipesList;
 
@@ -48,28 +48,38 @@ public class RecipeService {
             int count = 0;
 
             for (RecipeIngredientMatch m : ingredients) {
-                if(m.getMatchedIngId() == null) {
+                if (m.getMatchedIngId() == null) {
                     m.setMatchedColor("N");
 
                 } else if (m.getMatchedIngId() != null) {
                     m.setMatchedColor("G");
                     count++;
-                    if(m.getRedMatchedIng() != null) {
+                    if (m.getRedMatchedIng() != null) {
                         m.setMatchedColor("R");
                     }
                 }
 
             }
-            int total=ingredients.size();
-            int rate = (int)(total == 0 ? 0 : (count * 100.0) / total) ;
+            int total = ingredients.size();
+            int rate = (int) (total == 0 ? 0 : (count * 100.0) / total);
             r.setMatchRate(rate);
-            log.info("recipesList size = {}", recipesList.size());
-            log.info("first matchRate before/after = {}", recipesList.get(0).getMatchRate());
 
         }
-        return recipesList;
 
+        int totalCount = recipesList.size() == 0 ? 0 : recipesList.get(0).getTotalCount();
+        int totalPages = totalCount / pageSize;
+        RecipePageResponseDTO RecipeDTO = RecipePageResponseDTO.builder()
+                .recipes(recipesList)
+                .page(page)
+                .pageSize(pageSize)
+                .totalCount(totalCount)
+                .totalPages(totalPages)
+                .build();
+
+        return RecipeDTO;
     }
+
+
 
 
     /**
