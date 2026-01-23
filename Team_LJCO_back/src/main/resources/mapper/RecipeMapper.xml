@@ -40,6 +40,7 @@
         <result property="stepImgUrl" column="step_img_url"/>
         <result property="createdAt" column="created_at"/>
     </resultMap>
+
     <resultMap id="RecipeListWithIngredientsMap"
                type="com.korit.team_ljco.dto.RecipeListResponse">
         <id property="rcpId" column="rcp_id"/>
@@ -52,12 +53,6 @@
             <result property="ingName" column="ing_name"/>
         </collection>
     </resultMap>
-    <!-- MatchRate용 ResultMap 수정 -->
-    <resultMap id="MatchRateMap" type="com.korit.team_ljco.dto.RecipeCount">
-        <result property="recipeCount" column="recipe_count"/>
-        <result property="myCount" column="my_count"/>
-    </resultMap>
-
 
     <resultMap id="RecipeListMap"
                type="com.korit.team_ljco.dto.RecipeListResponse">
@@ -67,7 +62,7 @@
         <result property="rcpViewCount" column="rcp_view_count"/>
         <result property="level" column="level"/>
         <collection property="ingredients" ofType="com.korit.team_ljco.entity.RecipeIngredientMatch">
-            <result property="ingId" column="ing_id"/>
+            <id property="ingId" column="ing_id"/>
             <result property="matchedIngId" column="matched_ing_id"/>
             <result property="redMatchedIng" column="redmatched_ing"/>
         </collection>
@@ -279,38 +274,6 @@
         FROM rcp
     </select>
 
-
-    <!-- getMatchRate 쿼리 수정 (foreach 추가하여 여러 rcpIds 처리) -->
-    <select id="getMatchRate" resultMap="MatchRateMap">
-        SELECT
-        recipe_counts.rcp_id,
-        recipe_counts.recipe_count,
-        COALESCE(user_counts.my_count, 0) as my_count
-        FROM (
-        SELECT
-        ri.rcp_id,
-        COUNT(ri.ing_id) as recipe_count
-        FROM rcp_ing ri
-        WHERE ri.rcp_id IN
-        <foreach collection="rcpIds" item="rcpId" open="(" separator="," close=")">
-            #{rcpId}
-        </foreach>
-        GROUP BY ri.rcp_id
-        ) recipe_counts
-        LEFT JOIN (
-        SELECT
-        ri.rcp_id,
-        COUNT(ri.ing_id) as my_count
-        FROM rcp_ing ri
-        INNER JOIN user_ing ui ON ui.ing_id = ri.ing_id
-        WHERE ri.rcp_id IN
-        <foreach collection="rcpIds" item="rcpId" open="(" separator="," close=")">
-            #{rcpId}
-        </foreach>
-        AND ui.user_id = #{userId}
-        GROUP BY ri.rcp_id
-        ) user_counts ON recipe_counts.rcp_id = user_counts.rcp_id
-    </select>
 
 
 </mapper>
