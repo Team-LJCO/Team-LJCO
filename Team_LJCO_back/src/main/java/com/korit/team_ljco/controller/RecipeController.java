@@ -20,8 +20,9 @@ public class RecipeController {
     public RecipePageResponseDTO getAllRecipes(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "0") Long userId,
-            @RequestParam(required = false) String keyword) {
-        return recipeService.findRecipes(page, userId,keyword);
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false, defaultValue = "VIEW_DESC") String sort) {
+        return recipeService.findRecipes(page, userId,keyword,sort);
     }
 
 

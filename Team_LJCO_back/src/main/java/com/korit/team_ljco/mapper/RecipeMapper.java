@@ -16,13 +16,15 @@ public interface RecipeMapper {
     //페이지 넘김을 고려한 pagesize 생성 => 서비스에서 계산함
     List<RecipeListResponse> getRecipes(@Param("pageSize") int pageSize,
                                         @Param("offset") int offset,
-                                        @Param("userId") Long userId);
+                                        @Param("userId") Long userId,
+                                        @Param("sort") String sort);
 
 
     List<RecipeListResponse> getRecipesByKeyword(@Param("pageSize") int pageSize,
                                         @Param("offset") int offset,
                                         @Param("userId") Long userId,
-                                        @Param("keyword") String keyword);
+                                        @Param("keyword") String keyword,
+                                        @Param("sort") String sort);
 
 
     //며칠남았는지

@@ -18,12 +18,6 @@ import java.util.stream.Collectors;
 public class RecipeService {
 
     private final RecipeMapper recipeMapper;
-    //일치율
-    private Integer matchRate;
-
-    //등록 후 경과일
-    private Integer daysPassed;
-
     public List<RecipeResponse> getAllRecipes() {
         List<Recipe> recipes = recipeMapper.selectAllRecipes();
         return recipes.stream()
@@ -32,15 +26,15 @@ public class RecipeService {
     }
 
     //페이징된 레시피 조회
-    public RecipePageResponseDTO findRecipes(int page, Long userId, String keyword) {
+    public RecipePageResponseDTO findRecipes(int page, Long userId, String keyword, String sort) {
         int pageSize = 9;
         int offset = (page - 1) * pageSize;
         List<RecipeListResponse> recipesList;
 
         if (keyword == null || keyword.isEmpty()) {
-            recipesList = recipeMapper.getRecipes(pageSize, offset, userId);
+            recipesList = recipeMapper.getRecipes(pageSize, offset, userId, sort);
         } else {
-            recipesList = recipeMapper.getRecipesByKeyword(pageSize, offset, userId, keyword);
+            recipesList = recipeMapper.getRecipesByKeyword(pageSize, offset, userId, keyword, sort);
         }
 
         for (RecipeListResponse r : recipesList) {
@@ -60,14 +54,11 @@ public class RecipeService {
                 }
 
             }
-            int total = ingredients.size();
-            int rate = (int) (total == 0 ? 0 : (count * 100.0) / total);
-            r.setMatchRate(rate);
 
         }
 
         int totalCount = recipesList.size() == 0 ? 0 : recipesList.get(0).getTotalCount();
-        int totalPages = totalCount / pageSize;
+        int totalPages = (int)Math.ceil(totalCount / pageSize);
         RecipePageResponseDTO RecipeDTO = RecipePageResponseDTO.builder()
                 .recipes(recipesList)
                 .page(page)
@@ -78,8 +69,6 @@ public class RecipeService {
 
         return RecipeDTO;
     }
-
-
 
 
     /**

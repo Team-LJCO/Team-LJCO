@@ -61,6 +61,7 @@
         <result property="rcpImgUrl" column="rcp_img_url"/>
         <result property="rcpViewCount" column="rcp_view_count"/>
         <result property="level" column="level"/>
+        <result property="matchRate" column="match_rate"/>
         <result property="totalCount" column="total_count"/>
 
         <collection property="ingredients" ofType="com.korit.team_ljco.entity.RecipeIngredientMatch">
@@ -79,14 +80,37 @@
             r.rcp_img_url,
             r.rcp_view_count,
             r.level,
+            r.match_rate,
             r.total_count,
             i.ing_id,
             i.ing_name,
             ui.ing_id as matched_ing_id,
             ui2.ing_id as redmatched_ing
         from (
-            select rcp_id, rcp_name, rcp_img_url, rcp_view_count,level, count(*) over() as total_count
-        from rcp
+            select rcp_id, rcp_name, rcp_img_url, rcp_view_count,level, count(*) over() as total_count,
+        (
+        select count(ui2.ing_id) / count(ri2.ing_id) * 100
+        from rcp_ing ri2
+        left join user_ingredients ui2
+        on ui2.ing_id = ri2.ing_id
+        and ui2.user_id = #{userId}
+        where ri2.rcp_id = rcp.rcp_id
+        ) as match_rate
+        from rcp rcp
+        <choose>
+            <when test="sort == 'VIEW_DESC'">
+                order by rcp_view_count desc
+            </when>
+            <when test="sort == 'LEVEL_DESC'">
+                order by level desc
+            </when>
+            <when test="sort == 'MATCHRATE_DESC'">
+                order by match_rate desc
+            </when>
+            <otherwise>
+                order by rcp.rcp_id desc
+            </otherwise>
+        </choose>
         limit #{pageSize} offset #{offset}
         ) r
         join rcp_ing ri
@@ -102,6 +126,7 @@
         and DATEDIFF(CURRENT_DATE, ui2.created_at) >= 15;
     </select>
 
+
     <select id="getRecipesByKeyword" resultMap="RecipeListMap">
         SELECT
             r.rcp_id,
@@ -109,15 +134,38 @@
             r.rcp_img_url,
             r.rcp_view_count,
             r.level,
+            r.match_rate,
             r.total_count,
             i.ing_id,
             i.ing_name,
             ui.ing_id as matched_ing_id,
             ui2.ing_id as redmatched_ing
         from (
-        select rcp_id, rcp_name, rcp_img_url, rcp_view_count,level, count(*) over() as total_count
-        from rcp
+        select rcp_id, rcp_name, rcp_img_url, rcp_view_count,level, count(*) over() as total_count,
+        (
+        select count(ui2.ing_id) / count(ri2.ing_id) * 100
+        from rcp_ing ri2
+        left join user_ingredients ui2
+        on ui2.ing_id = ri2.ing_id
+        and ui2.user_id = #{userId}
+        where ri2.rcp_id = rcp.rcp_id
+        ) as match_rate
+        from rcp rcp
         where rcp_name like concat('%', #{keyword}, '%')
+        <choose>
+            <when test="sort == 'VIEW_DESC'">
+                order by rcp_view_count desc
+            </when>
+            <when test="sort == 'LEVEL_DESC'">
+                order by level desc
+            </when>
+            <when test="sort == 'MATCHRATE_DESC'">
+                order by match_rate desc
+            </when>
+            <otherwise>
+                order by rcp.rcp_id desc
+            </otherwise>
+        </choose>
         limit #{pageSize} offset #{offset}
         ) r
         join rcp_ing ri

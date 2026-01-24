@@ -6,7 +6,6 @@ import { fontImport, s as commonS } from "../Home/styles";
 import { s as recipeS } from "./styles"; 
 import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
 import { useNavigate, useLocation } from "react-router-dom"; // 💡 useLocation 추가
-import { getColorByDay } from "../../utils/colorUtils";
 import Pagination from "../../components/common/Pagination";
 import RecipeIngredientMark from "./RacipeIngredientMark";
 
@@ -16,6 +15,7 @@ function Recipe() {
     const location = useLocation();
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
+    const [sort, setSort] = useState("VIEW_DESC");
 
     const [isLogin] = useState(!!localStorage.getItem("accessToken")); // 대소문자 주의: accessToken
     const [recipes, setRecipes] = useState([]);
@@ -31,8 +31,15 @@ function Recipe() {
 
 
 useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const keywordParam = params.get("keyword");
+    const urlParams = new URLSearchParams(location.search);
+    const urlPage = Number(urlParams.get("page") ?? 1);
+
+
+    
+    const urlKeyword = urlParams.get("keyword");
+    const urlSort = urlParams.get("sort") ?? "VIEW_DESC";
+    setSort(urlSort);
+    setPage(urlPage);
     
     const fetchRecipes = async () => {
         setLoading(true);
@@ -46,15 +53,16 @@ useEffect(() => {
 
             const res = await axios.get(url, {
                 params: { 
-                    page: page, 
+                    page: urlPage, 
                     userId: currentUserId, 
-                    keyword: keywordParam || undefined 
+                    keyword: urlKeyword || undefined,
+                    sort: urlSort,
                 },
                 headers: { Authorization: `Bearer ${token}` }
             });
-                setRecipes(res.data);
-                const totalCount = res.data?.[0].totalCount ?? 0;
-                setTotalPages(Math.ceil(totalCount/10));
+            const data = res.data;
+                setRecipes(Array.isArray(data.recipes) ? data.recipes : []);
+                setTotalPages(typeof data.totalPages === "number" ? data.totalPages : 0);
 
 
         } catch (err) {
@@ -65,41 +73,31 @@ useEffect(() => {
     };
 
     fetchRecipes();
-}, [page, location.search]);
+}, [location.search]);
 
-    const handleRecipeSearch = async () => {
+const handleSort = (sort) => {
+    const params = new URLSearchParams(location.search);
+
+    params.set("sort", sort);
+    params.set("page", "1");
+    setPage(1);
+    navigate(`/recipe?${params.toString()}`);
+}
+
+    const handleRecipeSearch = () => {
     if (!recipeSearchTerm.trim()) return;
-    
-    setLoading(true);
-    const token = localStorage.getItem("accessToken");
-    const currentUserId = localStorage.getItem("userId") || 32;
-    
-    try {
-        const res = await axios.get(`http://localhost:8080/api/recipes`, {
-            params: { 
-                page: 1, 
-                userId: currentUserId, 
-                keyword: recipeSearchTerm,
-            },
-            headers: { Authorization: `Bearer ${token}` }
-        });
+    const params = new URLSearchParams(location.search);
+    params.set("keyword",recipeSearchTerm);
+    params.set("sort", sort);
+    params.set("page", "1");
 
-        setRecipes(res.data);
-        const totalCount = res.data?.[0].totalCount ?? 0;
-        setTotalPages(Math.ceil(totalCount/9));
-        setPage(1);
-        } catch(err) {
-
-        } finally {
-            setLoading(false);
-        }
+    navigate(`/recipe?${params.toString()}`);
     };
     return (
         <>
             <Global styles={fontImport} /> 
             <div css={commonS.wrapper}>
                 <div css={commonS.container}>
-                    {/* 상단 헤더 (변화 없음) */}
                     <div css={commonS.headerCard}>
                         <div css={commonS.logo} onClick={() => navigate("/home")}>
                             <div className="logo-box">🧊</div> 냉장고 파먹기
@@ -113,6 +111,17 @@ useEffect(() => {
                                 onChange={(e) => setRecipeSearchTerm(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleRecipeSearch()}
                             />
+                        </div>
+                        <div>
+                            <button onClick={() => handleSort("VIEW_DESC")}>
+                                조회수순
+                            </button>
+                            <button onClick={() => handleSort("LEVEL_DESC")}>
+                                난이도순
+                            </button>
+                            <button onClick={() => handleSort("MATCHRATE_DESC")}>
+                                매치율순
+                            </button>
                         </div>
                         <div css={commonS.navGroup}>
                             <button css={commonS.pillBtn(false)} onClick={() => navigate("/home")}>🏠 식재료</button>
@@ -153,7 +162,11 @@ useEffect(() => {
                     <Pagination
                     page={page}
                     totalPages={totalPages}
-                    onChange={(p) => setPage(p)}
+                    onChange={(p) => {
+                        const params = new URLSearchParams(location.search);
+                        params.set("page", String(p));
+                        navigate(`/recipe?${params.toString()}`);
+                    }}
                     />
                 </div>
 
