@@ -53,6 +53,7 @@ function Home() {
     const status = ingredientsError?.response?.status;
     if (isIngredientsError && status === 401) {
       localStorage.removeItem("accessToken");
+      localStorage.removeItem("userId");
       setIsLogin(false);
       queryClient.removeQueries({ queryKey: QUERY_KEYS.INGREDIENTS });
     }
