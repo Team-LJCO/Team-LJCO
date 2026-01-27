@@ -146,7 +146,7 @@ const handleSort = (sort) => {
                                     key={`${recipe.rcpId}-${index}`} // 💡 중복 키 에러 방지를 위해 index 조합
                                     css={recipeS.recipeCard}
                                     onClick={() => {
-                                        // 💡 카드를 클릭했을 때만 모달이 뜨게 합니다.
+                                        // 💡카드를 클릭했을 때만 모달이 뜨게 합니다.
                                         setSelectedRecipe(recipe); 
                                         setIsRecipeModalOpen(true);
                                     }}
