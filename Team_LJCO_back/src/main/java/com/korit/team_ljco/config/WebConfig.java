@@ -25,7 +25,6 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedHeaders("*")
                 .allowCredentials(true);
 
-        // 이미지 접근을 위한 CORS 설정
         registry.addMapping("/images/**")
                 .allowedOrigins("http://localhost:3000")
                 .allowedMethods("GET")

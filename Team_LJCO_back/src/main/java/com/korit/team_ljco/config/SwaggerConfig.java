@@ -22,7 +22,6 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI openAPI() {
-        // JWT 보안 스키마 정의
         SecurityScheme securityScheme = new SecurityScheme()
                 .type(SecurityScheme.Type.HTTP)
                 .scheme("bearer")
