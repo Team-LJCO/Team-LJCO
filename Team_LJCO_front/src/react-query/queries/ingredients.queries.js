@@ -1,3 +1,9 @@
+/**
+ * 일반 사용자용 재료 쿼리
+ * - api (일반 axios 인스턴스)를 사용
+ * - accessToken으로 인증
+ * - 사용자 페이지에서만 사용 (Home.jsx 등)
+ */
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../configs/axiosConfig";
 import { QUERY_KEYS } from "./queryKeys";

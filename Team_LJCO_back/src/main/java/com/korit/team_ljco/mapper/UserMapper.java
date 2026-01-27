@@ -13,8 +13,6 @@ public interface UserMapper {
 
     User selectUserByOauth2Id(String oauth2Id);
 
-    User selectUserByEmail(String email);
-
     int insertUser(User user);
 
     int updateUser(User user);

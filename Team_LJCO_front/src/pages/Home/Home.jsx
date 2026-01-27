@@ -12,19 +12,7 @@ import FridgeChar from "../../assets/fridge-closed.png";
 import { useIngredientsQuery } from "../../react-query/queries/ingredients.queries";
 import { useDeleteIngredientMutation } from "../../react-query/mutations/ingredients.mutations";
 import { QUERY_KEYS } from "../../react-query/queries/queryKeys";
-
-
-// 초성 검색 유틸리티
-const getChoseong = (str) => {
-  const cho = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
-  let result = "";
-  for (let i = 0; i < str.length; i++) {
-    const code = str.charCodeAt(i) - 44032;
-    if (code > -1 && code < 11172) result += cho[Math.floor(code / 588)];
-    else result += str.charAt(i);
-  }
-  return result;
-};
+import { getChoseong, getDaysInfo } from "../../utils";
 
 function Home() {
   const navigate = useNavigate();
@@ -72,13 +60,6 @@ function Home() {
       return targetName.toLowerCase().includes(term) || getChoseong(targetName).includes(term);
     });
   }, [searchTerm, ingredients]);
-
-  const getDaysInfo = (createDate) => {
-    const d = Math.floor((new Date() - new Date(createDate)) / (1000 * 60 * 60 * 24));
-    const getColor = (days) => days < 7 ? "#34C759" : days <= 14 ? "#FFD60A" : days <= 29 ? "#FF9F0A" : "#DBDBDB";
-    const getOpacity = (days) => days >= 100 ? 0.3 : days >= 60 ? 0.5 : days >= 50 ? 0.65 : days >= 30 ? 0.7 : 1.0;
-    return { text: `D+${d}`, color: getColor(d), opacity: getOpacity(d), isTrash: d >= 30 };
-  };
 
   const handleAuthClick = () => {
     if (isLogin) {

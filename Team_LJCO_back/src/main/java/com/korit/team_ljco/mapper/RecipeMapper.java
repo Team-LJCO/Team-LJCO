@@ -2,13 +2,11 @@ package com.korit.team_ljco.mapper;
 
 import com.korit.team_ljco.dto.RecipeListResponse;
 import com.korit.team_ljco.entity.Recipe;
-import com.korit.team_ljco.entity.RecipeIngredient;
 import com.korit.team_ljco.entity.RecipeStep;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface RecipeMapper {
@@ -26,13 +24,6 @@ public interface RecipeMapper {
                                         @Param("keyword") String keyword,
                                         @Param("sort") String sort);
 
-
-    //며칠남았는지
-    int getDaysLeft();
-
-    //난이도
-    int getLevel();
-
     // 레시피 조회
     Recipe selectRecipeById(Long rcpId);
 
@@ -40,43 +31,17 @@ public interface RecipeMapper {
 
     List<Recipe> searchRecipesByName(@Param("keyword") String keyword);
 
-    // 레시피 등록/수정/삭제
-    int insertRecipe(Recipe recipe);
-
+    // 레시피 수정/삭제
     int updateRecipe(Recipe recipe);
 
     int deleteRecipe(Long rcpId);
 
-    // 레시피 재료 조회
-    List<RecipeIngredient> selectRecipeIngredients(Long rcpId);
-
-    int insertRecipeIngredient(RecipeIngredient recipeIngredient);
-
+    // 레시피 재료/단계 삭제
     int deleteRecipeIngredients(Long rcpId);
-
-    // 레시피 조리 단계 조회
-    List<RecipeStep> selectRecipeSteps(Long rcpId);
-
-    int insertRecipeStep(RecipeStep recipeStep);
 
     int deleteRecipeSteps(Long rcpId);
 
-    // 추천 레시피 (사용자 재료 기반)
-    List<Map<String, Object>> selectRecommendedRecipes(@Param("userId") Long userId);
-
-    // 인기 레시피 (조회수 기준)
-    List<Recipe> selectTopRecipesByViews(@Param("limit") int limit);
-
-    // 조회수 증가
-    int incrementViewCount(Long rcpId);
-
-    // 전체 레시피 수
-    int countAllRecipes();
-    // 검색 결과를 RecipeListResponse DTO 리스트로 반환하도록 정의
-    List<RecipeListResponse> searchRecipesByKeyword(@Param("pageSize") int pageSize,
-                                                    @Param("offset") int offset,
-                                                    @Param("userId") Long userId,
-                                                    @Param("keyword") String keyword);
-
+    // 레시피 조리 단계 조회
+    List<RecipeStep> selectRecipeSteps(Long rcpId);
 }
 
