@@ -17,7 +17,7 @@ function Recipe() {
     const [totalPages, setTotalPages] = useState(0);
     const [sort, setSort] = useState("VIEW_DESC");
 
-    const [isLogin] = useState(!!localStorage.getItem("accessToken")); // 대소문자 주의: accessToken
+    const [isLogin] = useState(!!localStorage.getItem("accessToken")); 
     const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(false);
 
