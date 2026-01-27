@@ -41,18 +41,6 @@
         <result property="createdAt" column="created_at"/>
     </resultMap>
 
-    <resultMap id="RecipeListWithIngredientsMap"
-               type="com.korit.team_ljco.dto.RecipeListResponse">
-        <id property="rcpId" column="rcp_id"/>
-        <result property="rcpName" column="rcp_name"/>
-        <result property="rcpImgUrl" column="rcp_img_url"/>
-        <result property="rcpViewCount" column="rcp_view_count"/>
-        <result property="level" column="level"/>
-        <collection property="ingredients" ofType="com.korit.team_ljco.entity.RecipeIngredient">
-            <result property="ingId" column="ing_id"/>
-            <result property="ingName" column="ing_name"/>
-        </collection>
-    </resultMap>
 
     <resultMap id="RecipeListMap"
                type="com.korit.team_ljco.dto.RecipeListResponse">

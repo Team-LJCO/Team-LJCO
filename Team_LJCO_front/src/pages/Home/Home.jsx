@@ -45,8 +45,18 @@ function Home() {
     setIsAdmin(!!adminToken);
   }, []);
 
-  const { data: ingredients = [], isLoading: isIngredientsLoading, isError: isIngredientsError, error: ingredientsError } = useIngredientsQuery(isLogin);
+  const { 
+    data: fridgeHome, 
+    isLoading: isIngredientsLoading,
+    isError: isIngredientsError,
+    error: ingredientsError
+    } =  useIngredientsQuery(isLogin);
   const deleteIngredient = useDeleteIngredientMutation();
+
+  const ingredients = fridgeHome?.userIngredintLis ?? [];
+  const expiredIngredientCount = fridgeHome?.expiredIngredientCount ?? 0;
+  const matchedRecipeCount = fridgeHome?.matchedRecipeCount ?? 0;
+  const matchedRecipeList = fridgeHome?.matchedRecipeList ?? [];
 
   // 인증 에러 처리
   useEffect(() => {

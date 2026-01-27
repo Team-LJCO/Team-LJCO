@@ -27,12 +27,6 @@ public interface RecipeMapper {
                                         @Param("sort") String sort);
 
 
-    //며칠남았는지
-    int getDaysLeft();
-
-    //난이도
-    int getLevel();
-
     // 레시피 조회
     Recipe selectRecipeById(Long rcpId);
 
