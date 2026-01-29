@@ -202,7 +202,16 @@ function Home() {
         </div>
         {isRecipeModalOpen && <RecipeSearchModal keyword={recipeSearchTerm} onClose={() => setIsRecipeModalOpen(false)} />}
         {isLogin && <button css={s.fab} onClick={() => setIsModalOpen(true)}><div className="circle">+</div> 재료 추가하기</button>}
-        {isModalOpen && <AddIngredientModal onClose={() => { setIsModalOpen(false); queryClient.invalidateQueries({ queryKey: QUERY_KEYS.INGREDIENTS }); }} />}
+        {isModalOpen && (
+          <AddIngredientModal 
+            onClose={() => { 
+              setIsModalOpen(false); 
+              // 재료 추가 성공 시 두 가지 쿼리를 모두 무효화합니다.
+              queryClient.invalidateQueries({ queryKey: QUERY_KEYS.INGREDIENTS }); 
+              queryClient.invalidateQueries({ queryKey: ["recipes"] }); 
+            }} 
+          />
+        )}
       </div>
     </>
   );
