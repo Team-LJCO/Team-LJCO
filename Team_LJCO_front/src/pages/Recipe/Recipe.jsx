@@ -241,7 +241,7 @@ function RecipeCardContent({ recipe }) {
                         fontWeight: '800',
                         boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
                     }}>
-                         {recipe.level === 1 ? '쉬움' : recipe.level === 2 ? '보통' :  recipe.level === 2 ? '중급' : '어려움'}
+                         {recipe.level === 1 ? '쉬움' : recipe.level === 2 ? '보통' :  recipe.level === 3 ? '중급' : '어려움'}
                     </span>
                 </div>
             </div>

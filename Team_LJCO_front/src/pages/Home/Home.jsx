@@ -11,7 +11,7 @@ import FridgeChar from "../../assets/fridge-closed.png";
 
 import { useFridgeHomeQuery } from "../../queries/fridgeHome";
 import { useDeleteIngredientMutation } from "../../react-query/mutations/ingredients.mutations";
-import { queryKeys } from "../../react-query/queries/queryKeys";
+import { queryKeys } from "../../queries/queryKeys";
 
 
 // 초성 검색 유틸리티
@@ -36,6 +36,7 @@ function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [recipeSearchTerm, setRecipeSearchTerm] = useState("");
   const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
+  //const [matchedRecipe, setMatchedRecipe] = useState(false);
 
   // 로그인 및 어드민 토큰 체크
   useEffect(() => {
@@ -59,14 +60,17 @@ function Home() {
   const matchedRecipeCount = fridgeHome?.matchedRecipeCount ?? 0;
   const matchedRecipeList = fridgeHome?.matchedRecipeList ?? [];
 
-  
+  useEffect(() => {
+  console.log("fridgeHome:", fridgeHome);
+}, [fridgeHome]);
+
   useEffect(() => {
     const status = ingredientsError?.response?.status;
     if (isIngredientsError && status === 401) {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("userId");
       setIsLogin(false);
-      queryClient.removeQueries({ queryKey: queryKeys.INGREDIENTS });
+      queryClient.removeQueries({ queryKey: queryKeys.ingredients.all });
     }
   }, [isIngredientsError, ingredientsError, queryClient]);
 
@@ -193,7 +197,7 @@ function Home() {
         </div>
         {isRecipeModalOpen && <RecipeSearchModal keyword={recipeSearchTerm} onClose={() => setIsRecipeModalOpen(false)} />}
         {isLogin && <button css={s.fab} onClick={() => setIsModalOpen(true)}><div className="circle">+</div> 재료 추가하기</button>}
-        {isModalOpen && <AddIngredientModal onClose={() => { setIsModalOpen(false); queryClient.invalidateQueries({ queryKey: queryKeys.INGREDIENTS }); }} />}
+        {isModalOpen && <AddIngredientModal onClose={() => { setIsModalOpen(false); queryClient.invalidateQueries({ queryKey: queryKeys.ingredients.all }); }} />}
       </div>
     </>
   );
