@@ -8,6 +8,7 @@ import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
 import { useNavigate, useLocation } from "react-router-dom"; 
 import Pagination from "../../components/common/Pagination";
 import RecipeIngredientMark from "./RacipeIngredientMark";
+import { getLevelText } from "../../components/recipe/RecipeCard";
 
 function Recipe() {
     const navigate = useNavigate();
@@ -191,10 +192,7 @@ function RecipeCardContent({ recipe }) {
         return { text: "재료를 구매하셔야 해요!", color: "#999999" };
     };
 
-    const getLevelText = (level) => {
-        const levels = { 1: '쉬움', 2: '보통', 3: '중급', 4: '어려움' };
-        return levels[level] || '보통';
-    };
+
 
     const matchStyle = getMatchRateStyle(matchRate);
 
