@@ -2,7 +2,6 @@
 import { useState, useMemo, useRef } from 'react';
 import {
   useRecipesQuery,
-  useSearchRecipesQuery,
   useCreateRecipeMutation,
   useUpdateRecipeMutation,
   useDeleteRecipeMutation,
@@ -22,8 +21,8 @@ import * as TableS from '../../styles/common/Table.style';
 import * as ModalS from '../../styles/common/Modal.style';
 
 const RecipeManagement = () => {
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [pagination, setPagination] = useState({
     page: 0,
     size: 10,
@@ -61,13 +60,7 @@ const RecipeManagement = () => {
   const stepImageRefs = useRef({});
 
   // React Query 훅
-  const recipesQuery = useRecipesQuery({
-    enabled: !isSearching,
-  });
-
-  const searchQuery = useSearchRecipesQuery(searchKeyword, {
-    enabled: isSearching && !!searchKeyword,
-  });
+  const recipesQuery = useRecipesQuery();
 
   const ingredientsQuery = useIngredientsQuery();
 
@@ -75,29 +68,35 @@ const RecipeManagement = () => {
   const updateMutation = useUpdateRecipeMutation();
   const deleteMutation = useDeleteRecipeMutation();
 
-  // 데이터 추출
-  const allRecipes = isSearching
-    ? (searchQuery.data || [])
-    : (recipesQuery.data || []);
-  const allIngredients = ingredientsQuery.data || [];
-  const loading = recipesQuery.isLoading || searchQuery.isLoading || recipesQuery.isFetching;
+  // 데이터 추출 (API 응답이 배열 또는 { recipes: [...] } 형태일 수 있음)
+  const getRecipesArray = (data) => {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data.recipes)) return data.recipes;
+    return [];
+  };
 
-  // 클라이언트 사이드 페이지네이션
-  const totalPages = Math.ceil(allRecipes.length / pagination.size);
-  const currentPageData = useMemo(() => {
-    const start = pagination.page * pagination.size;
-    const end = start + pagination.size;
-    return allRecipes.slice(start, end);
-  }, [allRecipes, pagination.page, pagination.size]);
+  // 클라이언트 사이드 필터링 - 레시피명에 검색어 포함 여부
+  const allRecipes = useMemo(() => {
+    const recipes = getRecipesArray(recipesQuery.data);
+    if (!searchTerm) return recipes;
+    return recipes.filter((recipe) =>
+      recipe.rcpName?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [recipesQuery.data, searchTerm]);
+
+  const allIngredients = ingredientsQuery.data || [];
+  const loading = recipesQuery.isLoading || recipesQuery.isFetching;
+
+  const recipesData = recipesQuery.data;
+
+  const recipes = recipesData?.recipes ?? [];
+  const totalPages = recipesData?.totalPages ?? 1;
 
   // 레시피 검색
   const handleSearch = () => {
-    if (!searchKeyword.trim()) {
-      setIsSearching(false);
-      setPagination((prev) => ({ ...prev, page: 0 }));
-      return;
-    }
-    setIsSearching(true);
+    const term = inputValue.trim();
+    setSearchTerm(term);
     setPagination((prev) => ({ ...prev, page: 0 }));
   };
 
@@ -373,8 +372,8 @@ const RecipeManagement = () => {
 
   // 초기화
   const handleReset = () => {
-    setSearchKeyword('');
-    setIsSearching(false);
+    setInputValue('');
+    setSearchTerm('');
     setPagination((prev) => ({ ...prev, page: 0 }));
   };
 
@@ -430,12 +429,7 @@ const RecipeManagement = () => {
       dataIndex: 'rcpViewCount',
       render: (value) => <span css={S.viewCount}>{value?.toLocaleString() || 0}</span>,
     },
-    {
-      key: 'createdAt',
-      title: '생성일자',
-      dataIndex: 'createdAt',
-      render: (value) => <span css={TableS.tableDate}>{formatDate(value)}</span>,
-    },
+  
     {
       key: 'edit',
       title: '수정',
@@ -464,7 +458,7 @@ const RecipeManagement = () => {
         </button>
       ),
     },
-  ];
+  ];a
 
   return (
     <div css={S.recipeManagement}>
@@ -475,8 +469,8 @@ const RecipeManagement = () => {
       </PageHeader>
 
       <SearchBar
-        value={searchKeyword}
-        onChange={setSearchKeyword}
+        value={inputValue}
+        onChange={setInputValue}
         onSearch={handleSearch}
         onReset={handleReset}
         placeholder="레시피명 검색"
@@ -484,18 +478,19 @@ const RecipeManagement = () => {
 
       <DataTable
         columns={columns}
-        data={currentPageData}
+        data={recipes}
         loading={loading}
         rowKey="rcpId"
         emptyMessage="레시피가 없습니다."
       />
 
       <Pagination
-        currentPage={pagination.page}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
+      page={recipesData?.page}
+      totalPages={totalPages}
+      onChange={(newPage) =>
+      setPagination((prev) => ({ ...prev, page: newPage - 1 }))
+      }
       />
-
       {/* 삭제 확인 모달 */}
       <ConfirmModal
         isOpen={deleteModal.isOpen}

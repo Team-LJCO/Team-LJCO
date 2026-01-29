@@ -10,10 +10,16 @@ import {
 import { queryKeys } from './queryKeys';
 
 // 레시피 목록 조회
-export const useRecipesQuery = (options = {}) => {
+export const useRecipesQuery = (userId, options = {}) => {
   return useQuery({
-    queryKey: queryKeys.recipes.list(),
-    queryFn: getAllRecipes,
+    // userId가 바뀔 때마다 쿼리를 다시 실행하도록 키에 추가합니다.
+    queryKey: [...queryKeys.recipes.list(), userId], 
+    queryFn: async () => {
+      // 💡 주소창에 직접 쳤을 때 성공했던 그 주소(/api/recipes/all)를 직접 찌릅니다.
+      const response = await fetch(`http://localhost:8080/api/recipes/all?userId=${userId || 0}`);
+      if (!response.ok) throw new Error('레시피 로드 실패');
+      return response.json();
+    },
     ...options,
   });
 };

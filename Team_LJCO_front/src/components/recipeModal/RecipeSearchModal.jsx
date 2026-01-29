@@ -8,6 +8,22 @@ function RecipeSearchModal({ recipe, onClose }) {
     const [steps, setSteps] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // 매치율 텍스트 로직
+    const matchRate = Number(recipe?.matchRate ?? 0);
+    
+    const getMatchRateText = (rate) => {
+        if (rate <= 0) return '재료를 구매하셔야 해요!';
+        if (rate < 50) return '조금만 더 있으면 돼요';
+        if (rate < 70) return '거의 만들 수 있어요';
+        return '지금 바로 도전 가능!';
+    };
+
+    // 💡 추가: 매치율 아이콘 로직 (일관성을 위해 아이콘 추가)
+    const getMatchIcon = (rate) => {
+        if (rate < 70) return '🛒'; // 재료 부족할 땐 장바구니
+        return '🍳'; // 요리 가능할 땐 프라이팬
+    };
+
     useEffect(() => {
         const fetchRecipeData = async () => {
             if (!recipe?.rcpId) return;
@@ -31,68 +47,90 @@ function RecipeSearchModal({ recipe, onClose }) {
                 
                 {/* 1. Header: 이름 및 정보 */}
                 <div style={{ marginBottom: '20px' }}>
-                    <h2 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '8px' }}>{recipe?.rcpName}</h2>
-                    <div style={{ display: 'flex', gap: '15px', color: '#ff7043', fontWeight: '700', fontSize: '14px' }}>
-                        <span>🔥 {recipe?.level === 1 ? '쉬움' : '보통'}</span>
-                        <span>👁️ {recipe?.rcpViewCount?.toLocaleString()}</span>
+                    <h2 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '12px' }}>{recipe?.rcpName}</h2>
+                    
+                    {/* 정보 그리드 */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        
+                        {/* 왼쪽: 난이도 & 조회수 */}
+                        <div style={{ display: 'flex', gap: '15px', color: '#ff7043', fontWeight: '700', fontSize: '15px' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                🔥 {recipe?.level === 1 ? '쉬움' : recipe?.level === 2 ? '보통' : '어려움'}
+                            </span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                👁️ {recipe?.rcpViewCount?.toLocaleString()}
+                            </span>
+                        </div>
+
+                        {/* 오른쪽: 매치율 (박스 제거 -> 아이콘+텍스트 형태) */}
+                        <div style={{ 
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px', // 아이콘과 텍스트 사이 간격
+                            color: '#FF7043', 
+                            fontWeight: '800', 
+                            fontSize: '15px' // 왼쪽 폰트 사이즈와 통일
+                        }}>
+                            {/* 상황에 맞는 아이콘 + 텍스트 */}
+                            <span>{getMatchIcon(matchRate)}</span>
+                            <span>{getMatchRateText(matchRate)} ({matchRate}%)</span>
+                        </div>
                     </div>
                 </div>
 
-                {/* 2. 통합 정보 박스 (Visual + Info + Ingredients) */}
+                {/* 2. 이미지 & 재료 섹션 */}
                 <div style={{ background: '#f8f8f8', borderRadius: '30px', padding: '25px', marginBottom: '35px' }}>
-                    <div style={{ width: '100%', height: '250px', borderRadius: '20px', overflow: 'hidden', marginBottom: '20px' }}>
+                    <div style={{ width: '100%', height: '300px', borderRadius: '20px', overflow: 'hidden', marginBottom: '25px' }}>
                         <img src={recipe?.rcpImgUrl} alt="main" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', marginBottom: '20px', fontSize: '14px', color: '#666', fontWeight: '600' }}>
-                        <span>⏱️ 15분</span>
-                        <span>👥 2인분</span>
-                        <span>📂 메인요리</span>
-                    </div>
-                    <hr style={{ border: '0', borderTop: '1px solid #e0e0e0', marginBottom: '20px' }} />
-                    <h3 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '12px', color: '#555' }}>필요한 재료</h3>
-                    {/* Ingredients (신선도 색상 적용) */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                        {recipe.ingredients?.map((ing, idx) => {
-                            // 💡 대소문자 및 언더바 이슈 방지를 위해 모두 체크
-                            const hasIngredient = ing.hasIng === true || ing.hasIng === 1 || ing.has_ing === 1;
-                            const dDayValue = (ing.dDay !== undefined && ing.dDay !== null) ? ing.dDay : ing.dday;
 
-                            const bgColor = hasIngredient ? getColorByDay(dDayValue) : "#F0F0F0";
-                            // ⚠️ 아래 color와 border 부분에서 hasIng를 hasIngredient로 수정했습니다!
-                            const textColor = hasIngredient ? "#000" : "#999";
+                    <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '12px', color: '#555' }}>필요한 재료</h3>
+                    
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+    {recipe.ingredients?.map((ing, idx) => {
+        // ✅ 콘솔 확인 결과: matchedColor 필드가 "G"이면 보유(초록불), "N"이면 미보유입니다.
+        const isMatched = ing.matchedColor === "G";
+        
+        // ✅ 보유 중("G")일 때만 초록색을 적용하고, 아니면 회색/검정색으로 표시합니다.
+        // 만약 D-Day에 따른 다른 색상(Y, O, R 등)도 있다면 추가 대응이 가능합니다.
+        const bgColor = isMatched ? "#34C759" : "#333333"; 
+        const textColor = isMatched ? "#000000" : "#999999";
 
-                            return (
-                                <span key={idx} style={{
-                                    backgroundColor: bgColor,
-                                    color: textColor, // 💡 수정완료
-                                    padding: '7px 14px', 
-                                    borderRadius: '12px', 
-                                    fontSize: '13px', 
-                                    fontWeight: '700',
-                                    border: hasIngredient ? 'none' : '1px solid #e0e0e0' // 💡 수정완료
-                                }}>
-                                    {ing.ingName} {ing.rcpIngAmt && `(${ing.rcpIngAmt})`}
-                                </span>
-                            );
-                        })}
-                    </div>
+        return (
+            <span key={idx} style={{
+                backgroundColor: bgColor,
+                color: textColor,
+                padding: '8px 16px', 
+                borderRadius: '12px', 
+                fontSize: '14px', 
+                fontWeight: '600',
+                // 보유하지 않은 재료는 테두리를 주어 구분
+                border: isMatched ? 'none' : '1px solid #444',
+                boxShadow: isMatched ? '0 2px 5px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.2s ease'
+            }}>
+                {ing.ingName} {ing.rcpIngAmt && `(${ing.rcpIngAmt})`}
+            </span>
+        );
+    })}
+</div>
                 </div>
 
-                {/* 3. 고도화된 조리 순서 섹션 */}
-                <h3 style={{ fontSize: '20px', fontWeight: '900', marginBottom: '25px' }}>🍳 조리 순서</h3>
+                {/* 3. 조리 순서 섹션 */}
+                <h3 style={{ fontSize: '22px', fontWeight: '900', marginBottom: '25px' }}>🍳 조리 순서</h3>
                 {loading ? (
-                    <div style={{ textAlign: 'center', padding: '30px' }}>로딩 중...</div>
+                    <div style={{ textAlign: 'center', padding: '30px', color: '#888' }}>레시피 정보를 불러오는 중입니다...</div>
                 ) : (
                     <div className="steps-list" style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
                         {steps.map((step) => (
                             <div key={step.stepId} className="step-item">
-                                <div style={{ fontSize: '13px', fontWeight: '900', color: '#ff7043', marginBottom: '8px' }}>STEP {step.stepNo}</div>
-                                <p style={{ fontSize: '16px', lineHeight: '1.7', color: '#444', marginBottom: '15px' }}>{step.stepDesc}</p>
+                                <div style={{ fontSize: '14px', fontWeight: '900', color: '#ff7043', marginBottom: '10px' }}>STEP {step.stepNo}</div>
                                 {step.stepImgUrl && (
-                                    <div style={{ borderRadius: '20px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
-                                        <img src={step.stepImgUrl} alt="step" style={{ width: '100%' }} />
+                                    <div style={{ borderRadius: '20px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.08)', marginBottom: '15px' }}>
+                                        <img src={step.stepImgUrl} alt="step" style={{ width: '100%', display: 'block' }} />
                                     </div>
                                 )}
+                                <p style={{ fontSize: '16px', lineHeight: '1.7', color: '#333', wordBreak: 'keep-all' }}>{step.stepDesc}</p>
                             </div>
                         ))}
                     </div>

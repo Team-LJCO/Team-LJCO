@@ -15,15 +15,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthController {
 
-    /**
-     * 현재 로그인된 사용자 정보 조회
-     */
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal User user) {
+    public ResponseEntity<Map<String , Object>> getCurrentUser(@AuthenticationPrincipal User user) {
         if (user == null) {
             return ResponseEntity.status(401).body(Map.of("message", "인증되지 않은 사용자입니다."));
         }
-
         Map<String, Object> response = new HashMap<>();
         response.put("userId", user.getUserId());
         response.put("userName", user.getUserName());
@@ -33,9 +29,6 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 로그아웃 (프론트엔드에서 토큰 삭제)
-     */
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         return ResponseEntity.ok(Map.of("message", "로그아웃 성공"));

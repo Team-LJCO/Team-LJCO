@@ -35,15 +35,6 @@
         WHERE oauth2Id = #{oauth2Id}
     </select>
 
-    <!-- 이메일로 사용자 조회 -->
-    <select id="selectUserByEmail" parameterType="string" resultMap="UserResultMap">
-        SELECT
-        user_id, user_name, user_email, user_role,
-        oauth2Provider, oauth2Id, createdAt, updatedAt
-        FROM user
-        WHERE user_email = #{email}
-    </select>
-
     <!-- 사용자 등록 -->
     <insert id="insertUser" parameterType="com.korit.team_ljco.entity.User"
             useGeneratedKeys="true" keyProperty="userId">

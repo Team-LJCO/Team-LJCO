@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { css, Global } from "@emotion/react";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { fontImport, s } from "./styles";
+
 import AddIngredientModal from "../../components/ingredient/modal/AddIngredientModal";
 import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
 import FridgeChar from "../../assets/fridge-closed.png";
@@ -13,20 +13,10 @@ import { useFridgeHomeQuery } from "../../queries/fridgeHome";
 import { useDeleteIngredientMutation } from "../../react-query/mutations/ingredients.mutations";
 import { queryKeys } from "../../queries/queryKeys";
 
-
-// 초성 검색 유틸리티
-const getChoseong = (str) => {
-  const cho = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
-  let result = "";
-  for (let i = 0; i < str.length; i++) {
-    const code = str.charCodeAt(i) - 44032;
-    if (code > -1 && code < 11172) result += cho[Math.floor(code / 588)];
-    else result += str.charAt(i);
-  }
-  return result;
-};
+const commonS = s;
 
 function Home() {
+  
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -89,13 +79,6 @@ function Home() {
     });
   }, [searchTerm, ingredients]);
 
-  const getDaysInfo = (createDate) => {
-    const d = Math.floor((new Date() - new Date(createDate)) / (1000 * 60 * 60 * 24));
-    const getColor = (days) => days < 7 ? "#34C759" : days <= 14 ? "#FFD60A" : days <= 29 ? "#FF9F0A" : "#DBDBDB";
-    const getOpacity = (days) => days >= 100 ? 0.3 : days >= 60 ? 0.5 : days >= 50 ? 0.65 : days >= 30 ? 0.7 : 1.0;
-    return { text: `D+${d}`, color: getColor(d), opacity: getOpacity(d), isTrash: d >= 30 };
-  };
-
   const handleAuthClick = () => {
     if (isLogin) {
       if (window.confirm("로그아웃 하시겠습니까?")) {
@@ -120,33 +103,6 @@ function Home() {
         </button>
 
         <div css={s.container}>
-          <div css={s.headerCard}>
-            <div css={s.logo} onClick={() => navigate("/home")}>
-              <div className="logo-box">🧊</div> 냉장고 파먹기
-            </div>
-            <div style={{ position: "relative", flex: 1, display: "flex", alignItems: "center", gap: "10px" }}>
-              <input 
-                css={s.recipeSearch} 
-                placeholder="오늘은 뭐 해먹지?" 
-                value={recipeSearchTerm} 
-                onChange={(e) => setRecipeSearchTerm(e.target.value)} 
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && recipeSearchTerm.trim()) {
-                    navigate(`/recipe?keyword=${encodeURIComponent(recipeSearchTerm)}`);
-                  }
-                }} 
-              />
-              <button 
-                onClick={() => recipeSearchTerm.trim() && navigate(`/recipe?keyword=${encodeURIComponent(recipeSearchTerm)}`)} 
-                css={searchBtnStyle}
-              >🔍</button>
-            </div>
-            <div css={s.navGroup}>
-              <button css={s.pillBtn(true)} onClick={() => navigate("/home")}>🏠 식재료</button>
-              <button css={s.pillBtn(false)} onClick={() => navigate("/recipe")}>📖 레시피</button>
-              <button css={s.pillBtn(false)} onClick={handleAuthClick}>👤 {isLogin ? "로그아웃" : "로그인"}</button>
-            </div>
-          </div>
 
           {/* 대시보드 요약 정보 */}
           <div css={s.dashboardGrid}>

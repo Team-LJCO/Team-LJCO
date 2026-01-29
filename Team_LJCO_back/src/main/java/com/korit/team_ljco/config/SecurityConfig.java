@@ -23,7 +23,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity  // ← @PreAuthorize 활성화!
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
