@@ -458,7 +458,7 @@ const RecipeManagement = () => {
         </button>
       ),
     },
-  ];a
+  ];
 
   return (
     <div css={S.recipeManagement}>

@@ -12,8 +12,10 @@ import FridgeChar from "../../assets/fridge-closed.png";
 import { useFridgeHomeQuery } from "../../queries/fridgeHome";
 import { useDeleteIngredientMutation } from "../../react-query/mutations/ingredients.mutations";
 import { queryKeys } from "../../queries/queryKeys";
+import { fontImport, s } from "./styles";
+import { getDaysInfo } from "../../utils/date";
+import { getChoseong } from "../../utils/korean";
 
-const commonS = s;
 
 function Home() {
   
@@ -103,6 +105,38 @@ function Home() {
         </button>
 
         <div css={s.container}>
+
+          {/* 헤더 카드 */}
+          <div css={s.headerCard}>
+            <div css={s.logo} onClick={() => navigate("/home")}>
+              <div className="logo-box">🧊</div> 냉장고 파먹기
+            </div>
+            <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <input
+                css={s.recipeSearch}
+                style={{ flex: 1 }}
+                placeholder="오늘은 뭐 해먹지?"
+                value={recipeSearchTerm}
+                onChange={(e) => setRecipeSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && recipeSearchTerm.trim()) {
+                    setIsRecipeModalOpen(true);
+                  }
+                }}
+              />
+            </div>
+            <div css={s.navGroup}>
+              <button css={s.pillBtn(true)} onClick={() => navigate("/home")}>
+                🏠 <span className="btn-text">식재료</span>
+              </button>
+              <button css={s.pillBtn(false)} onClick={() => navigate("/recipe")}>
+                📖 <span className="btn-text">레시피</span>
+              </button>
+              <button css={s.pillBtn(false)} onClick={handleAuthClick}>
+                👤 <span className="btn-text">{isLogin ? "로그아웃" : "로그인"}</span>
+              </button>
+            </div>
+          </div>
 
           {/* 대시보드 요약 정보 */}
           <div css={s.dashboardGrid}>
