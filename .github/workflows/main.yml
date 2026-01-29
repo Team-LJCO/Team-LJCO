@@ -1,4 +1,4 @@
-Fname: GCP-VM-CICD
+name: GCP-VM-CICD
 
 on:
   push:
