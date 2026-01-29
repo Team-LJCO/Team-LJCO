@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { css, Global } from "@emotion/react";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { fontImport, s } from "./styles";
+
 import AddIngredientModal from "../../components/ingredient/modal/AddIngredientModal";
 import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
 import FridgeChar from "../../assets/fridge-closed.png";
@@ -14,6 +14,9 @@ import { useRecipesQuery } from "../../queries/useRecipes";
 import { useDeleteIngredientMutation } from "../../react-query/mutations/ingredients.mutations";
 import { QUERY_KEYS } from "../../react-query/queries/queryKeys";
 import { getChoseong, getDaysInfo } from "../../utils";
+import { fontImport, s } from "./styles";
+
+const commonS = s;
 
 function Home() {
   
@@ -47,13 +50,7 @@ function Home() {
     ? recipeData 
     : (recipeData?.recipes || []);
 
-  // 💡 검증용 로그 (이걸로 다시 확인)
-  console.log("실제 필터링 대상 배열:", recipes);
-  if(recipes.length > 0) console.log("첫번째 아이템의 매칭율:", recipes[0].matchRate);
 
-  console.log("검수용 레시피 전체 데이터 (원본):", recipeData);
-  console.log("추출된 레시피 배열 (가공후):", recipes);
-  console.log("현재 로그인한 유저 ID:", userId);
 
   const deleteIngredient = useDeleteIngredientMutation();
 
@@ -107,33 +104,34 @@ function Home() {
         </button>
 
         <div css={s.container}>
-          <div css={s.headerCard}>
-            <div css={s.logo} onClick={() => navigate("/home")}>
-              <div className="logo-box">🧊</div> 냉장고 파먹기
-            </div>
-            <div style={{ position: "relative", flex: 1, display: "flex", alignItems: "center", gap: "10px" }}>
-              <input 
-                css={s.recipeSearch} 
-                placeholder="오늘은 뭐 해먹지?" 
-                value={recipeSearchTerm} 
-                onChange={(e) => setRecipeSearchTerm(e.target.value)} 
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && recipeSearchTerm.trim()) {
-                    navigate(`/recipe?keyword=${encodeURIComponent(recipeSearchTerm)}`);
-                  }
-                }} 
-              />
-              <button 
-                onClick={() => recipeSearchTerm.trim() && navigate(`/recipe?keyword=${encodeURIComponent(recipeSearchTerm)}`)} 
-                css={searchBtnStyle}
-              >🔍</button>
-            </div>
-            <div css={s.navGroup}>
-              <button css={s.pillBtn(true)} onClick={() => navigate("/home")}>🏠 식재료</button>
-              <button css={s.pillBtn(false)} onClick={() => navigate("/recipe")}>📖 레시피</button>
-              <button css={s.pillBtn(false)} onClick={handleAuthClick}>👤 {isLogin ? "로그아웃" : "로그인"}</button>
-            </div>
-          </div>
+
+          <div css={commonS.headerCard}>
+    <div css={commonS.logo} onClick={() => navigate("/home")}>
+        <div className="logo-box">🧊</div> 
+        <span className="logo-text">냉장고 파먹기</span> {/* 💡 텍스트를 span으로 감싸면 제어가 편합니다 */}
+    </div>
+    
+    <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
+        <input 
+            css={commonS.recipeSearch} 
+            style={{ width: '100%' }}
+            placeholder="오늘은 뭐 해먹지?" 
+        />
+        {/* 💡 돋보기 버튼(button태그) 부분을 여기서 과감히 삭제하세요! */}
+    </div>
+
+    <div css={commonS.navGroup}>
+    <button css={commonS.pillBtn(true)} onClick={() => navigate("/home")}> {/* 💡 true로 변경 */}
+        🏠 <span className="btn-text">식재료</span>
+    </button>
+    <button css={commonS.pillBtn(false)} onClick={() => navigate("/recipe")}> {/* 💡 false로 변경 */}
+        📖 <span className="btn-text">레시피</span>
+    </button>
+    <button css={commonS.pillBtn(false)} onClick={handleAuthClick}>
+        👤 <span className="btn-text">{isLogin ? "로그아웃" : "로그인"}</span>
+    </button>
+</div>
+</div>
 
                       {/* 대시보드 요약 정보 */}
             <div css={s.dashboardGrid}>
