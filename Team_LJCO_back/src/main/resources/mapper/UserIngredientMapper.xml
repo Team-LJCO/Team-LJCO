@@ -5,7 +5,6 @@
 
 <mapper namespace="com.korit.team_ljco.mapper.UserIngredientMapper">
 
-    <!-- UserIngredient ResultMap -->
     <resultMap id="UserIngredientResultMap" type="com.korit.team_ljco.entity.UserIngredient">
         <id property="userIngId" column="user_ing_id"/>
         <result property="userId" column="user_id"/>
@@ -21,6 +20,68 @@
         </association>
     </resultMap>
 
+    <resultMap id="IngredientsByUser"
+               type="com.korit.team_ljco.dto.UserIngredientResponse">
+        <id property="rcpId" column="rcp_id"/>
+        <result property="rcpName" column="rcp_name"/>
+        <result property="rcpImgUrl" column="rcp_img_url"/>
+        <result property="rcpViewCount" column="rcp_view_count"/>
+        <result property="level" column="level"/>
+        <result property="totalCount" column="total_count"/>
+        <collection property="userIngredients" ofType="com.korit.team_ljco.dto.IngredientByUserResponse">
+            <result property="ingId" column="ing_id"/>
+            <result property="ingName" column="ing_name"/>
+        </collection>
+    </resultMap>
+
+
+
+    <select id="countExpiredIngredients" parameterType="long" resultType="int">
+        select count(*)
+        from user_ingredients ui
+        where ui.user_id = #{userId}
+        and datediff(current_date, ui.created_at) >= 15
+    </select>
+
+    <select id="getMatchedRecipes"  resultMap="IngredientsByUser">
+        select
+            r.rcp_id,
+            r.rcp_name,
+            r.rcp_img_url,
+            r.rcp_view_count,
+            r.level,
+            r.total_count,
+            i.ing_id,
+            i.ing_name
+        from
+        (
+        select
+            rcp.rcp_id,
+            rcp.rcp_name,
+            rcp.rcp_img_url,
+            rcp.rcp_view_count,
+            rcp.level,
+            count(*) over() as total_count
+        from rcp rcp
+        join rcp_ing ri
+        on ri.rcp_id = rcp.rcp_id
+        left join user_ingredients ui
+        on ui.user_id = #{userId}
+        and ui.ing_id = ri.ing_id
+        group by
+            rcp.rcp_id, rcp.rcp_name,rcp.rcp_img_url, rcp.rcp_view_count, rcp.level
+        having count(distinct ui.ing_id) = count(distinct ri.ing_id)
+        order by rcp.rcp_view_count desc
+        limit #{limit}
+        ) r
+        join rcp_ing ri
+        on ri.rcp_id = r.rcp_id
+        join ingredients i
+        on i.ing_id = ri.ing_id
+    </select>
+
+
+
     <!-- 사용자 재료 전체 조회 -->
     <select id="selectUserIngredients" parameterType="long" resultMap="UserIngredientResultMap">
         SELECT 
@@ -32,6 +93,8 @@
         WHERE ui.user_id = #{userId}
         ORDER BY ui.created_at DESC
     </select>
+
+
 
     <!-- ID로 사용자 재료 조회 -->
     <select id="selectUserIngredientById" parameterType="long" resultMap="UserIngredientResultMap">
