@@ -7,7 +7,7 @@ import { s as recipeS } from "./styles";
 import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
 import { useNavigate, useLocation } from "react-router-dom"; 
 import Pagination from "../../components/common/Pagination";
-import { RecipeCard } from "../../components/recipe";
+import RecipeIngredientMark from "./RacipeIngredientMark";
 
 function Recipe() {
     const navigate = useNavigate();
@@ -133,16 +133,16 @@ function Recipe() {
                     {/* 4. 레시피 그리드 */}
                     <div css={recipeS.recipeGrid}>
                         {recipes.map((recipe, index) => (
-                            <div
-                                key={`${recipe.rcpId}-${index}`}
+                            <div 
+                                key={`${recipe.rcpId}-${index}`} 
                                 css={recipeS.recipeCard}
                                 onClick={() => {
-                                    setSelectedRecipe(recipe);
+                                    setSelectedRecipe(recipe); 
                                     setIsRecipeModalOpen(true);
                                 }}
-                                style={{ cursor: 'pointer' }}
+                                style={{ cursor: 'pointer' }} 
                             >
-                                <RecipeCard recipe={recipe} />
+                                <RecipeCardContent recipe={recipe} />
                             </div>
                         ))}
                         {loading && <div style={{gridColumn: '1/-1', textAlign: 'center', padding: '20px'}}>
@@ -173,6 +173,111 @@ function Recipe() {
                 )}
             </div>
         </>
+    );
+}
+
+function RecipeCardContent({ recipe }) {
+    const matchRate = Number(recipe.matchRate ?? 0);
+
+    const getMatchRateText = (rate) => {
+        if(rate <= 0) return '재료를 구매하셔야 해요!';
+        if(rate < 50) return '조금만 더 있으면 돼요';
+        if(rate < 70) return '거의 만들 수 있어요';
+        return '지금 바로 도전 가능!';
+    };
+
+    const getLevelText = (level) => {
+        if (level === 1) return '쉬움';
+        if (level === 2) return '보통';
+        if (level === 3) return '어려움';
+        return '미정';
+    };
+
+    return (
+        <div style={{ borderRadius: '30px', overflow: 'hidden', height: '100%' }}>
+            <div className="thumb">
+                <img 
+                    src={recipe.rcpImgUrl} 
+                    alt={recipe.rcpName} 
+                />
+                
+                <div style={{ 
+                    position: 'absolute', 
+                    top: '15px', 
+                    left: '15px', 
+                    right: '15px', 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    zIndex: 10
+                }}>
+                    <span style={{ 
+                        background: '#FF7043', 
+                        color: 'white', 
+                        padding: '6px 14px', 
+                        borderRadius: '12px', 
+                        fontSize: '12px', 
+                        fontWeight: '800',
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+                    }}>
+                        {getMatchRateText(matchRate)}{'\u00A0\u00A0'}{matchRate}%
+                    </span>
+                </div>
+            </div>
+
+            <div className="content">
+                <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px' }}>
+                    {recipe.rcpName}
+                </h3>
+                
+                <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '15px', 
+                    marginBottom: '15px' 
+                }}>
+                    <span style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '4px',
+                        color: '#FF7043', 
+                        fontSize: '15px', 
+                        fontWeight: '800' 
+                    }}>
+                        🔥 {getLevelText(recipe.level)}
+                    </span>
+
+                    <span style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '4px',
+                        color: '#FF7043', 
+                        fontSize: '15px', 
+                        fontWeight: '700' 
+                    }}>
+                        👁 {recipe.rcpViewCount?.toLocaleString() || 0}
+                    </span>
+                </div>
+
+                <div style={{ 
+                    width: '100%', 
+                    height: '1px', 
+                    background: '#E0E0E0', 
+                    margin: '15px 0' 
+                }}></div>
+
+                <div className="ingredients">
+                    <div className="label" style={{ fontSize: '11px', color: '#999', marginBottom: '8px' }}>
+                        필요한 재료
+                    </div>
+
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {recipe.ingredients?.map((ingredients, idx) => (
+                            <RecipeIngredientMark key={idx} ingredients={ingredients} />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }
 

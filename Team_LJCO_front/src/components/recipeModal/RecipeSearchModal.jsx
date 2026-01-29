@@ -86,30 +86,34 @@ function RecipeSearchModal({ recipe, onClose }) {
 
                     <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '12px', color: '#555' }}>필요한 재료</h3>
                     
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                        {recipe.ingredients?.map((ing, idx) => {
-                            const hasIngredient = ing.hasIng === true || ing.hasIng === 1 || ing.has_ing === 1;
-                            const dDayValue = (ing.dDay !== undefined && ing.dDay !== null) ? ing.dDay : ing.dday;
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+    {recipe.ingredients?.map((ing, idx) => {
+        // ✅ 콘솔 확인 결과: matchedColor 필드가 "G"이면 보유(초록불), "N"이면 미보유입니다.
+        const isMatched = ing.matchedColor === "G";
+        
+        // ✅ 보유 중("G")일 때만 초록색을 적용하고, 아니면 회색/검정색으로 표시합니다.
+        // 만약 D-Day에 따른 다른 색상(Y, O, R 등)도 있다면 추가 대응이 가능합니다.
+        const bgColor = isMatched ? "#34C759" : "#333333"; 
+        const textColor = isMatched ? "#000000" : "#999999";
 
-                            const bgColor = hasIngredient ? getColorByDay(dDayValue) : "#FFFFFF";
-                            const textColor = hasIngredient ? "#000" : "#999";
-
-                            return (
-                                <span key={idx} style={{
-                                    backgroundColor: bgColor,
-                                    color: textColor,
-                                    padding: '8px 16px', 
-                                    borderRadius: '12px', 
-                                    fontSize: '14px', 
-                                    fontWeight: '600',
-                                    border: hasIngredient ? 'none' : '1px solid #ddd',
-                                    boxShadow: hasIngredient ? '0 2px 5px rgba(0,0,0,0.05)' : 'none'
-                                }}>
-                                    {ing.ingName} {ing.rcpIngAmt && `(${ing.rcpIngAmt})`}
-                                </span>
-                            );
-                        })}
-                    </div>
+        return (
+            <span key={idx} style={{
+                backgroundColor: bgColor,
+                color: textColor,
+                padding: '8px 16px', 
+                borderRadius: '12px', 
+                fontSize: '14px', 
+                fontWeight: '600',
+                // 보유하지 않은 재료는 테두리를 주어 구분
+                border: isMatched ? 'none' : '1px solid #444',
+                boxShadow: isMatched ? '0 2px 5px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.2s ease'
+            }}>
+                {ing.ingName} {ing.rcpIngAmt && `(${ing.rcpIngAmt})`}
+            </span>
+        );
+    })}
+</div>
                 </div>
 
                 {/* 3. 조리 순서 섹션 */}

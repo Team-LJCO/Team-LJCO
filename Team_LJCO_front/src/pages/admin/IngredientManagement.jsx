@@ -2,7 +2,6 @@
 import { useState, useMemo, useRef } from 'react';
 import {
   useIngredientsQuery,
-  useSearchIngredientsQuery,
   useCategoriesQuery,
   useCreateIngredientMutation,
   useUpdateIngredientMutation,
@@ -22,8 +21,8 @@ import * as TableS from '../../styles/common/Table.style';
 import * as ModalS from '../../styles/common/Modal.style';
 
 const IngredientManagement = () => {
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [pagination, setPagination] = useState({
     page: 0,
     size: 10,
@@ -45,32 +44,52 @@ const IngredientManagement = () => {
     ingImgUrl: '',
   });
 
+  // 수정 모달 상태
+  const [editModal, setEditModal] = useState({
+    isOpen: false,
+    ingId: null,
+    ingName: '',
+    ingImgUrl: '',
+  });
+
   // 이미지 업로드 상태
   const [imageUploading, setImageUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const fileInputRef = useRef(null);
 
   // React Query 훅
-  const ingredientsQuery = useIngredientsQuery({
-    enabled: !isSearching,
-  });
-
-  const searchQuery = useSearchIngredientsQuery(searchKeyword, {
-    enabled: isSearching && !!searchKeyword,
-  });
-
+  const ingredientsQuery = useIngredientsQuery();
   const categoriesQuery = useCategoriesQuery();
 
   const createMutation = useCreateIngredientMutation();
   const updateMutation = useUpdateIngredientMutation();
   const deleteMutation = useDeleteIngredientMutation();
 
-  // 데이터 추출
-  const allIngredients = isSearching
-    ? (searchQuery.data || [])
-    : (ingredientsQuery.data || []);
+  // 데이터 추출 (API 응답이 배열 또는 객체 형태일 수 있음)
+  const getIngredientsArray = (data) => {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data.ingredients)) return data.ingredients;
+    return [];
+  };
+
   const categories = categoriesQuery.data || [];
-  const loading = ingredientsQuery.isLoading || searchQuery.isLoading || ingredientsQuery.isFetching;
+
+  // 클라이언트 사이드 필터링 - 재료명 또는 카테고리명에 검색어 포함 여부
+  const allIngredients = useMemo(() => {
+    const ingredients = getIngredientsArray(ingredientsQuery.data);
+    if (!searchTerm) return ingredients;
+    return ingredients.filter((ing) => {
+      const category = categories.find((cat) => cat.ingCatId === ing.ingCatId);
+      const categoryName = category?.ingCatName || '';
+      return (
+        ing.ingName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        categoryName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    });
+  }, [ingredientsQuery.data, searchTerm, categories]);
+
+  const loading = ingredientsQuery.isLoading || ingredientsQuery.isFetching;
 
   // 클라이언트 사이드 페이지네이션
   const totalPages = Math.ceil(allIngredients.length / pagination.size);
@@ -82,12 +101,8 @@ const IngredientManagement = () => {
 
   // 재료 검색
   const handleSearch = () => {
-    if (!searchKeyword.trim()) {
-      setIsSearching(false);
-      setPagination((prev) => ({ ...prev, page: 0 }));
-      return;
-    }
-    setIsSearching(true);
+    const term = inputValue.trim();
+    setSearchTerm(term);
     setPagination((prev) => ({ ...prev, page: 0 }));
   };
 
@@ -149,6 +164,53 @@ const IngredientManagement = () => {
       ingImgUrl: '',
     });
     setImagePreview(null);
+  };
+
+  // 수정 모달 열기/닫기
+  const openEditModal = (ingredient) => {
+    setEditModal({
+      isOpen: true,
+      ingId: ingredient.ingId,
+      ingName: ingredient.ingName,
+      ingImgUrl: ingredient.ingImgUrl || '',
+    });
+  };
+
+  const closeEditModal = () => {
+    setEditModal({
+      isOpen: false,
+      ingId: null,
+      ingName: '',
+      ingImgUrl: '',
+    });
+  };
+
+  // 수정 모달 입력 변경
+  const handleEditModalChange = (e) => {
+    const { name, value } = e.target;
+    setEditModal((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // 재료 수정 확인
+  const confirmEdit = async () => {
+    if (!editModal.ingName.trim()) {
+      alert('재료명을 입력해주세요.');
+      return;
+    }
+
+    try {
+      await updateMutation.mutateAsync({
+        ingId: editModal.ingId,
+        ingredientData: {
+          ingName: editModal.ingName,
+          ingImgUrl: editModal.ingImgUrl || null,
+        },
+      });
+      closeEditModal();
+    } catch (error) {
+      console.error('재료 수정 실패:', error);
+      alert('재료 수정에 실패했습니다.');
+    }
   };
 
   // 이미지 파일 업로드 처리
@@ -245,8 +307,8 @@ const IngredientManagement = () => {
 
   // 초기화
   const handleReset = () => {
-    setSearchKeyword('');
-    setIsSearching(false);
+    setInputValue('');
+    setSearchTerm('');
     setPagination((prev) => ({ ...prev, page: 0 }));
   };
 
@@ -263,6 +325,20 @@ const IngredientManagement = () => {
       title: '재료ID',
       dataIndex: 'ingId',
       render: (value) => <span css={TableS.tableId}>{value}</span>,
+    },
+    {
+      key: 'ingImgUrl',
+      title: '이미지',
+      dataIndex: 'ingImgUrl',
+      render: (value) => (
+        <div css={S.ingImgCell}>
+          {value ? (
+            <img src={`http://localhost:8080/images/${value}`} alt="재료 이미지" css={S.ingImg} />
+          ) : (
+            <span css={S.noImage}>-</span>
+          )}
+        </div>
+      ),
     },
     {
       key: 'ingName',
@@ -290,10 +366,18 @@ const IngredientManagement = () => {
       ),
     },
     {
-      key: 'createdAt',
-      title: '생성일자',
-      dataIndex: 'createdAt',
-      render: (value) => <span css={TableS.tableDate}>{formatDate(value)}</span>,
+      key: 'edit',
+      title: '수정',
+      dataIndex: 'ingId',
+      render: (value, record) => (
+        <button
+          css={S.editBtn}
+          onClick={() => openEditModal(record)}
+          disabled={updateMutation.isPending}
+        >
+          수정
+        </button>
+      ),
     },
     {
       key: 'actions',
@@ -320,8 +404,8 @@ const IngredientManagement = () => {
       </PageHeader>
 
       <SearchBar
-        value={searchKeyword}
-        onChange={setSearchKeyword}
+        value={inputValue}
+        onChange={setInputValue}
         onSearch={handleSearch}
         onReset={handleReset}
         placeholder="재료 또는 카테고리 검색"
@@ -336,9 +420,9 @@ const IngredientManagement = () => {
       />
 
       <Pagination
-        currentPage={pagination.page}
+        page={pagination.page + 1}
         totalPages={totalPages}
-        onPageChange={handlePageChange}
+        onChange={(newPage) => handlePageChange(newPage - 1)}
       />
 
       {/* 삭제 확인 모달 */}
@@ -350,6 +434,38 @@ const IngredientManagement = () => {
         onConfirm={confirmDelete}
         onCancel={closeDeleteModal}
       />
+
+      {/* 재료 수정 모달 */}
+      <FormModal
+        isOpen={editModal.isOpen}
+        title="재료 수정"
+        confirmText="수정"
+        onConfirm={confirmEdit}
+        onCancel={closeEditModal}
+      >
+        <div css={ModalS.formGroup}>
+          <label htmlFor="edit-ingName">재료명</label>
+          <input
+            type="text"
+            id="edit-ingName"
+            name="ingName"
+            value={editModal.ingName}
+            onChange={handleEditModalChange}
+            placeholder="재료명 입력"
+          />
+        </div>
+        <div css={ModalS.formGroup}>
+          <label htmlFor="edit-ingImgUrl">이미지 URL</label>
+          <input
+            type="text"
+            id="edit-ingImgUrl"
+            name="ingImgUrl"
+            value={editModal.ingImgUrl}
+            onChange={handleEditModalChange}
+            placeholder="이미지 URL 입력"
+          />
+        </div>
+      </FormModal>
 
       {/* 재료 추가 모달 */}
       <FormModal
