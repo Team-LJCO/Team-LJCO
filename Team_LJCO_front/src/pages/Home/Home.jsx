@@ -9,9 +9,9 @@ import AddIngredientModal from "../../components/ingredient/modal/AddIngredientM
 import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
 import FridgeChar from "../../assets/fridge-closed.png";
 
-import { useIngredientsQuery } from "../../react-query/queries/ingredients.queries";
+import { useFridgeHomeQuery } from "../../queries/fridgeHome";
 import { useDeleteIngredientMutation } from "../../react-query/mutations/ingredients.mutations";
-import { QUERY_KEYS } from "../../react-query/queries/queryKeys";
+import { queryKeys } from "../../react-query/queries/queryKeys";
 
 
 // 초성 검색 유틸리티
@@ -50,22 +50,23 @@ function Home() {
     isLoading: isIngredientsLoading,
     isError: isIngredientsError,
     error: ingredientsError
-    } =  useIngredientsQuery(isLogin);
+    } =  useFridgeHomeQuery(isLogin, 30);
+
   const deleteIngredient = useDeleteIngredientMutation();
 
-  const ingredients = fridgeHome?.userIngredintLis ?? [];
+  const ingredients = fridgeHome?.userIngredientList ?? [];
   const expiredIngredientCount = fridgeHome?.expiredIngredientCount ?? 0;
   const matchedRecipeCount = fridgeHome?.matchedRecipeCount ?? 0;
   const matchedRecipeList = fridgeHome?.matchedRecipeList ?? [];
 
-  // 인증 에러 처리
+  
   useEffect(() => {
     const status = ingredientsError?.response?.status;
     if (isIngredientsError && status === 401) {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("userId");
       setIsLogin(false);
-      queryClient.removeQueries({ queryKey: QUERY_KEYS.INGREDIENTS });
+      queryClient.removeQueries({ queryKey: queryKeys.INGREDIENTS });
     }
   }, [isIngredientsError, ingredientsError, queryClient]);
 
@@ -96,7 +97,7 @@ function Home() {
       if (window.confirm("로그아웃 하시겠습니까?")) {
         localStorage.removeItem("accessToken");
         setIsLogin(false);
-        queryClient.removeQueries({ queryKey: QUERY_KEYS.INGREDIENTS });
+        queryClient.removeQueries({ queryKey: queryKeys.ingredients.all });
         navigate("/");
       }
     } else { navigate("/login"); }
@@ -150,11 +151,11 @@ function Home() {
                <div className="icon-wrap">📦</div>
              </div>
              <div css={s.summaryCard}>
-               <div className="info"><div className="label" style={{ color: "#FFB347" }}>● 소비 필요</div><div className="count">{isLogin ? ingredients.filter(i => Math.floor((new Date() - new Date(i.createdAt)) / 86400000) >= 7).length : 0}</div></div>
+               <div className="info"><div className="label" style={{ color: "#FFB347" }}>● 소비 임박</div><div className="count">{isLogin ? expiredIngredientCount : 0 }</div></div>
                <div className="icon-wrap">⚠️</div>
              </div>
              <div css={s.summaryCard}>
-               <div className="info"><div className="label" style={{ color: "#CD5C5C" }}>● 폐기 필요</div><div className="count">{isLogin ? ingredients.filter(i => Math.floor((new Date() - new Date(i.createdAt)) / 86400000) >= 30).length : 0}</div></div>
+               <div className="info"><div className="label" style={{ color: "#CD5C5C" }}>● 요리 가능</div><div className="count">{isLogin ? matchedRecipeCount : 0}</div></div>
                <div className="icon-wrap">❌</div>
              </div>
           </div>
@@ -192,7 +193,7 @@ function Home() {
         </div>
         {isRecipeModalOpen && <RecipeSearchModal keyword={recipeSearchTerm} onClose={() => setIsRecipeModalOpen(false)} />}
         {isLogin && <button css={s.fab} onClick={() => setIsModalOpen(true)}><div className="circle">+</div> 재료 추가하기</button>}
-        {isModalOpen && <AddIngredientModal onClose={() => { setIsModalOpen(false); queryClient.invalidateQueries({ queryKey: QUERY_KEYS.INGREDIENTS }); }} />}
+        {isModalOpen && <AddIngredientModal onClose={() => { setIsModalOpen(false); queryClient.invalidateQueries({ queryKey: queryKeys.INGREDIENTS }); }} />}
       </div>
     </>
   );

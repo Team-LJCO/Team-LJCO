@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { QUERY_KEYS } from "./queryKeys"; 
+import { queryKeys } from "../react-query/queries/queryKeys"; 
 
-export const useFridgeHomeQuery = (isLogin) => {
+export const useFridgeHomeQuery = (isLogin, limit = 30) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.INGREDIENTS, "FRIDGE_HOME"],
+    queryKey: [queryKeys.INGREDIENTS, "FRIDGE_HOME"],
     enabled: !!isLogin,
     queryFn: async () => {
       const token = localStorage.getItem("accessToken");

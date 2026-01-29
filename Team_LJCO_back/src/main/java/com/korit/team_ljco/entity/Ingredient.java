@@ -16,5 +16,9 @@ public class Ingredient {
     private String ingName;
     private Integer ingCatId;
     private String ingImgUrl;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private IngredientCategory category;
 }
 
