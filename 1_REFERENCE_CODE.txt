@@ -1,0 +1,15 @@
+[백엔드 섹션]
+- SecurityConfig: JWT 필터 체인, OAuth2 설정
+- JwtTokenProvider/JwtAuthenticationFilter: 토큰 생성/검증
+- AuthController: 회원가입/로그인/토큰 갱신 API
+- UserMapper.xml: MyBatis 쿼리 예시
+- application.yml: 데이터베이스, JWT, OAuth2 설정
+
+[프론트엔드 섹션]
+- main.jsx: QueryClient 설정
+- App.jsx: 라우터 + 인증 가드
+- api/axios.js: JWT 자동 주입 인터셉터
+- store/authStore.js: Zustand persist 인증 스토어
+- hooks/useAuth.js: React Query 래핑 커스텀 훅
+- components/auth/SigninForm.jsx: Emotion 스타일 예시
+- package.json, vite.config.js, eslint.config.js

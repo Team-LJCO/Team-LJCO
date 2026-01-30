@@ -1,10 +1,72 @@
 spring:
   profiles:
-    active: local
+    active: dev
     group:
-      local: common, secret
+      dev: dev, common, secret-dev
+      keun: keun-server, common, secret-prod
+      hyeokjun: hyeokjun-server, common, secret-prod
+      minseok: minseok-server, common, secret-prod
+      hyeonjung: hyeonjung-server, common, secret-prod
 
 ---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+domain:
+  name:
+    http: http://localhost:8080
+    https: https://localgost:8080
+
+---
+spring:
+  config:
+    activate:
+      on-profile: keun-server
+
+domain:
+  name:
+    http: http://oxoxox.store
+    https: http://oxoxox.store
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: hyeokjun-server
+
+domain:
+  name:
+    http: http://kakakao.store
+    https: http://kakakao.store
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: hyeonjung-server
+
+domain:
+  name:
+    http: http://oxoxox.store
+    https: http://oxoxox.store
+---
+
+spring:
+  config:
+    activate:
+      on-profile: minseok-server
+
+domain:
+  name:
+    http: http://oxoxox.store
+    https: http://oxoxox.store
+
+---
+
 
 spring:
   config:
@@ -14,7 +76,7 @@ spring:
   application:
     name: team-ljco-fridgemate
 
-  # 파일 업로드 설정 (재료 이미지, 레시피 이미지)
+  # 파일 업로드 설정
   servlet:
     multipart:
       enabled: true

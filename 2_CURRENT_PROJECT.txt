@@ -1,0 +1,19 @@
+[백엔드 섹션]
+- SecurityConfig: FridgeMate 보안 설정
+- OAuth2UserInfoFactory: Google/Naver/Kakao 소셜 로그인
+- IngredientController: 재료 CRUD + 검색 API
+- RecipeController: 레시피 페이지네이션 + 추천 API
+- UserIngredientController: 사용자 냉장고 재료 관리
+- ImageController: 이미지 업로드/다운로드
+- ImageUploadService: 확장자/크기 검증
+- application.yml: MySQL 35.203.139.207 설정
+
+[프론트엔드 섹션]
+- api/ingredientApi.js: 재료 API 호출 함수
+- api/recipeApi.js: 레시피 API 호출 함수
+- api/userIngredientApi.js: 냉장고 API 호출 함수
+- hooks/useUserIngredients.js: 냉장고 데이터 관리 훅
+- hooks/useRecipes.js: 레시피 페칭/추천 훅
+- components/fridge/FridgeIngredientList.jsx: 냉장고 재료 그리드
+- components/recipe/RecipeList.jsx: 레시피 목록 + 페이지네이션
+- package.json, vite.config.js, eslint.config.js

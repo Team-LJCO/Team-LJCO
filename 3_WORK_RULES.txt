@@ -1,0 +1,21 @@
+[백엔드 규칙]
+- 패키지 구조: controller → service → mapper → entity
+- MyBatis: camelCase 자동 변환, parameterType 생략
+- 보안: JWT 256비트, OAuth2 3사 지원, CORS 허용
+- API 응답: 200/201/204/400/401/403/404
+- Swagger: @Tag, @Operation, bearerAuth
+- 이미지: jpg/png/gif/webp, 최대 10MB, UUID 파일명
+
+[프론트엔드 규칙]
+- 디렉터리: components/pages/hooks/store/api/styles
+- 컴포넌트: PascalCase, 함수형, handle* 이벤트
+- Emotion: /** @jsxImportSource @emotion/react */
+- React Query: ['key'], staleTime 5분, select로 데이터 추출
+- Zustand: persist, partialize, 동사+명사 액션
+- Axios: baseURL, 인터셉터, 401 자동 로그아웃
+
+[공통 규칙]
+- Git: feat/fix/refactor/style/docs/test/chore
+- 환경 변수: application-secret.yml, .env.local (Git 제외)
+- 트러블슈팅: MyBatis 매핑, JWT 인증, OAuth2, 이미지 업로드
+- 3-파일 사용법: 새 세션 시 순서대로 복사 → AI 전달
