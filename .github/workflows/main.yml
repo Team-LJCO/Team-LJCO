@@ -75,7 +75,7 @@ jobs:
 
       - name: React Docker image build
         run: |
-          cd Team_LJCO_back
+          cd Team_LJCO_front
           echo ${{env.REACT_ENV}} | base64 --decode > .env
           docker build -t ${{env.DOCKER_USERNAME}}/react-app:latest .
 
