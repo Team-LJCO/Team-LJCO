@@ -1,8 +1,26 @@
 spring:
   profiles:
-    active: local
+    active: dev
     group:
-      local: common, secret
+      dev: dev, common, secret
+      keun: keun-server, common, secret
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+---
+spring:
+  config:
+    activate:
+      on-profile: keun-server
+
+domain:
+  name:
+    http: http://localhost:80
+    https: https://localhost:443
 
 ---
 
@@ -14,7 +32,7 @@ spring:
   application:
     name: team-ljco-fridgemate
 
-  # 파일 업로드 설정 (재료 이미지, 레시피 이미지)
+  # 파일 업로드 설정
   servlet:
     multipart:
       enabled: true
@@ -26,11 +44,6 @@ file:
   upload-dir: ./uploads/images
   base-url: http://localhost:8080
 
-
-
-
-
-# 서버 설정
 server:
   port: 8080
   tomcat:
@@ -41,7 +54,6 @@ server:
       enabled: true
       force: true
 
-# Swagger 설정 (API 문서)
 springdoc:
   swagger-ui:
     path: /doc
@@ -50,15 +62,13 @@ springdoc:
   api-docs:
     path: /api-docs
 
-# MyBatis 설정
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
   configuration:
-    map-underscore-to-camel-case: true   # user_id -> userId 자동 변환
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # SQL 로그
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   type-aliases-package: com.korit.team_ljco.entity
 
-# 로깅 설정
 logging:
   level:
     com.korit.team_ljco: DEBUG

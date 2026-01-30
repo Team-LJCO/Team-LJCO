@@ -1,5 +1,8 @@
 package com.korit.team_ljco.mapper;
 
+import com.korit.team_ljco.dto.IngredientByUserResponse;
+import com.korit.team_ljco.dto.RecipeListResponse;
+import com.korit.team_ljco.dto.UserIngredientResponse;
 import com.korit.team_ljco.entity.UserIngredient;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -9,7 +12,11 @@ import java.util.List;
 @Mapper
 public interface UserIngredientMapper {
 
-    // 사용자 재료 조회
+
+    List<UserIngredientResponse> getMatchedRecipes(@Param("userId") Long userId,
+                                                   @Param("limit") int limit);
+    int countExpiredIngredients (@Param("userId") Long userId);
+
     List<UserIngredient> selectUserIngredients(Long userId);
     
     UserIngredient selectUserIngredientById(Long userIngId);

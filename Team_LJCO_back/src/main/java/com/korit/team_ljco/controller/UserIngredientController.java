@@ -1,5 +1,6 @@
 package com.korit.team_ljco.controller;
 
+import com.korit.team_ljco.dto.FridgeHomeResponse;
 import com.korit.team_ljco.dto.UserIngredientRequest;
 import com.korit.team_ljco.entity.UserIngredient;
 import com.korit.team_ljco.security.PrincipalUser;
@@ -18,14 +19,13 @@ public class UserIngredientController {
 
     private final UserIngredientService userIngredientService;
 
-    /**
-     * 사용자 보유 재료 전체 조회
-     */
+
     @GetMapping
-    public ResponseEntity<List<UserIngredient>> getUserIngredients(
-            @AuthenticationPrincipal PrincipalUser principalUser) {
-        List<UserIngredient> ingredients = userIngredientService.getUserIngredients(principalUser.getUserId());
-        return ResponseEntity.ok(ingredients);
+    public ResponseEntity<FridgeHomeResponse> getUserIngredients(
+            @AuthenticationPrincipal PrincipalUser principalUser,
+            @RequestParam (defaultValue = "30") int limit) {
+        FridgeHomeResponse fridgeHomeResponse = userIngredientService.getUserIngredients(principalUser.getUserId(), limit);
+        return ResponseEntity.ok(fridgeHomeResponse);
     }
 
     /**

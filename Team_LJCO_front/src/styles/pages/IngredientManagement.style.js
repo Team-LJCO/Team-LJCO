@@ -141,6 +141,22 @@ export const ingName = css`
     color: ${colors.gray[800]};
 `;
 
+export const ingImgCell = css`
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+`;
+
+export const ingImg = css`
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid ${colors.gray[200]};
+`;
+
 export const createdDate = css`
     color: ${colors.gray[700]};
     font-size: 14px;
@@ -181,6 +197,16 @@ export const deleteBtn = css`
 
     &:hover {
         background-color: ${colors.dangerHover};
+    }
+`;
+
+export const editBtn = css`
+    ${actionBtn};
+    background-color: ${colors.primary};
+    color: white;
+
+    &:hover {
+        background-color: ${colors.primaryHover};
     }
 `;
 

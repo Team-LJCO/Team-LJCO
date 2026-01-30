@@ -7,7 +7,8 @@ import { s as recipeS } from "./styles";
 import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
 import { useNavigate, useLocation } from "react-router-dom"; 
 import Pagination from "../../components/common/Pagination";
-import { RecipeCard } from "../../components/recipe";
+import RecipeIngredientMark from "./RacipeIngredientMark";
+import { getLevelText } from "../../components/recipe/RecipeCard";
 
 function Recipe() {
     const navigate = useNavigate();
@@ -103,10 +104,14 @@ function Recipe() {
                         {/* 기존 정렬 버튼 있던 곳 -> 삭제됨 */}
                         
                         <div css={commonS.navGroup}>
-                            <button css={commonS.pillBtn(false)} onClick={() => navigate("/home")}>🏠 식재료</button>
-                            <button css={commonS.pillBtn(true)} onClick={() => navigate("/recipe")}>📖 레시피</button>
+                            <button css={commonS.pillBtn(false)} onClick={() => navigate("/home")}> {/* 💡 false로 변경 */}
+                                🏠 <span className="btn-text">식재료</span>
+                            </button>
+                            <button css={commonS.pillBtn(true)} onClick={() => navigate("/recipe")}> {/* 💡 true로 변경 */}
+                                📖 <span className="btn-text">레시피</span>
+                            </button>
                             <button css={commonS.pillBtn(false)} onClick={() => navigate("/login")}>
-                                👤 {isLogin ? "로그아웃" : "로그인"}
+                                👤 <span className="btn-text">{isLogin ? "로그아웃" : "로그인"}</span>
                             </button>
                         </div>
                     </div>
@@ -133,16 +138,16 @@ function Recipe() {
                     {/* 4. 레시피 그리드 */}
                     <div css={recipeS.recipeGrid}>
                         {recipes.map((recipe, index) => (
-                            <div
-                                key={`${recipe.rcpId}-${index}`}
+                            <div 
+                                key={`${recipe.rcpId}-${index}`} 
                                 css={recipeS.recipeCard}
                                 onClick={() => {
-                                    setSelectedRecipe(recipe);
+                                    setSelectedRecipe(recipe); 
                                     setIsRecipeModalOpen(true);
                                 }}
-                                style={{ cursor: 'pointer' }}
+                                style={{ cursor: 'pointer' }} 
                             >
-                                <RecipeCard recipe={recipe} />
+                                <RecipeCardContent recipe={recipe} />
                             </div>
                         ))}
                         {loading && <div style={{gridColumn: '1/-1', textAlign: 'center', padding: '20px'}}>
@@ -173,6 +178,107 @@ function Recipe() {
                 )}
             </div>
         </>
+    );
+}
+
+function RecipeCardContent({ recipe }) {
+    const matchRate = Number(recipe.matchRate ?? 0);
+
+    // 7번: 매칭율별 색상 및 텍스트 조율
+    const getMatchRateStyle = (rate) => {
+        if (rate === 100) return { text: "지금 바로 도전 가능!", color: "#28a745" }; // 초록
+        if (rate >= 80) return { text: "거의 만들 수 있어요", color: "#FF9800" };    // 주황
+        if (rate >= 50) return { text: "조금만 더 있으면 돼요", color: "#FF7043" }; 
+        return { text: "재료를 구매하셔야 해요!", color: "#999999" };
+    };
+
+
+
+    const matchStyle = getMatchRateStyle(matchRate);
+
+    return (
+        <div style={{ borderRadius: '30px', overflow: 'hidden', height: '100%' }}>
+            <div className="thumb">
+                <img src={recipe.rcpImgUrl} alt={recipe.rcpName} />
+                
+                <div style={{ 
+                    position: 'absolute', 
+                    top: '15px', 
+                    left: '15px', 
+                    right: '15px', 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    zIndex: 10
+                }}>
+                    {/* 7번: 동적 색상 및 알약 모양 디자인 적용 */}
+                    <span style={{ 
+                        background: matchStyle.color, 
+                        color: 'white', 
+                        padding: '6px 16px', 
+                        borderRadius: '20px', 
+                        fontSize: '12px', 
+                        fontWeight: '800',
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
+                    }}>
+                        {matchStyle.text}{'\u00A0\u00A0'}{matchRate}%
+                    </span>
+                </div>
+            </div>
+
+            <div className="content">
+                <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px' }}>
+                    {recipe.rcpName}
+                </h3>
+                
+                <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '15px', 
+                    marginBottom: '15px' 
+                }}>
+                    <span style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '4px',
+                        color: '#FF7043', 
+                        fontSize: '15px', 
+                        fontWeight: '800' 
+                    }}>
+                        🔥 {getLevelText(recipe.level)}
+                    </span>
+
+                    <span style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '4px',
+                        color: '#FF7043', 
+                        fontSize: '15px', 
+                        fontWeight: '700' 
+                    }}>
+                        👁 {recipe.rcpViewCount?.toLocaleString() || 0}
+                    </span>
+                </div>
+
+                <div style={{ 
+                    width: '100%', 
+                    height: '1px', 
+                    background: '#E0E0E0', 
+                    margin: '15px 0' 
+                }}></div>
+
+                <div className="ingredients">
+                    <div className="label" style={{ fontSize: '11px', color: '#999', marginBottom: '8px' }}>
+                        필요한 재료
+                    </div>
+
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {recipe.ingredients?.map((ingredients, idx) => (
+                            <RecipeIngredientMark key={idx} ingredients={ingredients} />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }
 

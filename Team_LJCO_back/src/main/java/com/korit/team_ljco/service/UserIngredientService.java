@@ -1,7 +1,11 @@
 package com.korit.team_ljco.service;
 
+import com.korit.team_ljco.dto.FridgeHomeResponse;
+import com.korit.team_ljco.dto.RecipeListResponse;
 import com.korit.team_ljco.dto.UserIngredientRequest;
+import com.korit.team_ljco.dto.UserIngredientResponse;
 import com.korit.team_ljco.entity.UserIngredient;
+import com.korit.team_ljco.mapper.RecipeMapper;
 import com.korit.team_ljco.mapper.UserIngredientMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +24,22 @@ public class UserIngredientService {
     /**
      * 사용자 보유 재료 전체 조회
      */
-    public List<UserIngredient> getUserIngredients(Long userId) {
-        return userIngredientMapper.selectUserIngredients(userId);
+    public FridgeHomeResponse getUserIngredients(Long userId,int limit) {
+        List<UserIngredient> userIngredients = userIngredientMapper.selectUserIngredients(userId);
+
+        int expired15Count = userIngredientMapper.countExpiredIngredients(userId);
+        List <UserIngredientResponse> userIngredientResponseList = userIngredientMapper.getMatchedRecipes(userId, limit);
+
+        int totalCount = userIngredientResponseList.isEmpty() ? 0 : userIngredientResponseList.get(0).getTotalCount();
+
+        return FridgeHomeResponse.builder()
+                .userIngredientList(userIngredients)
+                .expiredIngredientCount(expired15Count)
+                .matchedRecipeCount(totalCount)
+                .matchedRecipeList(userIngredientResponseList)
+                .build();
+
+
     }
 
     /**
@@ -40,7 +58,6 @@ public class UserIngredientService {
      */
     @Transactional
     public UserIngredient addUserIngredient(Long userId, UserIngredientRequest request) {
-        // 중복 체크
         UserIngredient existing = userIngredientMapper.selectUserIngredientByUserAndIng(userId, request.getIngId());
         if (existing != null) {
             throw new RuntimeException("이미 등록된 재료입니다.");

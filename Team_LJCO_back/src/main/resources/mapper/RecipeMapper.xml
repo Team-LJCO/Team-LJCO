@@ -26,6 +26,7 @@
         <result property="createdAt" column="created_at"/>
     </resultMap>
 
+
     <resultMap id="RecipeListMap"
                type="com.korit.team_ljco.dto.RecipeListResponse">
         <id property="rcpId" column="rcp_id"/>

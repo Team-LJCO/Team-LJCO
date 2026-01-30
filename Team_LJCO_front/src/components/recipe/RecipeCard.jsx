@@ -14,10 +14,9 @@ const getMatchRateText = (rate) => {
 /**
  * 난이도 텍스트 반환
  */
-const getLevelText = (level) => {
+export const getLevelText = (level) => {
   if (level === 1) return "쉬움";
   if (level === 2) return "보통";
-  if (level === 3) return "중급";
   return "어려움";
 };
 
