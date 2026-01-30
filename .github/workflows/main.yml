@@ -6,7 +6,7 @@ on:
   pull_request: 
     branches: [deploy-hyeonjung,deploy-hyeokjun,deploy-minseok,deploy-Keun]
 jobs:
-  build-deploy-hyeonjung:
+  build-deploy:
     runs-on: ubuntu-22.04
     steps:
       - name: "환경변수 세팅"
@@ -75,7 +75,7 @@ jobs:
 
       - name: React Docker image build
         run: |
-          cd Team_LJCO_back
+          cd Team_LJCO_front
           echo ${{env.REACT_ENV}} | base64 --decode > .env
           docker build -t ${{env.DOCKER_USERNAME}}/react-app:latest .
 
