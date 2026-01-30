@@ -59,9 +59,9 @@ jobs:
       - name: Springboot Build
         run: |
           cd Team_LJCO_back
-          echo ${{env.APPLICATION_SECRET}} | base64 --decode > ./src/main/resources/application-secret.yml
+          echo ${{env.APPLICATION_SECRET}} | base64 --decode > ./src/main/resources/application-secret-prod.yml
           chmod 777 ./mvnw
-          ./mvnw clean package -Dtestskip
+          ./mvnw clean package -DskipTests
 
       - name: Springboot Docker image build
         run: |
@@ -76,7 +76,7 @@ jobs:
       - name: React Docker image build
         run: |
           cd Team_LJCO_front
-          echo ${{env.REACT_ENV}} | base64 --decode > .env
+          echo ${{env.REACT_ENV}} | base64 --decode > .env.production
           docker build -t ${{env.DOCKER_USERNAME}}/react-app:latest .
 
       - name: React Docker image push
