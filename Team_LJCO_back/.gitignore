@@ -50,3 +50,7 @@ Thumbs.db
 *.zip
 *.tar.gz
 *.rar
+Team_LJCO_back/src/main/resources/application-secret-dev.yml
+Team_LJCO_back/src/main/resources/application-secret-prod.yml
+Team_LJCO_back/src/main/resources/application-secret-dev.yml
+Team_LJCO_back/src/main/resources/application-secret-prod.yml
