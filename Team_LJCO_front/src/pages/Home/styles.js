@@ -32,7 +32,6 @@ export const s = {
     gap: 20px;
   `,
 
-  // 상단 헤더 영역
   headerCard: css`
     background: #FFFFFF;
     padding: 12px 30px;
@@ -41,6 +40,12 @@ export const s = {
     align-items: center;
     gap: 15px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    
+    /* 6번: 반응형 조율 */
+    @media (max-width: 768px) {
+      padding: 10px 15px;
+      gap: 10px;
+    }
   `,
 
   logo: css`
@@ -51,6 +56,13 @@ export const s = {
     align-items: center;
     gap: 10px;
     cursor: pointer;
+    flex-shrink: 0; /* 로고 크기 유지 */
+
+    /* 6번: 모바일에서 텍스트 숨기기 */
+    @media (max-width: 600px) {
+      font-size: 0; 
+      .logo-box { font-size: 18px; }
+    }
 
     .logo-box {
       background: #FF7043;
@@ -65,6 +77,54 @@ export const s = {
     }
   `,
 
+  navGroup: css`
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+
+    /* 6번: 버튼 간격 및 텍스트 조율 */
+    @media (max-width: 768px) {
+      gap: 4px;
+    }
+  `,
+
+  pillBtn: (isPrimary) => css`
+    background: ${isPrimary ? "#FF7043" : "#FCE9DD"};
+    color: ${isPrimary ? "#FFFFFF" : "#C04122"};
+    border: none;
+    padding: 10px 22px;
+    border-radius: 30px;
+    font-weight: 800;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+
+    /* 💡 태블릿 반응형 (768px 이하) */
+    @media (max-width: 768px) {
+      padding: 10px 15px;
+      font-size: 16px;
+      gap: 0;
+    }
+
+    /* 💡 모바일 반응형 (600px 이하) - 이모지만 남기기 */
+    @media (max-width: 600px) {
+      width: 45px;
+      height: 45px;
+      padding: 0;
+      border-radius: 50%;
+      
+      /* 텍스트(span)만 숨기고 이모지는 유지 */
+      .btn-text {
+        display: none;
+      }
+    }
+  `,
+
   recipeSearch: css`
     flex: 1;
     background: #FFFFFF;
@@ -73,11 +133,6 @@ export const s = {
     padding: 10px 25px;
     font-size: 15px;
     outline: none;
-  `,
-
-  navGroup: css`
-    display: flex;
-    gap: 8px;
   `,
 
   // 대시보드 카드 그리드
@@ -129,19 +184,7 @@ export const s = {
     }
   `,
 
-  pillBtn: (isPrimary) => css`
-    background: ${isPrimary ? "#FF7043" : "#FCE9DD"};
-    color: ${isPrimary ? "#FFFFFF" : "#C04122"};
-    border: none;
-    padding: 10px 22px;
-    border-radius: 30px;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    cursor: pointer;
-  `,
+  
 
   // 식재료 리스트 섹션
   listSection: css`

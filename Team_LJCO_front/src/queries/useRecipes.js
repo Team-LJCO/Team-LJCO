@@ -13,7 +13,7 @@ import { queryKeys } from './queryKeys';
 export const useRecipesQuery = (options = {}) => {
   return useQuery({
     queryKey: queryKeys.recipes.list(),
-    queryFn: getAllRecipes,
+    queryFn: () => getAllRecipes(),
     ...options,
   });
 };

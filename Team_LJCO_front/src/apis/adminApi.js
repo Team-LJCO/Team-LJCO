@@ -63,7 +63,9 @@ export const getAllCategories = async () => {
 
 // ============ 레시피 관리 ============
 export const getAllRecipes = async () => {
-  const response = await axiosInstance.get('/recipes');
+  const response = await axiosInstance.get('/recipes', {
+    params: { size: 1000 },
+  });
   return response.data;
 };
 

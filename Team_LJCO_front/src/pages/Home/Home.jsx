@@ -4,17 +4,21 @@ import { useNavigate } from "react-router-dom";
 import { css, Global } from "@emotion/react";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { fontImport, s } from "./styles";
+
 import AddIngredientModal from "../../components/ingredient/modal/AddIngredientModal";
 import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
 import FridgeChar from "../../assets/fridge-closed.png";
 
-import { useIngredientsQuery } from "../../react-query/queries/ingredients.queries";
+import { useFridgeHomeQuery } from "../../queries/fridgeHome";
 import { useDeleteIngredientMutation } from "../../react-query/mutations/ingredients.mutations";
-import { QUERY_KEYS } from "../../react-query/queries/queryKeys";
-import { getChoseong, getDaysInfo } from "../../utils";
+import { queryKeys } from "../../queries/queryKeys";
+import { fontImport, s } from "./styles";
+import { getDaysInfo } from "../../utils/date";
+import { getChoseong } from "../../utils/korean";
+
 
 function Home() {
+  
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -24,6 +28,7 @@ function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [recipeSearchTerm, setRecipeSearchTerm] = useState("");
   const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
+  //const [matchedRecipe, setMatchedRecipe] = useState(false);
 
   // 로그인 및 어드민 토큰 체크
   useEffect(() => {
@@ -33,17 +38,31 @@ function Home() {
     setIsAdmin(!!adminToken);
   }, []);
 
-  const { data: ingredients = [], isLoading: isIngredientsLoading, isError: isIngredientsError, error: ingredientsError } = useIngredientsQuery(isLogin);
+  const { 
+    data: fridgeHome, 
+    isLoading: isIngredientsLoading,
+    isError: isIngredientsError,
+    error: ingredientsError
+    } =  useFridgeHomeQuery(isLogin, 30);
+
   const deleteIngredient = useDeleteIngredientMutation();
 
-  // 인증 에러 처리
+  const ingredients = fridgeHome?.userIngredientList ?? [];
+  const expiredIngredientCount = fridgeHome?.expiredIngredientCount ?? 0;
+  const matchedRecipeCount = fridgeHome?.matchedRecipeCount ?? 0;
+  const matchedRecipeList = fridgeHome?.matchedRecipeList ?? [];
+
+  useEffect(() => {
+  console.log("fridgeHome:", fridgeHome);
+}, [fridgeHome]);
+
   useEffect(() => {
     const status = ingredientsError?.response?.status;
     if (isIngredientsError && status === 401) {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("userId");
       setIsLogin(false);
-      queryClient.removeQueries({ queryKey: QUERY_KEYS.INGREDIENTS });
+      queryClient.removeQueries({ queryKey: queryKeys.ingredients.all });
     }
   }, [isIngredientsError, ingredientsError, queryClient]);
 
@@ -67,7 +86,7 @@ function Home() {
       if (window.confirm("로그아웃 하시겠습니까?")) {
         localStorage.removeItem("accessToken");
         setIsLogin(false);
-        queryClient.removeQueries({ queryKey: QUERY_KEYS.INGREDIENTS });
+        queryClient.removeQueries({ queryKey: queryKeys.ingredients.all });
         navigate("/");
       }
     } else { navigate("/login"); }
@@ -86,31 +105,36 @@ function Home() {
         </button>
 
         <div css={s.container}>
+
+          {/* 헤더 카드 */}
           <div css={s.headerCard}>
             <div css={s.logo} onClick={() => navigate("/home")}>
               <div className="logo-box">🧊</div> 냉장고 파먹기
             </div>
-            <div style={{ position: "relative", flex: 1, display: "flex", alignItems: "center", gap: "10px" }}>
-              <input 
-                css={s.recipeSearch} 
-                placeholder="오늘은 뭐 해먹지?" 
-                value={recipeSearchTerm} 
-                onChange={(e) => setRecipeSearchTerm(e.target.value)} 
+            <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <input
+                css={s.recipeSearch}
+                style={{ flex: 1 }}
+                placeholder="오늘은 뭐 해먹지?"
+                value={recipeSearchTerm}
+                onChange={(e) => setRecipeSearchTerm(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && recipeSearchTerm.trim()) {
-                    navigate(`/recipe?keyword=${encodeURIComponent(recipeSearchTerm)}`);
+                  if (e.key === 'Enter' && recipeSearchTerm.trim()) {
+                    setIsRecipeModalOpen(true);
                   }
-                }} 
+                }}
               />
-              <button 
-                onClick={() => recipeSearchTerm.trim() && navigate(`/recipe?keyword=${encodeURIComponent(recipeSearchTerm)}`)} 
-                css={searchBtnStyle}
-              >🔍</button>
             </div>
             <div css={s.navGroup}>
-              <button css={s.pillBtn(true)} onClick={() => navigate("/home")}>🏠 식재료</button>
-              <button css={s.pillBtn(false)} onClick={() => navigate("/recipe")}>📖 레시피</button>
-              <button css={s.pillBtn(false)} onClick={handleAuthClick}>👤 {isLogin ? "로그아웃" : "로그인"}</button>
+              <button css={s.pillBtn(true)} onClick={() => navigate("/home")}>
+                🏠 <span className="btn-text">식재료</span>
+              </button>
+              <button css={s.pillBtn(false)} onClick={() => navigate("/recipe")}>
+                📖 <span className="btn-text">레시피</span>
+              </button>
+              <button css={s.pillBtn(false)} onClick={handleAuthClick}>
+                👤 <span className="btn-text">{isLogin ? "로그아웃" : "로그인"}</span>
+              </button>
             </div>
           </div>
 
@@ -121,11 +145,11 @@ function Home() {
                <div className="icon-wrap">📦</div>
              </div>
              <div css={s.summaryCard}>
-               <div className="info"><div className="label" style={{ color: "#FFB347" }}>● 소비 필요</div><div className="count">{isLogin ? ingredients.filter(i => Math.floor((new Date() - new Date(i.createdAt)) / 86400000) >= 7).length : 0}</div></div>
+               <div className="info"><div className="label" style={{ color: "#FFB347" }}>● 소비 임박</div><div className="count">{isLogin ? expiredIngredientCount : 0 }</div></div>
                <div className="icon-wrap">⚠️</div>
              </div>
              <div css={s.summaryCard}>
-               <div className="info"><div className="label" style={{ color: "#CD5C5C" }}>● 폐기 필요</div><div className="count">{isLogin ? ingredients.filter(i => Math.floor((new Date() - new Date(i.createdAt)) / 86400000) >= 30).length : 0}</div></div>
+               <div className="info"><div className="label" style={{ color: "#CD5C5C" }}>● 요리 가능</div><div className="count">{isLogin ? matchedRecipeCount : 0}</div></div>
                <div className="icon-wrap">❌</div>
              </div>
           </div>
@@ -163,7 +187,7 @@ function Home() {
         </div>
         {isRecipeModalOpen && <RecipeSearchModal keyword={recipeSearchTerm} onClose={() => setIsRecipeModalOpen(false)} />}
         {isLogin && <button css={s.fab} onClick={() => setIsModalOpen(true)}><div className="circle">+</div> 재료 추가하기</button>}
-        {isModalOpen && <AddIngredientModal onClose={() => { setIsModalOpen(false); queryClient.invalidateQueries({ queryKey: QUERY_KEYS.INGREDIENTS }); }} />}
+        {isModalOpen && <AddIngredientModal onClose={() => { setIsModalOpen(false); queryClient.invalidateQueries({ queryKey: queryKeys.ingredients.all }); }} />}
       </div>
     </>
   );
