@@ -19,8 +19,17 @@ spring:
 
 domain:
   name:
+<<<<<<< Updated upstream
     http: http://localhost:80
     https: https://localhost:443
+=======
+    http: http://kakakao.store
+    https: http://kakakao.store
+
+app:
+  cors:
+    allowed-origins: http://kakakao.store
+>>>>>>> Stashed changes
 
 ---
 
