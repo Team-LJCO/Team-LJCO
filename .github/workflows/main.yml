@@ -6,7 +6,7 @@ on:
   pull_request: 
     branches: [deploy-hyeonjung,deploy-hyeokjun,deploy-minseok,deploy-Keun]
 jobs:
-  build-deploy-hyeonjung:
+  build-deploy:
     runs-on: ubuntu-22.04
     steps:
       - name: "환경변수 세팅"
