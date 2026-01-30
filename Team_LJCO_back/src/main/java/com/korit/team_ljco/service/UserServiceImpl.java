@@ -35,12 +35,6 @@ public class UserServiceImpl implements UserService {
     }
 
     public String adminLogin(String username, String password) {
-        System.out.println("=== Admin Login Debug ===");
-        System.out.println("입력 username: [" + username + "]");
-        System.out.println("입력 password: [" + password + "]");
-        System.out.println("설정 username: [" + adminUsername + "]");
-        System.out.println("설정 password: [" + adminPassword + "]");
-
         if (!adminUsername.equals(username) || !adminPassword.equals(password)) {
             throw new RuntimeException("Invalid admin credentials");
         }

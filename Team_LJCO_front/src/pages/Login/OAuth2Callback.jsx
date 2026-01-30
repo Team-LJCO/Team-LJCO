@@ -10,27 +10,14 @@ function OAuth2Callback() {
         const token = params.get("accessToken");
         const userId = params.get("userId");
 
-        console.log("추출된 토큰 확인:", token);
-        console.log("userId 확인 :", userId);
-        console.log("entries:", [...params.entries()]);
-
         if (token) {
-
             localStorage.setItem("accessToken", token);
-            console.log("로컬스토리지 저장 완료!");
             if(userId) {
-                localStorage.setItem("userId",userId);
-                  console.log("저장 후:", {
-                    accessToken: localStorage.getItem("accessToken"),
-                    userId: localStorage.getItem("userId"),
-  });
+                localStorage.setItem("userId", userId);
             }
-
-
-            window.location.replace("/home"); 
+            window.location.replace("/home");
         } else {
-            console.error("주소창에 토큰이 없습니다.");
-            navigate("/"); // 실패 시 로그인 페이지나 메인으로
+            navigate("/");
         }
     }, [navigate]);
 

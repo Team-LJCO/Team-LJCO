@@ -36,10 +36,10 @@ function Recipe() {
         const fetchRecipes = async () => {
             setLoading(true);
             const token = localStorage.getItem("accessToken");
-            const currentUserId = localStorage.getItem("userId") || 32;
+            const currentUserId = localStorage.getItem("userId");
 
             try {
-                const url = `http://localhost:8080/api/recipes`;
+                const url = `${import.meta.env.VITE_API_BASE_URL}/api/recipes`;
                 const res = await axios.get(url, {
                     params: { 
                         page: urlPage, 

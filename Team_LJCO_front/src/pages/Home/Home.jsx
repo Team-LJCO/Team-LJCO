@@ -53,10 +53,6 @@ function Home() {
   const matchedRecipeList = fridgeHome?.matchedRecipeList ?? [];
 
   useEffect(() => {
-  console.log("fridgeHome:", fridgeHome);
-}, [fridgeHome]);
-
-  useEffect(() => {
     const status = ingredientsError?.response?.status;
     if (isIngredientsError && status === 401) {
       localStorage.removeItem("accessToken");
@@ -172,10 +168,10 @@ function Home() {
                       <button className="delete-target" css={s.deleteBtn} onClick={(e) => handleDelete(item.userIngId, e)}>×</button>
                       <span className="badge" style={{ backgroundColor: dateInfo.color }}>{dateInfo.text}</span>
                       <img 
-                        src={`http://localhost:8080/images/${item.ingredient?.ingImgUrl}`} 
+                        src={`${import.meta.env.VITE_API_BASE_URL}/images/${item.ingredient?.ingImgUrl}`} 
                         alt="" 
                         style={{ opacity: dateInfo.opacity }} 
-                        onError={(e) => { e.target.src = "http://localhost:8080/images/pork_thin.png"; }} 
+                        onError={(e) => { e.target.src = import.meta.env.VITE_API_BASE_URL + "/images/pork_thin.png"; }} 
                       />
                       <div className="name">{item.ingredient?.ingName}</div>
                     </div>
