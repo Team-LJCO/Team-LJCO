@@ -2,8 +2,12 @@ spring:
   profiles:
     active: dev
     group:
-      dev: dev, common, secret
-      keun: keun-server, common, secret
+      dev: dev, common, secret-dev
+      prod: prod-server, common, secret-prod
+      keun: prod-server, common, secret-prod
+      hyeokjun: prod-server, common, secret-prod
+      minseok: prod-server, common, secret-prod
+      hyeonjung: prod-server, common, secret-prod
 
 ---
 spring:
@@ -11,16 +15,29 @@ spring:
     activate:
       on-profile: dev
 
+domain:
+  name:
+    http: http://localhost:8080
+    https: https://localhost:8080
+
+app:
+  cors:
+    allowed-origins: http://localhost:5173,http://localhost:3000
+
 ---
 spring:
   config:
     activate:
-      on-profile: keun-server
+      on-profile: prod-server
 
 domain:
   name:
-    http: http://localhost:80
-    https: https://localhost:443
+    http: http://oxoxox.store
+    https: http://oxoxox.store
+
+app:
+  cors:
+    allowed-origins: http://oxoxox.store
 
 ---
 
@@ -42,7 +59,7 @@ spring:
 
 file:
   upload-dir: ./uploads/images
-  base-url: http://localhost:8080
+  base-url: ${domain.name.http}
 
 server:
   port: 8080
@@ -71,8 +88,8 @@ mybatis:
 
 logging:
   level:
-    com.korit.team_ljco: DEBUG
-    org.springframework.security: DEBUG
-    org.mybatis: DEBUG
+    com.korit.team_ljco: ${LOG_LEVEL:DEBUG}
+    org.springframework.security: ${LOG_LEVEL:DEBUG}
+    org.mybatis: ${LOG_LEVEL:DEBUG}
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

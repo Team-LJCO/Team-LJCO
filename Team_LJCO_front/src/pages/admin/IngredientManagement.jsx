@@ -333,7 +333,7 @@ const IngredientManagement = () => {
       render: (value) => (
         <div css={S.ingImgCell}>
           {value ? (
-            <img src={`http://localhost:8080/images/${value}`} alt="재료 이미지" css={S.ingImg} />
+            <img src={`${import.meta.env.VITE_API_BASE_URL}/images/${value}`} alt="재료 이미지" css={S.ingImg} />
           ) : (
             <span css={S.noImage}>-</span>
           )}

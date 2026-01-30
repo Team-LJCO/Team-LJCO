@@ -34,6 +34,7 @@ build/
 
 ### Application Secret ###
 application-secret.yml
+application-secret-*.yml
 
 ### OS ###
 .DS_Store

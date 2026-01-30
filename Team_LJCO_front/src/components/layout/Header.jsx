@@ -7,7 +7,7 @@ const Header = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    console.log('검색어:', searchQuery);
+    // 검색 처리
   };
 
   return (

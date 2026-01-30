@@ -4,7 +4,7 @@ import axios from 'axios';
 // 1. 일반 사용자용 인스턴스 
 // ==========================================
 export const api = axios.create({
-  baseURL: "http://localhost:8080", //
+  baseURL: import.meta.env.VITE_API_BASE_URL, //
   timeout: 50000,
 });
 
@@ -18,8 +18,8 @@ api.interceptors.request.use((config) => {
 // 2. 어드민 전용 인스턴스 
 // ==========================================
 export const axiosInstance = axios.create({
-  baseURL: 'http://localhost:8080/api', //
-  timeout: 1000000, //
+  baseURL: import.meta.env.VITE_API_BASE_URL + "/api", //
+  timeout: 30000, //
 });
 
 axiosInstance.interceptors.request.use((config) => {
