@@ -3,6 +3,7 @@ package com.korit.team_ljco.service;
 import com.korit.team_ljco.entity.RecipeStep;
 import com.korit.team_ljco.entity.User;
 import com.korit.team_ljco.jwt.JwtTokenProvider;
+import com.korit.team_ljco.mapper.UserIngredientMapper;
 import com.korit.team_ljco.mapper.UserMapper;
 import com.korit.team_ljco.security.oauth2.OAuth2UserInfo;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.Map;
 public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
+    private final UserIngredientMapper userIngredientMapper;
     private final JwtTokenProvider jwtTokenProvider;
 
     @Value("${admin.username}")
@@ -26,8 +28,9 @@ public class UserServiceImpl implements UserService {
     private String adminPassword;
 
     // 생성자
-    public UserServiceImpl(UserMapper userMapper, JwtTokenProvider jwtTokenProvider) {
+    public UserServiceImpl(UserMapper userMapper, UserIngredientMapper userIngredientMapper, JwtTokenProvider jwtTokenProvider) {
         this.userMapper = userMapper;
+        this.userIngredientMapper = userIngredientMapper;
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
@@ -112,6 +115,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUser(Long userId) {
+        // 사용자의 재료 데이터 먼저 삭제 (외래 키 제약조건)
+        userIngredientMapper.deleteUserIngredientsByUser(userId);
         userMapper.deleteUser(userId);
     }
 

@@ -24,6 +24,7 @@ public interface RecipeMapper {
                                         @Param("keyword") String keyword,
                                         @Param("sort") String sort);
 
+
     // 레시피 조회
     Recipe selectRecipeById(Long rcpId);
 

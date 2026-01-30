@@ -8,6 +8,7 @@ import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
 import { useNavigate, useLocation } from "react-router-dom"; 
 import Pagination from "../../components/common/Pagination";
 import RecipeIngredientMark from "./RacipeIngredientMark";
+import { getLevelText } from "../../components/recipe/RecipeCard";
 
 function Recipe() {
     const navigate = useNavigate();
@@ -103,10 +104,14 @@ function Recipe() {
                         {/* 기존 정렬 버튼 있던 곳 -> 삭제됨 */}
                         
                         <div css={commonS.navGroup}>
-                            <button css={commonS.pillBtn(false)} onClick={() => navigate("/home")}>🏠 식재료</button>
-                            <button css={commonS.pillBtn(true)} onClick={() => navigate("/recipe")}>📖 레시피</button>
+                            <button css={commonS.pillBtn(false)} onClick={() => navigate("/home")}> {/* 💡 false로 변경 */}
+                                🏠 <span className="btn-text">식재료</span>
+                            </button>
+                            <button css={commonS.pillBtn(true)} onClick={() => navigate("/recipe")}> {/* 💡 true로 변경 */}
+                                📖 <span className="btn-text">레시피</span>
+                            </button>
                             <button css={commonS.pillBtn(false)} onClick={() => navigate("/login")}>
-                                👤 {isLogin ? "로그아웃" : "로그인"}
+                                👤 <span className="btn-text">{isLogin ? "로그아웃" : "로그인"}</span>
                             </button>
                         </div>
                     </div>
@@ -179,27 +184,22 @@ function Recipe() {
 function RecipeCardContent({ recipe }) {
     const matchRate = Number(recipe.matchRate ?? 0);
 
-    const getMatchRateText = (rate) => {
-        if(rate <= 0) return '재료를 구매하셔야 해요!';
-        if(rate < 50) return '조금만 더 있으면 돼요';
-        if(rate < 70) return '거의 만들 수 있어요';
-        return '지금 바로 도전 가능!';
+    // 7번: 매칭율별 색상 및 텍스트 조율
+    const getMatchRateStyle = (rate) => {
+        if (rate === 100) return { text: "지금 바로 도전 가능!", color: "#28a745" }; // 초록
+        if (rate >= 80) return { text: "거의 만들 수 있어요", color: "#FF9800" };    // 주황
+        if (rate >= 50) return { text: "조금만 더 있으면 돼요", color: "#FF7043" }; 
+        return { text: "재료를 구매하셔야 해요!", color: "#999999" };
     };
 
-    const getLevelText = (level) => {
-        if (level === 1) return '쉬움';
-        if (level === 2) return '보통';
-        if (level === 3) return '어려움';
-        return '미정';
-    };
+
+
+    const matchStyle = getMatchRateStyle(matchRate);
 
     return (
         <div style={{ borderRadius: '30px', overflow: 'hidden', height: '100%' }}>
             <div className="thumb">
-                <img 
-                    src={recipe.rcpImgUrl} 
-                    alt={recipe.rcpName} 
-                />
+                <img src={recipe.rcpImgUrl} alt={recipe.rcpName} />
                 
                 <div style={{ 
                     position: 'absolute', 
@@ -210,16 +210,17 @@ function RecipeCardContent({ recipe }) {
                     justifyContent: 'space-between', 
                     zIndex: 10
                 }}>
+                    {/* 7번: 동적 색상 및 알약 모양 디자인 적용 */}
                     <span style={{ 
-                        background: '#FF7043', 
+                        background: matchStyle.color, 
                         color: 'white', 
-                        padding: '6px 14px', 
-                        borderRadius: '12px', 
+                        padding: '6px 16px', 
+                        borderRadius: '20px', 
                         fontSize: '12px', 
                         fontWeight: '800',
-                        boxShadow: '0 4px 10px rgba(0,0,0,0.1)'
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
                     }}>
-                        {getMatchRateText(matchRate)}{'\u00A0\u00A0'}{matchRate}%
+                        {matchStyle.text}{'\u00A0\u00A0'}{matchRate}%
                     </span>
                 </div>
             </div>
