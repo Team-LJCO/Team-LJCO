@@ -20,6 +20,9 @@ public class SwaggerConfig {
     @Value("${server.port:8080}")
     private String serverPort;
 
+    @Value("${domain.name.http:http://localhost:8080}")
+    private String domainHttp;
+
     @Bean
     public OpenAPI openAPI() {
         SecurityScheme securityScheme = new SecurityScheme()
@@ -35,8 +38,7 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(apiInfo())
                 .servers(List.of(
-                        new Server().url("http://localhost:" + serverPort).description("로컬 서버"),
-                        new Server().url("https://api.fridgemate.com").description("운영 서버")
+                        new Server().url(domainHttp).description("현재 서버")
                 ))
                 .components(new Components().addSecuritySchemes("Bearer Authentication", securityScheme))
                 .addSecurityItem(securityRequirement);
