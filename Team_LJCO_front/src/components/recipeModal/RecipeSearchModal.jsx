@@ -29,7 +29,7 @@ function RecipeSearchModal({ recipe, onClose }) {
             if (!recipe?.rcpId) return;
             setLoading(true);
             try {
-                const stepRes = await axios.get(`http://localhost:8080/api/recipes/${recipe.rcpId}/steps`);
+                const stepRes = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/recipes/${recipe.rcpId}/steps`);
                 setSteps(stepRes.data);
             } catch (err) {
                 console.error("데이터 로드 실패", err);

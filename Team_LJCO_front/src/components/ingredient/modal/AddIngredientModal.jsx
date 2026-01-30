@@ -12,7 +12,7 @@ function AddIngredientModal({ onClose }) {
     useEffect(() => {
         if (!keyword.trim()) { setDbList([]); return; }
         const timer = setTimeout(() => {
-            axios.get(`http://localhost:8080/api/ingredients/search?keyword=${keyword}`)
+            axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/ingredients/search?keyword=${keyword}`)
                 .then(res => setDbList(res.data))
                 .catch(err => console.error(err));
         }, 300);
@@ -52,9 +52,9 @@ function AddIngredientModal({ onClose }) {
                     {dbList.map(item => (
                         <div key={item.ingId} css={s.itemCard(false)} onClick={() => handleAdd(item.ingId)}>
                             <img 
-                                src={`http://localhost:8080/images/${item.ingImgUrl}`} 
+                                src={`${import.meta.env.VITE_API_BASE_URL}/images/${item.ingImgUrl}`} 
                                 alt={item.ingName} 
-                                onError={(e) => e.target.src = "http://localhost:8080/images/dicoahdma.png"}
+                                onError={(e) => e.target.src = import.meta.env.VITE_API_BASE_URL + "/images/dicoahdma.png"}
                             />
                             <div className="ing-name">{item.ingName}</div>
                         </div>
