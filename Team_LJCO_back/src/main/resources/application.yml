@@ -9,7 +9,7 @@ spring:
       minseok: prod-server, common, secret-prod
       hyeonjung: prod-server, common, secret-prod
 
----
+--- 
 spring:
   config:
     activate:
