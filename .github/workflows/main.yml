@@ -90,21 +90,3 @@ jobs:
       - name: React Docker image push
         run: |
           docker push ${{env.DOCKER_USERNAME}}/react-app:latest
-
-#=============================CIDC==========================================
-
-      - name: Deploy to GCP VM
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ env.GCP_VM_HOST }}
-          username: ${{ env.GCP_VM_USERNAME }}
-          key: ${{ env.GCP_VM_SSHKEY }}
-          script: |
-            echo "${{ env.DOCKER_PASSWORD }}" | docker login -u ${{ env.DOCKER_USERNAME }} --password-stdin
-            docker pull ${{ env.DOCKER_USERNAME }}/springboot-app:latest
-            docker pull ${{ env.DOCKER_USERNAME }}/react-app:latest
-            docker stop back-server front-server || true
-            docker rm back-server front-server || true
-            docker run -d --name back-server -p 8080:8080 -e SPRING_PROFILES_ACTIVE=prod ${{ env.DOCKER_USERNAME }}/springboot-app:latest
-            docker run -d --name front-server -p 80:80 -p 443:443 ${{ env.DOCKER_USERNAME }}/react-app:latest
-            docker image prune -f
