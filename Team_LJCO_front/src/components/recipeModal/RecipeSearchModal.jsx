@@ -93,7 +93,7 @@ function RecipeSearchModal({ recipe, onClose }) {
         
         // ✅ 보유 중("G")일 때만 초록색을 적용하고, 아니면 회색/검정색으로 표시합니다.
         // 만약 D-Day에 따른 다른 색상(Y, O, R 등)도 있다면 추가 대응이 가능합니다.
-        const bgColor = isMatched ? "#34C759" : "#333333"; 
+        const bgColor = isMatched ? "#b9f6ca" : "#333333"; 
         const textColor = isMatched ? "#000000" : "#999999";
 
         return (
