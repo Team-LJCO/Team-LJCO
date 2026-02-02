@@ -1,6 +1,5 @@
 /** @jsxImportSource @emotion/react */
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { s } from "./styles";
 import { api } from "../../../configs/axiosConfig";
 
@@ -12,7 +11,7 @@ function AddIngredientModal({ onClose }) {
     useEffect(() => {
         if (!keyword.trim()) { setDbList([]); return; }
         const timer = setTimeout(() => {
-            axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/ingredients/search?keyword=${keyword}`)
+            api.get(`/api/ingredients/search`, { params: { keyword } })
                 .then(res => setDbList(res.data))
                 .catch(err => console.error(err));
         }, 300);

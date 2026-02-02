@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "../../configs/axiosConfig";
 import { s } from "./styles";
 import { getColorByDay } from "../../utils/colorUtils";
 
@@ -29,7 +29,7 @@ function RecipeSearchModal({ recipe, onClose }) {
             if (!recipe?.rcpId) return;
             setLoading(true);
             try {
-                const stepRes = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/recipes/${recipe.rcpId}/steps`);
+                const stepRes = await api.get(`/api/recipes/${recipe.rcpId}/steps`);
                 setSteps(stepRes.data);
             } catch (err) {
                 console.error("데이터 로드 실패", err);

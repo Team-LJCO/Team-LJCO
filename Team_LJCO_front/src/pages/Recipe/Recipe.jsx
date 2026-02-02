@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "../../configs/axiosConfig";
 import { Global } from "@emotion/react"; 
 import { fontImport, s as commonS } from "../Home/styles"; 
 import { s as recipeS } from "./styles"; 
@@ -36,19 +36,16 @@ function Recipe() {
         
         const fetchRecipes = async () => {
             setLoading(true);
-            const token = localStorage.getItem("accessToken");
             const currentUserId = localStorage.getItem("userId");
 
             try {
-                const url = `${import.meta.env.VITE_API_BASE_URL}/api/recipes`;
-                const res = await axios.get(url, {
-                    params: { 
-                        page: urlPage, 
-                        userId: currentUserId, 
+                const res = await api.get("/api/recipes", {
+                    params: {
+                        page: urlPage,
+                        userId: currentUserId,
                         keyword: urlKeyword || undefined,
                         sort: urlSort,
                     },
-                    headers: { Authorization: `Bearer ${token}` }
                 });
                 const data = res.data;
                 setRecipes(Array.isArray(data.recipes) ? data.recipes : []);
