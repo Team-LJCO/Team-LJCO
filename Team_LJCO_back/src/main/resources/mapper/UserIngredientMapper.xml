@@ -83,15 +83,41 @@
 
 
     <!-- 사용자 재료 전체 조회 -->
-    <select id="selectUserIngredients" parameterType="long" resultMap="UserIngredientResultMap">
-        SELECT 
-            ui.user_ing_id, ui.user_id, ui.ing_id, ui.user_ing_amt,
-            ui.created_at, ui.updated_at,
-            i.ing_name, i.ing_cat_id, i.ing_img_url
+    <select id="selectUserIngredients" resultMap="UserIngredientResultMap">
+        SELECT
+        ui.user_ing_id, ui.user_id, ui.ing_id, ui.user_ing_amt,
+        ui.created_at, ui.updated_at,
+        i.ing_name, i.ing_cat_id, i.ing_img_url
         FROM user_ingredients ui
         INNER JOIN ingredients i ON ui.ing_id = i.ing_id
         WHERE ui.user_id = #{userId}
-        ORDER BY ui.created_at DESC
+        ORDER BY
+        -- 1순위: 요청하신 그룹별 우선순위
+        CASE i.ing_cat_id
+        WHEN 1  THEN 1  -- 소고기
+        WHEN 13 THEN 2  -- 돼지고기
+        WHEN 9  THEN 3  -- 닭고기
+        -- 그룹 4: 해산물, 육류, 달걀/유제품 (동일 가중치 4 부여)
+        WHEN 12 THEN 4
+        WHEN 15 THEN 4
+        WHEN 6  THEN 4
+        -- 그룹 5: 채소, 과일, 버섯 (동일 가중치 5 부여)
+        WHEN 2  THEN 5
+        WHEN 8  THEN 5
+        WHEN 3  THEN 5
+        WHEN 5  THEN 6  -- 가공식품류
+        -- 그룹 7: 건어물, 쌀, 곡류, 콩/견과류 (동일 가중치 7 부여)
+        WHEN 10 THEN 7
+        WHEN 7  THEN 7
+        WHEN 16 THEN 7
+        WHEN 11 THEN 7
+        -- 그룹 8: 밀가루/전분, 양념/소스류
+        WHEN 14 THEN 8
+        WHEN 17 THEN 8
+        ELSE 99
+        END ASC,
+        -- 2순위: 같은 그룹 내에서는 등록일이 오래된 순(D+ 높은 순)
+        ui.created_at ASC
     </select>
 
 
