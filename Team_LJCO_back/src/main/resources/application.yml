@@ -32,12 +32,12 @@ spring:
 
 domain:
   name:
-    http: http://oxoxox.store
-    https: http://oxoxox.store
+    http: http://xoxoxo.store
+    https: http://xoxoxo.store
 
 app:
   cors:
-    allowed-origins: http://oxoxox.store
+    allowed-origins: http://xoxoxo.store
 
 ---
 

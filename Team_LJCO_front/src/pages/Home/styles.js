@@ -405,5 +405,19 @@ export const s = {
     }
     
   `,
+    summaryCardClickable: css`
+    cursor: pointer;
+    transition: 0.15s ease;
+
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+    }
+
+    &:active {
+      transform: translateY(-1px) scale(0.99);
+    }
+  `,
+
   
 };
