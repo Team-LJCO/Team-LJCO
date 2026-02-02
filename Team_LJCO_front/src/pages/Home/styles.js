@@ -10,8 +10,8 @@ const refrigeratorShake = keyframes`
   100% { transform: rotate(0deg); }
 `;
 
-export const fontImport = css`
-  @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap');
+export const    fontImport = css`
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 `;
 
 
