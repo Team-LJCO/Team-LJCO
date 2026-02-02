@@ -14,7 +14,9 @@ jobs:
          if [ "${{ github.ref }}" == "refs/heads/deploy-hyeonjung" ]; then
             echo "GCP_VM_HOST=${{ secrets.GCP_VM_HOST_HYEONJUNG }}" >> $GITHUB_ENV
             echo "GCP_VM_USERNAME=${{ secrets.GCP_VM_USERNAME_HYEONJUNG }}" >> $GITHUB_ENV
-            echo "GCP_VM_SSHKEY=${{ secrets.GCP_VM_SSHKEY_HYEONJUNG }}" >> $GITHUB_ENV
+            echo "GCP_VM_SSHKEY<<EOF" >> $GITHUB_ENV
+            echo "${{ secrets.GCP_VM_SSHKEY_HYEONJUNG }}" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
             echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME_HYEONJUNG }}" >> $GITHUB_ENV
             echo "DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD_HYEONJUNG }}" >> $GITHUB_ENV
             echo "APPLICATION_SECRET=${{ secrets.APPLICATION_SECRET_HYEONJUNG }}" >> $GITHUB_ENV
@@ -22,7 +24,9 @@ jobs:
           elif [ "${{ github.ref }}" == "refs/heads/deploy-hyeokjun" ]; then
             echo "GCP_VM_HOST=${{ secrets.GCP_VM_HOST_HYEOKJUN }}" >> $GITHUB_ENV
             echo "GCP_VM_USERNAME=${{ secrets.GCP_VM_USERNAME_HYEOKJUN }}" >> $GITHUB_ENV
-            echo "GCP_VM_SSHKEY=${{ secrets.GCP_VM_SSHKEY_HYEOKJUN }}" >> $GITHUB_ENV
+            echo "GCP_VM_SSHKEY<<EOF" >> $GITHUB_ENV
+            echo "${{ secrets.GCP_VM_SSHKEY_HYEOKJUN }}" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
             echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME_HYEOKJUN }}" >> $GITHUB_ENV
             echo "DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD_HYEOKJUN }}" >> $GITHUB_ENV
             echo "APPLICATION_SECRET=${{ secrets.APPLICATION_SECRET_HYEOKJUN }}" >> $GITHUB_ENV
@@ -30,7 +34,9 @@ jobs:
           elif [ "${{ github.ref }}" == "refs/heads/deploy-minseok" ]; then
             echo "GCP_VM_HOST=${{ secrets.GCP_VM_HOST_MINSEOK }}" >> $GITHUB_ENV
             echo "GCP_VM_USERNAME=${{ secrets.GCP_VM_USERNAME_MINSEOK }}" >> $GITHUB_ENV
-            echo "GCP_VM_SSHKEY=${{ secrets.GCP_VM_SSHKEY_MINSEOK }}" >> $GITHUB_ENV
+            echo "GCP_VM_SSHKEY<<EOF" >> $GITHUB_ENV
+            echo "${{ secrets.GCP_VM_SSHKEY_MINSEOK }}" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
             echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME_MINSEOK }}" >> $GITHUB_ENV
             echo "DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD_MINSEOK }}" >> $GITHUB_ENV
             echo "APPLICATION_SECRET=${{ secrets.APPLICATION_SECRET_MINSEOK }}" >> $GITHUB_ENV
@@ -38,7 +44,9 @@ jobs:
           elif [ "${{ github.ref }}" == "refs/heads/deploy-Keun" ]; then
             echo "GCP_VM_HOST=${{ secrets.GCP_VM_HOST_KEUN }}" >> $GITHUB_ENV
             echo "GCP_VM_USERNAME=${{ secrets.GCP_VM_USERNAME_KEUN }}" >> $GITHUB_ENV
-            echo "GCP_VM_SSHKEY=${{ secrets.GCP_VM_SSHKEY_KEUN }}" >> $GITHUB_ENV
+            echo "GCP_VM_SSHKEY<<EOF" >> $GITHUB_ENV
+            echo "${{ secrets.GCP_VM_SSHKEY_KEUN }}" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
             echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME_KEUN }}" >> $GITHUB_ENV
             echo "DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD_KEUN }}" >> $GITHUB_ENV
             echo "APPLICATION_SECRET=${{ secrets.APPLICATION_SECRET_KEUN }}" >> $GITHUB_ENV
