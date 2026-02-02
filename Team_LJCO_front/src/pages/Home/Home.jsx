@@ -8,6 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import AddIngredientModal from "../../components/ingredient/modal/AddIngredientModal";
 import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
 import FridgeChar from "../../assets/fridge-closed.png";
+import CookableRecipesModal from "../../components/common/Modal/CookableRecipesModal";
 
 import { useFridgeHomeQuery } from "../../queries/fridgeHome";
 import { useDeleteIngredientMutation } from "../../react-query/mutations/ingredients.mutations";
@@ -24,11 +25,12 @@ function Home() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false); // 💡 어드민 로그인 상태 추가
+  const [isAdmin, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [recipeSearchTerm, setRecipeSearchTerm] = useState("");
   const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
-  //const [matchedRecipe, setMatchedRecipe] = useState(false);
+
+  const [isCookableModalOpen, setIsCookableModalOpen] = useState(false);
 
   // 로그인 및 어드민 토큰 체크
   useEffect(() => {
@@ -88,6 +90,20 @@ function Home() {
     } else { navigate("/login"); }
   };
 
+  const handleCookableClick = () => {
+    if (!isLogin) {
+      alert("로그인 후 이용해주세요");
+      return;
+    }
+    if(matchedRecipeCount === 0) {
+      alert("현재 요리 가능한 레시피가 없어요!");
+      return;
+    }
+    setIsCookableModalOpen(true);
+
+
+  }
+
   return (
     <>
       <Global styles={fontImport} />
@@ -145,9 +161,12 @@ function Home() {
                <div className="info"><div className="label" style={{ color: "#FFB347" }}>● 소비 임박</div><div className="count">{isLogin ? expiredIngredientCount : 0 }</div></div>
                <div className="icon-wrap">⚠️</div>
              </div>
-             <div css={s.summaryCard}>
+              <div
+              css={[s.summaryCard, s.summaryCardClickable]}
+              onClick={handleCookableClick}
+            >
                <div className="info"><div className="label" style={{ color: "#CD5C5C" }}>● 요리 가능</div><div className="count">{isLogin ? matchedRecipeCount : 0}</div></div>
-               <div className="icon-wrap">❌</div>
+               <div className="icon-wrap">🍲</div>
              </div>
           </div>
 
@@ -182,6 +201,18 @@ function Home() {
             )}
           </div>
         </div>
+        {isCookableModalOpen && (
+          <CookableRecipesModal
+            recipes={matchedRecipeList}
+            onClose={() => setIsCookableModalOpen(false)}
+            onSelectRecipe={(recipe) => {
+              setIsCookableModalOpen(false);
+              navigate(`/recipe?keyword=${encodeURIComponent(recipe.rcpName)}`);
+            }}
+          />
+        )}
+
+
         {isRecipeModalOpen && <RecipeSearchModal keyword={recipeSearchTerm} onClose={() => setIsRecipeModalOpen(false)} />}
         {isLogin && <button css={s.fab} onClick={() => setIsModalOpen(true)}><div className="circle">+</div> 재료 추가하기</button>}
         {isModalOpen && <AddIngredientModal onClose={() => { setIsModalOpen(false); queryClient.invalidateQueries({ queryKey: queryKeys.ingredients.all }); }} />}
