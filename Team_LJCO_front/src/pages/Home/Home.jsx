@@ -116,7 +116,8 @@ function Home() {
                 onChange={(e) => setRecipeSearchTerm(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && recipeSearchTerm.trim()) {
-                    setIsRecipeModalOpen(true);
+                    // ✅ 모달 대신 레시피 페이지로 검색어를 쿼리 스트링에 담아 보냅니다.
+                    navigate(`/recipe?keyword=${encodeURIComponent(recipeSearchTerm.trim())}`);
                   }
                 }}
               />
