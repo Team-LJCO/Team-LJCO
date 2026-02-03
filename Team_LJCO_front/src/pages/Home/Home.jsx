@@ -1,12 +1,14 @@
 /** @jsxImportSource @emotion/react */
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { css, Global } from "@emotion/react";
+import { Global } from "@emotion/react";
 import { useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
 import AddIngredientModal from "../../components/ingredient/modal/AddIngredientModal";
 import FridgeChar from "../../assets/fridge-closed.png";
 import CookableRecipesModal from "../../components/common/Modal/CookableRecipesModal";
+import RecipeSearchModal from "../../components/recipe/RecipeSearchModal";
 
 import { useFridgeHomeQuery } from "../../queries/fridgeHome";
 import { useDeleteIngredientMutation } from "../../react-query/mutations/ingredients.mutations";
@@ -25,6 +27,7 @@ function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [recipeSearchTerm, setRecipeSearchTerm] = useState("");
   const [isCookableModalOpen, setIsCookableModalOpen] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -33,13 +36,7 @@ function Home() {
     setIsAdmin(!!adminToken);
   }, []);
 
-  const {
-    data: fridgeHome,
-    isLoading: isIngredientsLoading,
-    isError: isIngredientsError,
-    error: ingredientsError
-  } = useFridgeHomeQuery(isLogin, 30);
-
+  const { data: fridgeHome, isLoading: isIngredientsLoading } = useFridgeHomeQuery(isLogin, 30);
   const deleteIngredient = useDeleteIngredientMutation();
 
   const ingredients = fridgeHome?.userIngredientList ?? [];
@@ -47,20 +44,30 @@ function Home() {
   const matchedRecipeCount = fridgeHome?.matchedRecipeCount ?? 0;
   const matchedRecipeList = fridgeHome?.matchedRecipeList ?? [];
 
-  useEffect(() => {
-    const status = ingredientsError?.response?.status;
-    if (isIngredientsError && status === 401) {
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("userId");
-      setIsLogin(false);
-      queryClient.removeQueries({ queryKey: queryKeys.ingredients.all });
-    }
-  }, [isIngredientsError, ingredientsError, queryClient]);
+  /* --- 상세 모달용 서버 통신 핸들러 --- */
+  const handleFinishRecipe = async (usedItems) => {
+    const token = localStorage.getItem("accessToken");
+    await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/user/ingredients/names`, {
+      headers: { "Authorization": `Bearer ${token}` },
+      data: usedItems
+    });
+    queryClient.invalidateQueries({ queryKey: queryKeys.ingredients.all });
+  };
 
-  const handleDelete = (userIngId, e) => {
-    e.stopPropagation();
-    if (!window.confirm("이 재료를 냉장고에서 꺼낼까요?")) return;
-    deleteIngredient.mutate(userIngId, { onError: () => alert("삭제 실패") });
+  const handleAddMissingIngredients = async (missingItems) => {
+    const token = localStorage.getItem("accessToken");
+    await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/ingredients/names`, missingItems, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    queryClient.invalidateQueries({ queryKey: queryKeys.ingredients.all });
+  };
+
+  const handleAuthClick = () => {
+    if (isLogin && window.confirm("로그아웃 하시겠습니까?")) {
+      localStorage.removeItem("accessToken");
+      setIsLogin(false);
+      navigate("/");
+    } else if (!isLogin) navigate("/login");
   };
 
   const filteredIngredients = useMemo(() => {
@@ -72,136 +79,83 @@ function Home() {
     });
   }, [searchTerm, ingredients]);
 
-  const handleAuthClick = () => {
-    if (isLogin) {
-      if (window.confirm("로그아웃 하시겠습니까?")) {
-        localStorage.removeItem("accessToken");
-        setIsLogin(false);
-        queryClient.removeQueries({ queryKey: queryKeys.ingredients.all });
-        navigate("/");
-      }
-    } else { navigate("/login"); }
-  };
-
-  const handleCookableClick = () => {
-    if (!isLogin) {
-      alert("로그인 후 이용해주세요");
-      return;
-    }
-    if (matchedRecipeCount === 0) {
-      alert("현재 요리 가능한 레시피가 없어요!");
-      return;
-    }
-    setIsCookableModalOpen(true);
-  }
-
   return (
     <>
       <Global styles={fontImport} />
       <div css={s.wrapper}>
-        <button
-          onClick={() => navigate(isAdmin ? "/admin" : "/admin/login")}
-          style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 10 }}
-        >
-          {isAdmin ? "📊 관리자 대시보드" : "⚙️ 관리자 로그인"}
-        </button>
+        <button css={s.adminFab} onClick={() => navigate(isAdmin ? "/admin" : "/admin/login")}>⚙️</button>
 
         <div css={s.container}>
-          <div css={s.headerCard}>
-            <div css={s.logo} onClick={() => navigate("/home")}>
-              <div className="logo-box">🧊</div> 냉장고 파먹기
-            </div>
-            <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <header css={s.headerCard}>
+            <div css={s.logo} onClick={() => navigate("/home")}><div className="logo-box">🧊</div> 냉장고 파먹기</div>
+            <div css={s.searchContainer}>
               <input
                 css={s.recipeSearch}
-                style={{ flex: 1 }}
                 placeholder="오늘은 뭐 해먹지?"
                 value={recipeSearchTerm}
                 onChange={(e) => setRecipeSearchTerm(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && recipeSearchTerm.trim()) {
-                    navigate(`/recipe?keyword=${encodeURIComponent(recipeSearchTerm.trim())}`);
-                  }
-                }}
+                onKeyDown={(e) => e.key === 'Enter' && navigate(`/recipe?keyword=${recipeSearchTerm}`)}
               />
             </div>
-            <div css={s.navGroup}>
+            <nav css={s.navGroup}>
               <button css={s.pillBtn(true)} onClick={() => navigate("/home")}>🏠 <span className="btn-text">식재료</span></button>
               <button css={s.pillBtn(false)} onClick={() => navigate("/recipe")}>📖 <span className="btn-text">레시피</span></button>
               <button css={s.pillBtn(false)} onClick={handleAuthClick}>👤 <span className="btn-text">{isLogin ? "로그아웃" : "로그인"}</span></button>
+            </nav>
+          </header>
+
+          <section css={s.dashboardGrid}>
+            <div css={s.summaryCard}><div className="info"><div className="label" style={{ color: "#E9967A" }}>● 전체</div><div className="count">{isLogin ? ingredients.length : 0}</div></div><div className="icon-wrap">📦</div></div>
+            <div css={s.summaryCard}><div className="info"><div className="label" style={{ color: "#FFB347" }}>● 소비 임박</div><div className="count">{isLogin ? expiredIngredientCount : 0}</div></div><div className="icon-wrap">⚠️</div></div>
+            <div css={[s.summaryCard, s.summaryCardClickable]} onClick={() => matchedRecipeCount > 0 ? setIsCookableModalOpen(true) : alert("요리 가능한 레시피가 없어요!")}>
+              <div className="info"><div className="label" style={{ color: "#CD5C5C" }}>● 요리 가능</div><div className="count">{isLogin ? matchedRecipeCount : 0}</div></div><div className="icon-wrap">🍲</div>
             </div>
-          </div>
+          </section>
 
-          <div css={s.dashboardGrid}>
-            <div css={s.summaryCard}>
-              <div className="info"><div className="label" style={{ color: "#E9967A" }}>● 전체</div><div className="count">{isLogin ? ingredients.length : 0}</div></div>
-              <div className="icon-wrap">📦</div>
+          <section css={s.listSection}>
+            <div css={s.grid}>
+              {filteredIngredients.map((item) => {
+                const dateInfo = getDaysInfo(item.createdAt || item.created_at);
+                return (
+                  <div key={item.userIngId} css={s.foodCard} style={{ backgroundColor: dateInfo.isTrash ? "#F5F5F5" : "#FFFFFF" }}>
+                    <button className="delete-target" css={s.deleteBtn} onClick={(e) => deleteIngredient.mutate(item.userIngId)}>×</button>
+                    <span className="badge" style={{ backgroundColor: dateInfo.color, color: dateInfo.color === "#FFFFFF" ? "#10be1f" : "#FFFFFF" }}>{dateInfo.text}</span>
+                    <img src={`${import.meta.env.VITE_API_BASE_URL}/images/${item.ingredient?.ingImgUrl}`} alt="" style={{ opacity: dateInfo.opacity }} />
+                    <div className="name">{item.ingredient?.ingName}</div>
+                  </div>
+                );
+              })}
             </div>
-            <div css={s.summaryCard}>
-              <div className="info"><div className="label" style={{ color: "#FFB347" }}>● 소비 임박</div><div className="count">{isLogin ? expiredIngredientCount : 0}</div></div>
-              <div className="icon-wrap">⚠️</div>
-            </div>
-            <div css={[s.summaryCard, s.summaryCardClickable]} onClick={handleCookableClick}>
-              <div className="info"><div className="label" style={{ color: "#CD5C5C" }}>● 요리 가능</div><div className="count">{isLogin ? matchedRecipeCount : 0}</div></div>
-              <div className="icon-wrap">🍲</div>
-            </div>
-          </div>
-
-          <div css={s.listSection}>
-            <div css={s.sectionTitle}><div className="square"></div>식재료 목록</div>
-            {isLogin && ingredients.length > 0 && (
-              <div css={s.searchBarWrapper}><span css={s.searchIcon}>🔍</span><input css={s.innerSearchInput} placeholder="목록 내 검색..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} /></div>
-            )}
-            {isLogin && isIngredientsLoading ? (
-              <div css={s.emptyState}><div className="bubble">불러오는 중...</div><img src={FridgeChar} alt="" className="refrigerator-img" /></div>
-            ) : !isLogin || ingredients.length === 0 ? (
-              <div css={s.emptyState}><div className="bubble">{isLogin ? "냉장고가 텅 비어있어요!" : "로그인 후 관리해 보세요!"}</div><img src={FridgeChar} alt="" className="refrigerator-img" /></div>
-            ) : (
-              <div css={s.grid}>
-                {filteredIngredients.map((item) => {
-                  // 💡 해결책: 서버 응답 필드명(camelCase vs snake_case) 모두 대응
-                  const dateValue = item.createdAt || item.created_at;
-                  const dateInfo = getDaysInfo(dateValue);
-
-                  return (
-                    <div key={item.userIngId} css={s.foodCard} style={{ backgroundColor: dateInfo.isTrash ? "#F5F5F5" : "#FFFFFF" }}>
-                      <button className="delete-target" css={s.deleteBtn} onClick={(e) => handleDelete(item.userIngId, e)}>×</button>
-
-                      {/* 💡 오늘등록(흰색) 배경일 때 글자가 보이도록 스타일 적용 */}
-                      <span className="badge" style={{ 
-                        backgroundColor: dateInfo.color,
-                        color: dateInfo.color === "#FFFFFF" ? "#10be1f" : "#FFFFFF",
-                        border: dateInfo.color === "#FFFFFF" ? "1px solid #FF704333" : "none"
-                      }}>
-                        {dateInfo.text}
-                      </span>
-
-                      <img
-                        src={`${import.meta.env.VITE_API_BASE_URL}/images/${item.ingredient?.ingImgUrl}`}
-                        alt=""
-                        style={{ opacity: dateInfo.opacity }}
-                        onError={(e) => { e.target.src = import.meta.env.VITE_API_BASE_URL + "/images/pork_thin.png"; }}
-                      />
-                      <div className="name">{item.ingredient?.ingName}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          </section>
         </div>
+
+        {/* 요리 가능 레시피 목록 모달 */}
         {isCookableModalOpen && (
           <CookableRecipesModal
             recipes={matchedRecipeList}
             onClose={() => setIsCookableModalOpen(false)}
             onSelectRecipe={(recipe) => {
               setIsCookableModalOpen(false);
-              navigate(`/recipe?keyword=${encodeURIComponent(recipe.rcpName)}`);
+              setSelectedRecipe(recipe); // 상세 모달 오픈
             }}
           />
         )}
+
+        {/* 레시피 상세 조리법 모달 */}
+        {selectedRecipe && (
+          <RecipeSearchModal 
+            recipe={selectedRecipe} 
+            onFinish={handleFinishRecipe}
+            onAddMissing={handleAddMissingIngredients}
+            onClose={() => {
+              setSelectedRecipe(null); 
+              setIsCookableModalOpen(true); // 뒤로가기 시 리스트 재오픈
+            }} 
+          />
+        )}
+
         {isLogin && <button css={s.fab} onClick={() => setIsModalOpen(true)}><div className="circle">+</div> 재료 추가하기</button>}
-        {isModalOpen && <AddIngredientModal onClose={() => { setIsModalOpen(false); queryClient.invalidateQueries({ queryKey: queryKeys.ingredients.all }); }} />}
+        {isModalOpen && <AddIngredientModal onClose={() => setIsModalOpen(false)} />}
       </div>
     </>
   );

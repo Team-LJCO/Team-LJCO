@@ -2,25 +2,23 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { s } from "./styles";
+import FinishRecipe from "./FinishRecipe";
 
-function RecipeSearchModal({ recipe, onClose }) {
+function RecipeSearchModal({ recipe, onFinish, onAddMissing, onClose }) {
     const [steps, setSteps] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // 매치율 관련 로직
-    const matchRate = Number(recipe?.matchRate ?? 0);
+    // ✅ [확인용] 데이터가 어떻게 들어오는지 콘솔에 찍어보세요.
+    // F12 개발자 도구 콘솔창에서 rcpIngredients나 ingredients가 있는지 확인!
+    console.log("전달된 레시피 데이터:", recipe);
 
-    const getMatchRateText = (rate) => {
-        if (rate <= 0) return '재료를 구매하셔야 해요!';
-        if (rate < 50) return '조금만 더 있으면 돼요';
-        if (rate < 70) return '거의 만들 수 있어요';
-        return '지금 바로 도전 가능!';
-    };
-
-    const getMatchIcon = (rate) => {
-        if (rate < 70) return '🛒';
-        return '🍳';
-    };
+    useEffect(() => {
+        if (typeof document !== "undefined" && document.body) {
+            const originalStyle = window.getComputedStyle(document.body).overflow;
+            document.body.style.overflow = "hidden";
+            return () => { document.body.style.overflow = originalStyle || "unset"; };
+        }
+    }, []);
 
     useEffect(() => {
         const fetchRecipeData = async () => {
@@ -28,12 +26,8 @@ function RecipeSearchModal({ recipe, onClose }) {
             setLoading(true);
             try {
                 const stepRes = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/recipes/${recipe.rcpId}/steps`);
-                setSteps(stepRes.data);
-            } catch (err) {
-                console.error("데이터 로드 실패", err);
-            } finally {
-                setLoading(false);
-            }
+                setSteps(stepRes.data || []);
+            } catch (err) { console.error("데이터 로드 실패", err); } finally { setLoading(false); }
         };
         fetchRecipeData();
     }, [recipe?.rcpId]);
@@ -41,112 +35,38 @@ function RecipeSearchModal({ recipe, onClose }) {
     return (
         <div css={s.detailOverlay} onClick={onClose}>
             <div css={s.detailContent} onClick={(e) => e.stopPropagation()}>
-                <button className="back-btn" onClick={onClose}>← 검색 결과로 돌아가기</button>
-
-                {/* 1. Header: 이름 및 정보 */}
-                <div style={{ marginBottom: '20px' }}>
-                    <h2 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '12px' }}>{recipe?.rcpName}</h2>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', gap: '15px', color: '#ff7043', fontWeight: '700', fontSize: '15px' }}>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                🔥 {recipe?.level === 1 ? '쉬움' : recipe?.level === 2 ? '보통' : '어려움'}
-                            </span>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                👁️ {recipe?.rcpViewCount?.toLocaleString()}
-                            </span>
+                <div className="recipe-body">
+                    <button className="back-btn" onClick={onClose}>← 뒤로가기</button>
+                    <h2 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '20px' }}>{recipe?.rcpName}</h2>
+                    <img src={recipe?.rcpImgUrl} alt="main" style={{ width: '100%', height: '400px', objectFit: 'cover', borderRadius: '25px', marginBottom: '35px' }} />
+                    <h3 style={{ fontSize: '24px', fontWeight: '900' }}>🍳 조리 순서</h3>
+                    {loading ? <p>로딩 중...</p> : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '40px', marginTop: '20px' }}>
+                            {steps.map((step) => (
+                                <div key={step.stepId}>
+                                    <div style={{ fontWeight: '900', color: '#ff7043' }}>STEP {step.stepNo}</div>
+                                    {step.stepImgUrl && <img src={step.stepImgUrl} style={{ width: '100%', borderRadius: '20px', margin: '15px 0' }} alt="step" />}
+                                    <p>{step.stepDesc}</p>
+                                </div>
+                            ))}
                         </div>
-
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            color: '#FF7043',
-                            fontWeight: '800',
-                            fontSize: '15px'
-                        }}>
-                            <span>{getMatchIcon(matchRate)}</span>
-                            <span>{getMatchRateText(matchRate)} ({matchRate}%)</span>
-                        </div>
-                    </div>
+                    )}
                 </div>
-
-                {/* 2. 이미지 & 재료 섹션 */}
-                <div style={{ background: '#f8f8f8', borderRadius: '30px', padding: '25px', marginBottom: '35px' }}>
-                    <div style={{ width: '100%', height: '300px', borderRadius: '20px', overflow: 'hidden', marginBottom: '25px' }}>
-                        <img src={recipe?.rcpImgUrl} alt="main" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-
-                    <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '12px', color: '#555' }}>필요한 재료</h3>
-
-                    {/* ✅ 재료 버튼 그리드 시작 */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                        {recipe.ingredients?.map((ing, idx) => {
-                            // "N"이 아니면 보유 중인 것으로 간주
-                            const isOwned = ing.matchedColor !== "N";
-                            
-
-                            return (
-                                <span
-                                    key={idx}
-                                    style={{
-                                        // 1. 배경 & 글자색: 보유 중일 땐 화이트, 아닐 땐 연회색
-                                        backgroundColor: isOwned ? "#ffffff" : "#E2E2E2",
-                                        color: isOwned ? "#000000" : "#777777",
-
-                                        // 2. 그림자: 입체적인 단단한 그림자
-                                        boxShadow: "0 3px 1px rgba(0, 0, 0, 0.3)",
-
-                                        // 3. 테두리: 얇고 선명한 선
-                                        border: "1px solid",
-                                        borderColor: isOwned ? "#666" : "#BBB",
-                                        
-
-                                        // 4. 형태 스타일
-                                        padding: "5px 12px",
-                                        borderRadius: "20px",
-                                        fontSize: "15px",
-                                        fontWeight: "600",
-                                        display: "inline-flex",
-                                        alignItems: "center",
-                                        gap: "1px",
-                                        margin: "1px",
-                                        cursor: "default",
-                                        transition: "all 0.2s ease"
-                                    }}
-                                >
-                                    {/* ✅ 보유 중일 때만 체크 표시 아이콘 */}
-                                    {isOwned && (
-                                        <span style={{ fontSize: "12px",color: "#34c765" }}>
-                                            ✔
-                                        </span>
-                                    )}
-                                    {ing.ingName} {ing.rcpIngAmt && `(${ing.rcpIngAmt})`}
-                                </span>
-                            );
-                        })}
-                    </div>
+                
+                <div className="recipe-sidebar">
+                    {!loading && (
+                        <FinishRecipe
+                            /* 💡 [가장 중요] 서버 응답 필드명 매핑 
+                               서버에서 'ingredients'로 줄 수도 있고 'rcpIngredients'로 줄 수도 있습니다.
+                               둘 다 확인해서 데이터를 넘겨주도록 수정했습니다.
+                            */
+                            ingredients={recipe?.ingredients || recipe?.rcpIngredients || []} 
+                            onFinish={onFinish}
+                            onAddMissing={onAddMissing}
+                            onClose={onClose}
+                        />
+                    )}
                 </div>
-
-                {/* 3. 조리 순서 섹션 */}
-                <h3 style={{ fontSize: '22px', fontWeight: '900', marginBottom: '25px' }}>🍳 조리 순서</h3>
-                {loading ? (
-                    <div style={{ textAlign: 'center', padding: '30px', color: '#888' }}>레시피 정보를 불러오는 중입니다...</div>
-                ) : (
-                    <div className="steps-list" style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-                        {steps.map((step) => (
-                            <div key={step.stepId} className="step-item">
-                                <div style={{ fontSize: '14px', fontWeight: '900', color: '#ff7043', marginBottom: '10px' }}>STEP {step.stepNo}</div>
-                                {step.stepImgUrl && (
-                                    <div style={{ borderRadius: '20px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.08)', marginBottom: '15px' }}>
-                                        <img src={step.stepImgUrl} alt="step" style={{ width: '100%', display: 'block' }} />
-                                    </div>
-                                )}
-                                <p style={{ fontSize: '16px', lineHeight: '1.7', color: '#333', wordBreak: 'keep-all' }}>{step.stepDesc}</p>
-                            </div>
-                        ))}
-                    </div>
-                )}
             </div>
         </div>
     );
