@@ -17,6 +17,9 @@ public interface UserIngredientMapper {
                                                    @Param("limit") int limit);
     int countExpiredIngredients (@Param("userId") Long userId);
 
+    // UserIngredientMapper.java 에 추가
+    void deleteMatchingIngredients(@Param("userId") Long userId, @Param("rcpId") Long rcpId);
+
     List<UserIngredient> selectUserIngredients(Long userId);
     
     UserIngredient selectUserIngredientById(Long userIngId);

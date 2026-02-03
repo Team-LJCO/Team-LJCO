@@ -53,6 +53,13 @@ public class UserIngredientService {
         return userIngredient;
     }
 
+    @Transactional
+    public void useRecipeIngredients(Long userId, Long rcpId) {
+        log.info("요리 완료로 인한 재료 차감 - 유저: {}, 레시피: {}", userId, rcpId);
+        userIngredientMapper.deleteMatchingIngredients(userId, rcpId);
+    }
+
+
     /**
      * 사용자 재료 등록
      */
