@@ -122,6 +122,17 @@
         VALUES (#{userId}, #{ingId}, #{userIngAmt})
     </insert>
 
+    <!--재료 목록받아서 추가-->
+    <insert id="insertIngredientsByNames">
+        INSERT INTO user_ingredients (user_id, ing_id, user_ing_amt, created_at)
+        SELECT #{userId}, ing_id, 1.00, CURRENT_TIMESTAMP
+        FROM ingredients
+        WHERE ing_name IN
+        <foreach collection="ingredientNames" item="name" open="(" separator="," close=")">
+            #{name}
+        </foreach>
+    </insert>
+
     <update id="updateUserIngredient" parameterType="com.korit.team_ljco.entity.UserIngredient">
         UPDATE user_ingredients
         SET user_ing_amt = #{userIngAmt}, updated_at = CURRENT_TIMESTAMP
@@ -134,6 +145,23 @@
 
     <delete id="deleteUserIngredientsByUser" parameterType="long">
         DELETE FROM user_ingredients WHERE user_id = #{userId}
+    </delete>
+
+
+
+    <!--재료 목록받아서 삭제-->
+    <delete id="deleteIngredientsByNames">
+
+        DELETE FROM user_ingredients
+        WHERE user_id = #{userId}
+        AND ing_id IN (
+        SELECT ing_id
+        FROM ingredients
+        WHERE ing_name IN
+        <foreach collection="ingredientNames" item="name" open="(" separator="," close=")">
+            #{name}
+        </foreach>
+        )
     </delete>
 
     <select id="countUserIngredients" parameterType="long" resultType="int">

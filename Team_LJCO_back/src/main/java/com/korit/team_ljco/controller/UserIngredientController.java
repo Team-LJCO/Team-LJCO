@@ -13,13 +13,30 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/user/ingredients")
+@RequestMapping("/api/user/ingredients") // 기본 경로 유지
 @RequiredArgsConstructor
 public class UserIngredientController {
 
     private final UserIngredientService userIngredientService;
 
+    /**
+     * ✅ [신규 추가] 요리 완료 시 선택한 재료들 이름 기반으로 다중 삭제
+     * 기존 기능들과 경로가 겹치지 않도록 "/names"를 추가했습니다.
+     */
+    @DeleteMapping("/names")
+    public ResponseEntity<Void> deleteIngredientsByNames(
+            @AuthenticationPrincipal PrincipalUser principalUser,
+            @RequestBody List<String> ingredientNames) {
 
+        // MyBatis Mapper의 deleteIngredientsByNames를 호출하도록 서비스 연동
+        userIngredientService.deleteIngredientsByNames(principalUser.getUserId(), ingredientNames);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * 내 냉장고 전체 재료 조회
+     */
     @GetMapping
     public ResponseEntity<FridgeHomeResponse> getUserIngredients(
             @AuthenticationPrincipal PrincipalUser principalUser,
@@ -29,7 +46,7 @@ public class UserIngredientController {
     }
 
     /**
-     * 사용자 재료 ID로 조회
+     * 사용자 재료 ID로 상세 조회
      */
     @GetMapping("/{userIngId}")
     public ResponseEntity<UserIngredient> getUserIngredientById(@PathVariable Long userIngId) {
@@ -50,7 +67,20 @@ public class UserIngredientController {
     }
 
     /**
-     * 사용자 재료 수정
+     * ✅ [신규] 부족한 재료 다중 등록 (이름 기반)
+     */
+    @PostMapping("/names")
+    public ResponseEntity<Void> addIngredientsByNames(
+            @AuthenticationPrincipal PrincipalUser principalUser,
+            @RequestBody List<String> ingredientNames) {
+
+        userIngredientService.addIngredientsByNames(principalUser.getUserId(), ingredientNames);
+
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 사용자 재료 정보 수정
      */
     @PutMapping("/{userIngId}")
     public ResponseEntity<UserIngredient> updateUserIngredient(
@@ -61,7 +91,7 @@ public class UserIngredientController {
     }
 
     /**
-     * 사용자 재료 삭제
+     * 단일 재료 삭제 (기존 기능)
      */
     @DeleteMapping("/{userIngId}")
     public ResponseEntity<Void> deleteUserIngredient(@PathVariable Long userIngId) {
@@ -70,7 +100,7 @@ public class UserIngredientController {
     }
 
     /**
-     * 사용자의 모든 재료 삭제
+     * 사용자의 모든 재료 비우기 (기존 기능)
      */
     @DeleteMapping
     public ResponseEntity<Void> deleteAllUserIngredients(
@@ -80,7 +110,7 @@ public class UserIngredientController {
     }
 
     /**
-     * 사용자 재료 개수
+     * 사용자 냉장고 재료 총 개수
      */
     @GetMapping("/count")
     public ResponseEntity<Integer> getUserIngredientCount(
