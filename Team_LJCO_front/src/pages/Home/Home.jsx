@@ -17,6 +17,23 @@ import { fontImport, s } from "./styles";
 import { getDaysInfo } from "../../utils/date";
 import { getChoseong } from "../../utils/korean";
 
+const Icons = {
+  Logo: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 2h14a2 2 0 0 1 2 2v18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M3 10h18"/><path d="M7 6v2"/><path d="M7 14v4"/></svg>
+  ),
+  Home: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+  ),
+  Recipe: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+  ),
+  User: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+  ),
+  Plus: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+  )
+};
 
 function Home() {
   
@@ -121,7 +138,10 @@ function Home() {
           {/* 헤더 카드 */}
           <div css={s.headerCard}>
             <div css={s.logo} onClick={() => navigate("/home")}>
-              <div className="logo-box">🧊</div> 냉장고 파먹기
+             <div className="logo-box">
+                <Icons.Logo /> {/* 🧊 대신 아이콘 컴포넌트 삽입 */}
+              </div> 
+              냉장고 파먹기
             </div>
             <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
               <input
@@ -140,13 +160,13 @@ function Home() {
             </div>
             <div css={s.navGroup}>
               <button css={s.pillBtn(true)} onClick={() => navigate("/home")}>
-                🏠 <span className="btn-text">식재료</span>
+                <Icons.Home /> <span className="btn-text">식재료</span>
               </button>
               <button css={s.pillBtn(false)} onClick={() => navigate("/recipe")}>
-                📖 <span className="btn-text">레시피</span>
+                <Icons.Recipe /> <span className="btn-text">레시피</span>
               </button>
               <button css={s.pillBtn(false)} onClick={handleAuthClick}>
-                👤 <span className="btn-text">{isLogin ? "로그아웃" : "로그인"}</span>
+                <Icons.User /> <span className="btn-text">{isLogin ? "로그아웃" : "로그인"}</span>
               </button>
             </div>
           </div>
@@ -224,7 +244,14 @@ function Home() {
 
 
         {isRecipeModalOpen && <RecipeSearchModal keyword={recipeSearchTerm} onClose={() => setIsRecipeModalOpen(false)} />}
-        {isLogin && <button css={s.fab} onClick={() => setIsModalOpen(true)}><div className="circle">+</div> 재료 추가하기</button>}
+          {isLogin && (
+      <button css={s.fab} onClick={() => setIsModalOpen(true)}>
+        <div className="circle">
+          <Icons.Plus /> {/* ✅ 기존 '+' 대신 SVG 아이콘 적용 */}
+        </div> 
+        재료 추가하기
+      </button>
+    )}
         {isModalOpen && <AddIngredientModal onClose={() => { setIsModalOpen(false); queryClient.invalidateQueries({ queryKey: queryKeys.ingredients.all }); }} />}
       </div>
     </>

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { api } from "../../configs/axiosConfig";
 import { Global } from "@emotion/react"; 
-import { fontImport, s as commonS } from "../Home/styles"; 
+import { fontImport, s } from "../Home/styles";
 import { s as recipeS } from "./styles"; 
 import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
 import { useNavigate, useLocation } from "react-router-dom"; 
@@ -10,10 +10,48 @@ import Pagination from "../../components/common/Pagination";
 import RecipeIngredientMark from "./RacipeIngredientMark";
 import { getLevelText } from "../../components/recipe/RecipeCard";
 import RecipeCardContent from "../../components/recipe/RecipeCardContent";
+import { useQueryClient } from "@tanstack/react-query";
+
+
+const Icons = {
+    Logo: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 2h14a2 2 0 0 1 2 2v18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M3 10h18"/><path d="M7 6v2"/><path d="M7 14v4"/></svg>
+  ),
+  Home: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+  ),
+  Recipe: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+  ),
+  User: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+  )
+};
 
 function Recipe() {
     const navigate = useNavigate();
     const location = useLocation();
+
+    const queryClient = useQueryClient();
+
+    const handleAuthClick = () => {
+    const isLogin = !!localStorage.getItem("accessToken");
+    if (isLogin) {
+        if (window.confirm("로그아웃 하시겠습니까?")) {
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("userId");
+            
+            // 수정: clear() 대신 removeQueries() 사용 혹은 일단 주석 처리
+            // queryClient.removeQueries(); 
+            
+            navigate("/");
+            window.location.reload();
+        }
+    } else {
+        navigate("/login");
+    }
+};
+
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [sort, setSort] = useState("VIEW_DESC");
@@ -81,36 +119,38 @@ function Recipe() {
     return (
         <>
             <Global styles={fontImport} /> 
-            <div css={commonS.wrapper}>
-                <div css={commonS.container}>
-                    {/* 1. 헤더 카드 (검색창, 로고, 메뉴) */}
-                    <div css={commonS.headerCard}>
-                        <div css={commonS.logo} onClick={() => navigate("/home")}>
-                            <div className="logo-box">🧊</div> 냉장고 파먹기
+            <div css={s.wrapper}> {/* commonS를 s로 수정 */}
+                <div css={s.container}> {/* commonS를 s로 수정 */}
+                    <div css={s.headerCard}> {/* commonS를 s로 수정 */}
+                        <div css={s.logo} onClick={() => navigate("/home")}>
+                            <div className="logo-box">
+                                <Icons.Logo /> {/* ✅ 🧊 대신 새 아이콘 적용 */}
+                            </div> 
+                            냉장고 파먹기
                         </div>
                         <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <input 
-                                css={commonS.recipeSearch} 
+                                css={s.recipeSearch} 
                                 style={{ flex: 1 }}
                                 placeholder="오늘은 뭐 해먹지?" 
                                 value={recipeSearchTerm}
                                 onChange={(e) => setRecipeSearchTerm(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleRecipeSearch()}
-                            />
+                            /> {/* <--- 여기에 /> 태그를 확실히 닫아주세요 */}
                         </div>
                         
                         {/* 기존 정렬 버튼 있던 곳 -> 삭제됨 */}
                         
-                        <div css={commonS.navGroup}>
-                            <button css={commonS.pillBtn(false)} onClick={() => navigate("/home")}> {/* 💡 false로 변경 */}
-                                🏠 <span className="btn-text">식재료</span>
-                            </button>
-                            <button css={commonS.pillBtn(true)} onClick={() => navigate("/recipe")}> {/* 💡 true로 변경 */}
-                                📖 <span className="btn-text">레시피</span>
-                            </button>
-                            <button css={commonS.pillBtn(false)} onClick={() => navigate("/login")}>
-                                👤 <span className="btn-text">{isLogin ? "로그아웃" : "로그인"}</span>
-                            </button>
+                        <div css={s.navGroup}>
+                        <button css={s.pillBtn(false)} onClick={() => navigate("/home")}>
+                            <Icons.Home /> <span className="btn-text">식재료</span>
+                        </button>
+                        <button css={s.pillBtn(true)} onClick={() => navigate("/recipe")}>
+                            <Icons.Recipe /> <span className="btn-text">레시피</span>
+                        </button>
+                        <button css={s.pillBtn(false)} onClick={handleAuthClick}>
+                            <Icons.User /> <span className="btn-text">{isLogin ? "로그아웃" : "로그인"}</span>
+                        </button>
                         </div>
                     </div>
 

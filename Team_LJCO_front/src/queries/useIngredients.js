@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+// import axios from 'axios';
+import { api } from '../configs/axiosConfig';
 import {
   getAllIngredients,
   searchIngredients,
@@ -15,11 +16,8 @@ export const useUseRecipeIngredientsMutation = () => {
 
   return useMutation({
     mutationFn: ({ rcpId }) => 
-        axios.post(
-            `${import.meta.env.VITE_API_BASE_URL}/api/user/ingredients/use-recipe/${rcpId}`,
-            {}, // POST 요청의 body (현재는 필요 없으므로 빈 객체)
-            { withCredentials: true } // 👈 이 설정이 누락되어 401 에러가 발생합니다!
-        ),
+        // api.post를 사용하여 인터셉터가 자동으로 토큰을 실어주게 함
+        api.post(`/api/user/ingredients/use-recipe/${rcpId}`),
     
     onSuccess: () => {
       // 데이터 동기화를 위해 관련 쿼리 무효화
