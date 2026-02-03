@@ -20,6 +20,7 @@ jobs:
             echo "DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD_HYEONJUNG }}" >> $GITHUB_ENV
             echo "APPLICATION_SECRET=${{ secrets.APPLICATION_SECRET_HYEONJUNG }}" >> $GITHUB_ENV
             echo "REACT_ENV=${{ secrets.REACT_ENV_HYEONJUNG }}" >> $GITHUB_ENV
+            echo "test"
           elif [ "${{ github.ref }}" == "refs/heads/deploy-hyeokjun" ]; then
             echo "GCP_VM_HOST=${{ secrets.GCP_VM_HOST_HYEOKJUN }}" >> $GITHUB_ENV
             echo "GCP_VM_USERNAME=${{ secrets.GCP_VM_USERNAME_HYEOKJUN }}" >> $GITHUB_ENV
