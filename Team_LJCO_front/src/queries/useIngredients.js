@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
 import {
   getAllIngredients,
   searchIngredients,
@@ -8,6 +9,30 @@ import {
   getAllCategories,
 } from '../apis/adminApi';
 import { queryKeys } from './queryKeys';
+
+export const useUseRecipeIngredientsMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ rcpId }) => 
+        axios.post(
+            `${import.meta.env.VITE_API_BASE_URL}/api/user/ingredients/use-recipe/${rcpId}`,
+            {}, // POST 요청의 body (현재는 필요 없으므로 빈 객체)
+            { withCredentials: true } // 👈 이 설정이 누락되어 401 에러가 발생합니다!
+        ),
+    
+    onSuccess: () => {
+      // 데이터 동기화를 위해 관련 쿼리 무효화
+      queryClient.invalidateQueries({ queryKey: queryKeys.ingredients.all });
+      queryClient.invalidateQueries({ queryKey: ['recipes'] }); 
+      alert("요리가 완료되었습니다! 식재료가 냉장고에서 차감되었습니다.");
+    },
+    onError: (error) => {
+      console.error("차감 실패:", error);
+      alert("인증 세션이 만료되었거나 처리에 실패했습니다. 다시 로그인해 주세요.");
+    }
+  });
+};
 
 // 재료 목록 조회
 export const useIngredientsQuery = (options = {}) => {
