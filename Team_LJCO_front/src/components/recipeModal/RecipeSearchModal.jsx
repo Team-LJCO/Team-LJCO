@@ -120,30 +120,29 @@ function RecipeSearchModal({ recipe, onClose }) {
                     
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
     {recipe.ingredients?.map((ing, idx) => {
-        // ✅ 콘솔 확인 결과: matchedColor 필드가 "G"이면 보유(초록불), "N"이면 미보유입니다.
-        const isMatched = ing.matchedColor === "G";
-        
-        // ✅ 보유 중("G")일 때만 초록색을 적용하고, 아니면 회색/검정색으로 표시합니다.
-        // 만약 D-Day에 따른 다른 색상(Y, O, R 등)도 있다면 추가 대응이 가능합니다.
-        const bgColor = isMatched ? "#b9f6ca" : "#333333"; 
-        const textColor = isMatched ? "#000000" : "#999999";
+        // RecipeSearchModal.jsx 내 변수 설정 부분
+const isMatched = ing.matchedColor === "G";
 
-        return (
-            <span key={idx} style={{
-                backgroundColor: bgColor,
-                color: textColor,
-                padding: '8px 16px', 
-                borderRadius: '12px', 
-                fontSize: '14px', 
-                fontWeight: '600',
-                // 보유하지 않은 재료는 테두리를 주어 구분
-                border: isMatched ? 'none' : '1px solid #444',
-                boxShadow: isMatched ? '0 2px 5px rgba(0,0,0,0.1)' : 'none',
-                transition: 'all 0.2s ease'
-            }}>
-                {ing.ingName} {ing.rcpIngAmt && `(${ing.rcpIngAmt})`}
-            </span>
-        );
+// 보유 시 농도를 높인 배경색 사용
+const bgColor = isMatched ? "#C8E6C9" : "#F5F5F5"; 
+const textColor = isMatched ? "#1B5E20" : "#757575";
+const borderColor = isMatched ? "#A5D6A7" : "#E0E0E0"; // 테두리도 조금 더 진하게
+
+return (
+    <span key={idx} style={{
+        backgroundColor: bgColor,
+        color: textColor,
+        padding: '8px 16px', 
+        borderRadius: '12px', 
+        fontSize: '14px', 
+        fontWeight: '700',
+        border: `1.5px solid ${borderColor}`, // 테두리를 연하게 주어 카드와 일관성 유지
+        boxShadow: isMatched ? '0 2px 8px rgba(0, 200, 83, 0.05)' : 'none',
+        transition: 'all 0.2s ease'
+    }}>
+        {ing.ingName} {ing.rcpIngAmt && `(${ing.rcpIngAmt})`}
+    </span>
+);
     })}
 </div>
                 </div>

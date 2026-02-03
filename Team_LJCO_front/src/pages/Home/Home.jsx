@@ -186,7 +186,17 @@ function Home() {
                   return (
                     <div key={item.userIngId} css={s.foodCard} style={{ backgroundColor: dateInfo.isTrash ? "#F5F5F5" : "#FFFFFF" }}>
                       <button className="delete-target" css={s.deleteBtn} onClick={(e) => handleDelete(item.userIngId, e)}>×</button>
-                      <span className="badge" style={{ backgroundColor: dateInfo.color }}>{dateInfo.text}</span>
+                      <span 
+  className="badge" 
+  style={{ 
+    backgroundColor: dateInfo.bgColor, // ✅ 연한 파스텔 배경
+    color: dateInfo.textColor,         // ✅ 진한 포인트 글자색
+    border: `1px solid ${dateInfo.textColor}22`, // 미세한 테두리로 선명도 업
+    fontWeight: "900",                 // 파스텔 톤에서 가독성 확보
+  }}
+>
+  {dateInfo.text}
+</span>
                       <img 
                         src={`${import.meta.env.VITE_API_BASE_URL}/images/${item.ingredient?.ingImgUrl}`} 
                         alt="" 
