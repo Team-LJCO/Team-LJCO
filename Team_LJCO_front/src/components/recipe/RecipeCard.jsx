@@ -1,5 +1,5 @@
 /** @jsxImportSource @emotion/react */
-import RecipeIngredientMark from "../../pages/Recipe/RacipeIngredientMark";
+import RecipeIngredientMark from "../../pages/Recipe/RecipeIngredientMark";
 
 /**
  * 매치율에 따른 안내 텍스트 반환

@@ -29,7 +29,7 @@ function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [recipeSearchTerm, setRecipeSearchTerm] = useState("");
   const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
-
+const [cookableRecipes, setCookableRecipes] = useState([]);
   const [isCookableModalOpen, setIsCookableModalOpen] = useState(false);
 
   // 로그인 및 어드민 토큰 체크

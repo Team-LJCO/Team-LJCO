@@ -1,9 +1,9 @@
 /** @jsxImportSource @emotion/react */
-import RecipeIngredientMark from "../../pages/Recipe/RacipeIngredientMark";
+import RecipeIngredientMark from "../../pages/Recipe/RecipeIngredientMark";
 import { getLevelText } from "./RecipeCard";
 
 export default function RecipeCardContent({ recipe }) {
-  const matchRate = Number(recipe.matchRate ?? 100); // ✅ cookable은 100으로 취급 가능
+  const matchRate = Number(recipe.matchRate ?? 100); 
 
   const getMatchRateStyle = (rate) => {
     if (rate === 100) return { text: "지금 바로 도전 가능!", color: "#28a745" };
@@ -76,17 +76,26 @@ export default function RecipeCardContent({ recipe }) {
             필요한 재료
           </div>
 
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-            {(recipe.ingredients ?? recipe.userIngredients ?? []).map((ing, idx) => (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+          {(recipe.ingredients ?? recipe.userIngredients ?? []).map((ing, idx) => {
+            const isObj = ing && typeof ing === "object";
+
+            const ingName = isObj ? (ing.ingName ?? ing.name ?? "") : String(ing);
+            const matchedColor = "G"; 
+            console.log("color=", ing?.matchedColor, "ing=", ing);
+
+
+            return (
               <RecipeIngredientMark
                 key={idx}
                 ingredients={{
-                  ingName: ing.ingName ?? ing,
-                  matchedColor: "G",
+                  ingName,
+                  matchedColor,
                 }}
               />
-            ))}
-          </div>
+            );
+          })}
+        </div>
         </div>
       </div>
     </div>

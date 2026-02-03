@@ -7,7 +7,7 @@ import { s as recipeS } from "./styles";
 import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
 import { useNavigate, useLocation } from "react-router-dom"; 
 import Pagination from "../../components/common/Pagination";
-import RecipeIngredientMark from "./RacipeIngredientMark";
+import RecipeIngredientMark from "./RecipeIngredientMark";
 import { getLevelText } from "../../components/recipe/RecipeCard";
 import RecipeCardContent from "../../components/recipe/RecipeCardContent";
 
@@ -17,6 +17,7 @@ function Recipe() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [sort, setSort] = useState("VIEW_DESC");
+    const [isCookableOpen, setIsCookableOpen] = useState(false);
 
     const [isLogin] = useState(!!localStorage.getItem("accessToken")); 
     const [recipes, setRecipes] = useState([]);
@@ -80,6 +81,7 @@ function Recipe() {
         params.set("page", "1");
         navigate(`/recipe?${params.toString()}`);
     };
+     const cookableRecipes = recipes.filter(r => Number(r.matchRate) === 100);
 
     return (
         <>

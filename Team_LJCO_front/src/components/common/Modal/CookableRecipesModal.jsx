@@ -79,17 +79,8 @@ export default function CookableRecipesModal({
                 cursor: "pointer",
                 }}
 
-                >
-                  <RecipeCardContent
-                    recipe={{
-                      rcpId: r.rcpId,
-                      rcpName: r.rcpName,
-                      rcpImgUrl: r.rcpImgUrl,
-                      rcpViewCount: r.rcpViewCount,
-                      level: r.level,
-                      userIngredients: r.userIngredients,
-                    }}
-                  />
+                 >
+                <RecipeCardContent recipe={r} />
                 </div>
               ))}
             </div>
