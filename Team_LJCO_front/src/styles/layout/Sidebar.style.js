@@ -16,29 +16,34 @@ export const sidebarLogo = css`
     padding: 20px 30px;
     margin-bottom: 20px;
 
-    & > h2 {
-        color: white;
+    & h2 {
+        color: white; 
+        text-decoration: none !important; /* 밑줄 제거 */
         font-size: 28px;
         font-weight: 700;
         margin: 0;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        /* 그림자 들어간 흰색 효과 */
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); 
     }
+`;
+
+export const logoLink = css`
+    text-decoration: none !important;
 `;
 
 export const sidebarNav = css`
     flex: 1;
-
     & > ul {
         list-style: none;
         padding: 0;
         margin: 0;
     }
-
     & li {
         margin: 5px 15px;
     }
 `;
 
+/* 메뉴 및 로그아웃 공통: 평상시 투명, 호버 시에만 RGBA 배경 */
 export const sidebarLink = css`
     display: flex;
     align-items: center;
@@ -46,19 +51,28 @@ export const sidebarLink = css`
     color: white;
     text-decoration: none;
     border-radius: 12px;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     font-size: 16px;
     font-weight: 500;
+    cursor: pointer;
+    background-color: transparent; /* 항상 켜져있지 않도록 기본 투명 설정 */
 
     &:hover {
-        background-color: rgba(255, 255, 255, 0.2);
+        background-color: rgba(255, 255, 255, 0.2); /* 호버 시에만 불 들어옴 */
         transform: translateX(5px);
     }
+`;
 
-    &.active {
-        background-color: rgba(255, 255, 255, 0.3);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    }
+/* 현재 페이지 강조용 (호버보다 조금 더 진하게) */
+export const activeLinkStyle = css`
+    background-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+`;
+
+export const logoutDivider = css`
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.2); /* RGBA 실선 */
+    margin: 15px 15px;
 `;
 
 export const sidebarIcon = css`

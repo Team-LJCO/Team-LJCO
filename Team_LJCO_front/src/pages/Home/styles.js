@@ -259,14 +259,16 @@ export const s = {
     background: #FFFFFF;
     border: 1px solid #F0F0F0;
     border-radius: 24px;
-    padding: 20px 10px;
+    /* 💡 패딩 조정: 상하 여백을 줄여 밀도를 높임 */
+    padding: 15px 10px 12px 10px; 
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
     transition: 0.3s;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-    min-height: 200px;
+    /* 💡 최소 높이 하향 조정하여 여백 제거 */
+    min-height: 160px; 
 
     &:hover {
       transform: translateY(-5px);
@@ -279,28 +281,36 @@ export const s = {
     }
 
     img {
-      width: 150px;
-      height: 100px;
-      object-fit: contain; /* 💡 사진 왜곡 방지 */
-      margin-bottom: 15px;
+      width: 140px; /* 💡 크기 살짝 조절 */
+      height: 90px;
+      object-fit: contain;
+      /* 💡 이미지 하단 마진을 크게 줄임 */
+      margin-bottom: 5px; 
     }
 
     .name {
       font-weight: 700;
       color: #333;
-      font-size: 17px;
-      margin-top: auto;
+      font-size: 16px; /* 💡 폰트 크기 살짝 조절 */
+      /* 💡 margin-top: auto를 제거하거나 줄여서 이미지 바로 아래 붙게 함 */
+      margin-top: 5px; 
+      text-align: center;
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .badge {
       position: absolute;
-      top: 15px;
-      left: 15px;
+      /* 💡 배지 위치를 더 구석으로 조정 */
+      top: 12px;
+      left: 12px;
       color: #FFFFFF;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 800;
-      padding: 4px 12px;
-      border-radius: 12px;
+      padding: 3px 10px;
+      border-radius: 10px;
       z-index: 10;
     }
   `,

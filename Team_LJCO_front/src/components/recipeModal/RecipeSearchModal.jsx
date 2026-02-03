@@ -1,14 +1,13 @@
 /** @jsxImportSource @emotion/react */
 import { useState, useEffect } from "react";
-import { api } from "../../configs/axiosConfig";
+import axios from "axios";
 import { s } from "./styles";
-import { getColorByDay } from "../../utils/colorUtils";
 
 function RecipeSearchModal({ recipe, onClose }) {
     const [steps, setSteps] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // 매치율 텍스트 로직
+    // 매치율 관련 로직
     const matchRate = Number(recipe?.matchRate ?? 0);
     
     const getMatchRateText = (rate) => {
@@ -18,10 +17,9 @@ function RecipeSearchModal({ recipe, onClose }) {
         return '지금 바로 도전 가능!';
     };
 
-    // 💡 추가: 매치율 아이콘 로직 (일관성을 위해 아이콘 추가)
     const getMatchIcon = (rate) => {
-        if (rate < 70) return '🛒'; // 재료 부족할 땐 장바구니
-        return '🍳'; // 요리 가능할 땐 프라이팬
+        if (rate < 70) return '🛒';
+        return '🍳';
     };
 
     useEffect(() => {
@@ -29,7 +27,7 @@ function RecipeSearchModal({ recipe, onClose }) {
             if (!recipe?.rcpId) return;
             setLoading(true);
             try {
-                const stepRes = await api.get(`/api/recipes/${recipe.rcpId}/steps`);
+                const stepRes = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/recipes/${recipe.rcpId}/steps`);
                 setSteps(stepRes.data);
             } catch (err) {
                 console.error("데이터 로드 실패", err);
@@ -49,10 +47,7 @@ function RecipeSearchModal({ recipe, onClose }) {
                 <div style={{ marginBottom: '20px' }}>
                     <h2 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '12px' }}>{recipe?.rcpName}</h2>
                     
-                    {/* 정보 그리드 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        
-                        {/* 왼쪽: 난이도 & 조회수 */}
                         <div style={{ display: 'flex', gap: '15px', color: '#ff7043', fontWeight: '700', fontSize: '15px' }}>
                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 🔥 {recipe?.level === 1 ? '쉬움' : recipe?.level === 2 ? '보통' : '어려움'}
@@ -62,16 +57,14 @@ function RecipeSearchModal({ recipe, onClose }) {
                             </span>
                         </div>
 
-                        {/* 오른쪽: 매치율 (박스 제거 -> 아이콘+텍스트 형태) */}
                         <div style={{ 
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '4px', // 아이콘과 텍스트 사이 간격
+                            gap: '4px',
                             color: '#FF7043', 
                             fontWeight: '800', 
-                            fontSize: '15px' // 왼쪽 폰트 사이즈와 통일
+                            fontSize: '15px'
                         }}>
-                            {/* 상황에 맞는 아이콘 + 텍스트 */}
                             <span>{getMatchIcon(matchRate)}</span>
                             <span>{getMatchRateText(matchRate)} ({matchRate}%)</span>
                         </div>
@@ -86,34 +79,51 @@ function RecipeSearchModal({ recipe, onClose }) {
 
                     <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '12px', color: '#555' }}>필요한 재료</h3>
                     
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-    {recipe.ingredients?.map((ing, idx) => {
-        // ✅ 콘솔 확인 결과: matchedColor 필드가 "G"이면 보유(초록불), "N"이면 미보유입니다.
-        const isMatched = ing.matchedColor === "G";
-        
-        // ✅ 보유 중("G")일 때만 초록색을 적용하고, 아니면 회색/검정색으로 표시합니다.
-        // 만약 D-Day에 따른 다른 색상(Y, O, R 등)도 있다면 추가 대응이 가능합니다.
-        const bgColor = isMatched ? "#b9f6ca" : "#333333"; 
-        const textColor = isMatched ? "#000000" : "#999999";
+                    {/* ✅ 재료 버튼 그리드 시작 */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                        {recipe.ingredients?.map((ing, idx) => {
+                            // "N"이 아니면 보유 중인 것으로 간주
+                            const isOwned = ing.matchedColor !== "N";
 
-        return (
-            <span key={idx} style={{
-                backgroundColor: bgColor,
-                color: textColor,
-                padding: '8px 16px', 
-                borderRadius: '12px', 
-                fontSize: '14px', 
-                fontWeight: '600',
-                // 보유하지 않은 재료는 테두리를 주어 구분
-                border: isMatched ? 'none' : '1px solid #444',
-                boxShadow: isMatched ? '0 2px 5px rgba(0,0,0,0.1)' : 'none',
-                transition: 'all 0.2s ease'
-            }}>
-                {ing.ingName} {ing.rcpIngAmt && `(${ing.rcpIngAmt})`}
-            </span>
-        );
-    })}
-</div>
+                            return (
+                                <span 
+                                    key={idx} 
+                                    style={{
+                                        // 1. 배경 & 글자색: 보유 중일 땐 화이트, 아닐 땐 연회색
+                                        backgroundColor: isOwned ? "#ffffff" : "#E2E2E2",
+                                        color: isOwned ? "#000000" : "#777777",
+
+                                        // 2. 그림자: 입체적인 단단한 그림자
+                                        boxShadow: isOwned ? "0 3px 1px rgba(0, 0, 0, 0.3)" : "none",
+
+                                        // 3. 테두리: 얇고 선명한 선
+                                        border: "1px solid",
+                                        borderColor: isOwned ? "#666" : "#BBB",
+
+                                        // 4. 형태 스타일
+                                        padding: "6px 15px",
+                                        borderRadius: "20px",
+                                        fontSize: "13px",
+                                        fontWeight: "600",
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: "4px",
+                                        margin: "2px",
+                                        cursor: "default",
+                                        transition: "all 0.2s ease"
+                                    }}
+                                >
+                                    {/* ✅ 보유 중일 때만 체크 표시 아이콘 */}
+                                    {isOwned && (
+                                        <span style={{ fontSize: "12px", color: "#000000" }}>
+                                            ✔
+                                        </span>
+                                    )}
+                                    {ing.ingName} {ing.rcpIngAmt && `(${ing.rcpIngAmt})`}
+                                </span>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 {/* 3. 조리 순서 섹션 */}

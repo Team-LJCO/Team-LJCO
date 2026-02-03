@@ -1,23 +1,35 @@
 /** @jsxImportSource @emotion/react */
 import RecipeIngredientMark from "../../pages/Recipe/RacipeIngredientMark";
-import { getLevelText } from "./RecipeCard";
+
+// ✅ 1. 컴포넌트 외부에서 사용하는 헬퍼 함수들은 상단에 배치하는 것이 좋습니다.
+/* 난이도 텍스트 반환 */
+const getLevelText = (level) => {
+  if (level === 1) return "쉬움";
+  if (level === 2) return "보통";
+  return "어려움";
+};
+
+/* 매치율 스타일 반환 */
+const getMatchRateStyle = (rate) => {
+  if (rate === 100) return { text: "지금 바로 도전 가능!", color: "#28a745" };
+  if (rate >= 80) return { text: "거의 만들 수 있어요", color: "#FF9800" };
+  if (rate >= 50) return { text: "조금만 더 있으면 돼요", color: "#FF7043" };
+  return { text: "재료를 구매하셔야 해요!", color: "#999999" };
+};
 
 export default function RecipeCardContent({ recipe }) {
-  const matchRate = Number(recipe.matchRate ?? 100); // ✅ cookable은 100으로 취급 가능
-
-  const getMatchRateStyle = (rate) => {
-    if (rate === 100) return { text: "지금 바로 도전 가능!", color: "#28a745" };
-    if (rate >= 80) return { text: "거의 만들 수 있어요", color: "#FF9800" };
-    if (rate >= 50) return { text: "조금만 더 있으면 돼요", color: "#FF7043" };
-    return { text: "재료를 구매하셔야 해요!", color: "#999999" };
-  };
-
+  // ✅ recipe.matchRate가 없으면 기본값 100 사용
+  const matchRate = Number(recipe.matchRate ?? 100); 
   const matchStyle = getMatchRateStyle(matchRate);
 
   return (
     <div style={{ borderRadius: "30px", overflow: "hidden", height: "100%" }}>
       <div className="thumb" style={{ position: "relative" }}>
-        <img src={recipe.rcpImgUrl} alt={recipe.rcpName} />
+        <img 
+          src={recipe.rcpImgUrl} 
+          alt={recipe.rcpName} 
+          style={{ width: "100%", height: "240px", objectFit: "cover" }} 
+        />
 
         <div
           style={{
@@ -47,7 +59,7 @@ export default function RecipeCardContent({ recipe }) {
         </div>
       </div>
 
-      <div className="content">
+      <div className="content" style={{ padding: "20px" }}>
         <h3 style={{ fontSize: "20px", fontWeight: "800", marginBottom: "8px" }}>
           {recipe.rcpName}
         </h3>

@@ -4,9 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { css, Global } from "@emotion/react";
 import { useQueryClient } from "@tanstack/react-query";
 
-
 import AddIngredientModal from "../../components/ingredient/modal/AddIngredientModal";
-import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
 import FridgeChar from "../../assets/fridge-closed.png";
 import CookableRecipesModal from "../../components/common/Modal/CookableRecipesModal";
 
@@ -14,12 +12,10 @@ import { useFridgeHomeQuery } from "../../queries/fridgeHome";
 import { useDeleteIngredientMutation } from "../../react-query/mutations/ingredients.mutations";
 import { queryKeys } from "../../queries/queryKeys";
 import { fontImport, s } from "./styles";
-import { getDaysInfo } from "../../utils/date";
+import { getDaysInfo } from "../../utils/date"; 
 import { getChoseong } from "../../utils/korean";
 
-
 function Home() {
-  
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -28,11 +24,8 @@ function Home() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [recipeSearchTerm, setRecipeSearchTerm] = useState("");
-  const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
-
   const [isCookableModalOpen, setIsCookableModalOpen] = useState(false);
 
-  // 로그인 및 어드민 토큰 체크
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     const adminToken = localStorage.getItem("adminToken");
@@ -40,12 +33,12 @@ function Home() {
     setIsAdmin(!!adminToken);
   }, []);
 
-  const { 
-    data: fridgeHome, 
+  const {
+    data: fridgeHome,
     isLoading: isIngredientsLoading,
     isError: isIngredientsError,
     error: ingredientsError
-    } =  useFridgeHomeQuery(isLogin, 30);
+  } = useFridgeHomeQuery(isLogin, 30);
 
   const deleteIngredient = useDeleteIngredientMutation();
 
@@ -95,21 +88,18 @@ function Home() {
       alert("로그인 후 이용해주세요");
       return;
     }
-    if(matchedRecipeCount === 0) {
+    if (matchedRecipeCount === 0) {
       alert("현재 요리 가능한 레시피가 없어요!");
       return;
     }
     setIsCookableModalOpen(true);
-
-
   }
 
   return (
     <>
       <Global styles={fontImport} />
       <div css={s.wrapper}>
-        {/* 💡 관리자 페이지 버튼 개선: 토큰 없으면 로그인으로, 있으면 대시보드로 */}
-        <button 
+        <button
           onClick={() => navigate(isAdmin ? "/admin" : "/admin/login")}
           style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 10 }}
         >
@@ -117,8 +107,6 @@ function Home() {
         </button>
 
         <div css={s.container}>
-
-          {/* 헤더 카드 */}
           <div css={s.headerCard}>
             <div css={s.logo} onClick={() => navigate("/home")}>
               <div className="logo-box">🧊</div> 냉장고 파먹기
@@ -132,42 +120,31 @@ function Home() {
                 onChange={(e) => setRecipeSearchTerm(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && recipeSearchTerm.trim()) {
-                    // ✅ 모달 대신 레시피 페이지로 검색어를 쿼리 스트링에 담아 보냅니다.
                     navigate(`/recipe?keyword=${encodeURIComponent(recipeSearchTerm.trim())}`);
                   }
                 }}
               />
             </div>
             <div css={s.navGroup}>
-              <button css={s.pillBtn(true)} onClick={() => navigate("/home")}>
-                🏠 <span className="btn-text">식재료</span>
-              </button>
-              <button css={s.pillBtn(false)} onClick={() => navigate("/recipe")}>
-                📖 <span className="btn-text">레시피</span>
-              </button>
-              <button css={s.pillBtn(false)} onClick={handleAuthClick}>
-                👤 <span className="btn-text">{isLogin ? "로그아웃" : "로그인"}</span>
-              </button>
+              <button css={s.pillBtn(true)} onClick={() => navigate("/home")}>🏠 <span className="btn-text">식재료</span></button>
+              <button css={s.pillBtn(false)} onClick={() => navigate("/recipe")}>📖 <span className="btn-text">레시피</span></button>
+              <button css={s.pillBtn(false)} onClick={handleAuthClick}>👤 <span className="btn-text">{isLogin ? "로그아웃" : "로그인"}</span></button>
             </div>
           </div>
 
-          {/* 대시보드 요약 정보 */}
           <div css={s.dashboardGrid}>
-             <div css={s.summaryCard}>
-               <div className="info"><div className="label" style={{ color: "#E9967A" }}>● 전체</div><div className="count">{isLogin ? ingredients.length : 0}</div></div>
-               <div className="icon-wrap">📦</div>
-             </div>
-             <div css={s.summaryCard}>
-               <div className="info"><div className="label" style={{ color: "#FFB347" }}>● 소비 임박</div><div className="count">{isLogin ? expiredIngredientCount : 0 }</div></div>
-               <div className="icon-wrap">⚠️</div>
-             </div>
-              <div
-              css={[s.summaryCard, s.summaryCardClickable]}
-              onClick={handleCookableClick}
-            >
-               <div className="info"><div className="label" style={{ color: "#CD5C5C" }}>● 요리 가능</div><div className="count">{isLogin ? matchedRecipeCount : 0}</div></div>
-               <div className="icon-wrap">🍲</div>
-             </div>
+            <div css={s.summaryCard}>
+              <div className="info"><div className="label" style={{ color: "#E9967A" }}>● 전체</div><div className="count">{isLogin ? ingredients.length : 0}</div></div>
+              <div className="icon-wrap">📦</div>
+            </div>
+            <div css={s.summaryCard}>
+              <div className="info"><div className="label" style={{ color: "#FFB347" }}>● 소비 임박</div><div className="count">{isLogin ? expiredIngredientCount : 0}</div></div>
+              <div className="icon-wrap">⚠️</div>
+            </div>
+            <div css={[s.summaryCard, s.summaryCardClickable]} onClick={handleCookableClick}>
+              <div className="info"><div className="label" style={{ color: "#CD5C5C" }}>● 요리 가능</div><div className="count">{isLogin ? matchedRecipeCount : 0}</div></div>
+              <div className="icon-wrap">🍲</div>
+            </div>
           </div>
 
           <div css={s.listSection}>
@@ -182,16 +159,28 @@ function Home() {
             ) : (
               <div css={s.grid}>
                 {filteredIngredients.map((item) => {
-                  const dateInfo = getDaysInfo(item.createdAt);
+                  // 💡 해결책: 서버 응답 필드명(camelCase vs snake_case) 모두 대응
+                  const dateValue = item.createdAt || item.created_at;
+                  const dateInfo = getDaysInfo(dateValue);
+
                   return (
                     <div key={item.userIngId} css={s.foodCard} style={{ backgroundColor: dateInfo.isTrash ? "#F5F5F5" : "#FFFFFF" }}>
                       <button className="delete-target" css={s.deleteBtn} onClick={(e) => handleDelete(item.userIngId, e)}>×</button>
-                      <span className="badge" style={{ backgroundColor: dateInfo.color }}>{dateInfo.text}</span>
-                      <img 
-                        src={`${import.meta.env.VITE_API_BASE_URL}/images/${item.ingredient?.ingImgUrl}`} 
-                        alt="" 
-                        style={{ opacity: dateInfo.opacity }} 
-                        onError={(e) => { e.target.src = import.meta.env.VITE_API_BASE_URL + "/images/pork_thin.png"; }} 
+
+                      {/* 💡 오늘등록(흰색) 배경일 때 글자가 보이도록 스타일 적용 */}
+                      <span className="badge" style={{ 
+                        backgroundColor: dateInfo.color,
+                        color: dateInfo.color === "#FFFFFF" ? "#10be1f" : "#FFFFFF",
+                        border: dateInfo.color === "#FFFFFF" ? "1px solid #FF704333" : "none"
+                      }}>
+                        {dateInfo.text}
+                      </span>
+
+                      <img
+                        src={`${import.meta.env.VITE_API_BASE_URL}/images/${item.ingredient?.ingImgUrl}`}
+                        alt=""
+                        style={{ opacity: dateInfo.opacity }}
+                        onError={(e) => { e.target.src = import.meta.env.VITE_API_BASE_URL + "/images/pork_thin.png"; }}
                       />
                       <div className="name">{item.ingredient?.ingName}</div>
                     </div>
@@ -211,16 +200,11 @@ function Home() {
             }}
           />
         )}
-
-
-        {isRecipeModalOpen && <RecipeSearchModal keyword={recipeSearchTerm} onClose={() => setIsRecipeModalOpen(false)} />}
         {isLogin && <button css={s.fab} onClick={() => setIsModalOpen(true)}><div className="circle">+</div> 재료 추가하기</button>}
         {isModalOpen && <AddIngredientModal onClose={() => { setIsModalOpen(false); queryClient.invalidateQueries({ queryKey: queryKeys.ingredients.all }); }} />}
       </div>
     </>
   );
 }
-
-const searchBtnStyle = css`background: #ff7043; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; &:hover { background: #e65a2d; }`;
 
 export default Home;
