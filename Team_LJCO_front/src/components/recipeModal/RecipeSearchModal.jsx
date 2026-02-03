@@ -9,7 +9,7 @@ function RecipeSearchModal({ recipe, onClose }) {
 
     // 매치율 관련 로직
     const matchRate = Number(recipe?.matchRate ?? 0);
-    
+
     const getMatchRateText = (rate) => {
         if (rate <= 0) return '재료를 구매하셔야 해요!';
         if (rate < 50) return '조금만 더 있으면 돼요';
@@ -42,11 +42,11 @@ function RecipeSearchModal({ recipe, onClose }) {
         <div css={s.detailOverlay} onClick={onClose}>
             <div css={s.detailContent} onClick={(e) => e.stopPropagation()}>
                 <button className="back-btn" onClick={onClose}>← 검색 결과로 돌아가기</button>
-                
+
                 {/* 1. Header: 이름 및 정보 */}
                 <div style={{ marginBottom: '20px' }}>
                     <h2 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '12px' }}>{recipe?.rcpName}</h2>
-                    
+
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ display: 'flex', gap: '15px', color: '#ff7043', fontWeight: '700', fontSize: '15px' }}>
                             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -57,12 +57,12 @@ function RecipeSearchModal({ recipe, onClose }) {
                             </span>
                         </div>
 
-                        <div style={{ 
+                        <div style={{
                             display: 'flex',
                             alignItems: 'center',
                             gap: '4px',
-                            color: '#FF7043', 
-                            fontWeight: '800', 
+                            color: '#FF7043',
+                            fontWeight: '800',
                             fontSize: '15px'
                         }}>
                             <span>{getMatchIcon(matchRate)}</span>
@@ -78,44 +78,46 @@ function RecipeSearchModal({ recipe, onClose }) {
                     </div>
 
                     <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '12px', color: '#555' }}>필요한 재료</h3>
-                    
+
                     {/* ✅ 재료 버튼 그리드 시작 */}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                         {recipe.ingredients?.map((ing, idx) => {
                             // "N"이 아니면 보유 중인 것으로 간주
                             const isOwned = ing.matchedColor !== "N";
+                            
 
                             return (
-                                <span 
-                                    key={idx} 
+                                <span
+                                    key={idx}
                                     style={{
                                         // 1. 배경 & 글자색: 보유 중일 땐 화이트, 아닐 땐 연회색
                                         backgroundColor: isOwned ? "#ffffff" : "#E2E2E2",
                                         color: isOwned ? "#000000" : "#777777",
 
                                         // 2. 그림자: 입체적인 단단한 그림자
-                                        boxShadow: isOwned ? "0 3px 1px rgba(0, 0, 0, 0.3)" : "none",
+                                        boxShadow: "0 3px 1px rgba(0, 0, 0, 0.3)",
 
                                         // 3. 테두리: 얇고 선명한 선
                                         border: "1px solid",
                                         borderColor: isOwned ? "#666" : "#BBB",
+                                        
 
                                         // 4. 형태 스타일
-                                        padding: "6px 15px",
+                                        padding: "5px 12px",
                                         borderRadius: "20px",
-                                        fontSize: "13px",
+                                        fontSize: "15px",
                                         fontWeight: "600",
                                         display: "inline-flex",
                                         alignItems: "center",
-                                        gap: "4px",
-                                        margin: "2px",
+                                        gap: "1px",
+                                        margin: "1px",
                                         cursor: "default",
                                         transition: "all 0.2s ease"
                                     }}
                                 >
                                     {/* ✅ 보유 중일 때만 체크 표시 아이콘 */}
                                     {isOwned && (
-                                        <span style={{ fontSize: "12px", color: "#000000" }}>
+                                        <span style={{ fontSize: "12px",color: "#34c765" }}>
                                             ✔
                                         </span>
                                     )}

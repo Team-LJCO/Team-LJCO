@@ -84,7 +84,7 @@ export default function RecipeCardContent({ recipe }) {
         <div style={{ width: "100%", height: "1px", background: "#E0E0E0", margin: "15px 0" }} />
 
         <div className="ingredients">
-          <div className="label" style={{ fontSize: "11px", color: "#999", marginBottom: "8px" }}>
+          <div className="label" style={{ fontSize: "11px", color: "#000000", marginBottom: "8px" }}>
             필요한 재료
           </div>
 

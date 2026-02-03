@@ -3,25 +3,27 @@ export default function RecipeIngredientMark({ ingredients }) {
     const isOwned = whatColor !== "N";
 
     const style = {
-        // 1. 배경색: 투명감 없는 단단한 연두색
-        backgroundColor: isOwned ? "#ffffff" : "#E2E2E2",
-        color: isOwned ? "#000000" : "#777777",
+    // 1. 배경색: 보유 시 흰색, 미보유 시 부드러운 회색 (#EEEEEE)
+    backgroundColor: isOwned ? "#ffffff" : "#eeeeee",
+    
+    // 2. 글자색: 요청하신 대로 미보유 시에도 검정색 계열(#333)로 또렷하게
+    color: isOwned ? "#000000" : "#333333",
 
-        // 2. 그림자: 이미지처럼 퍼지지 않고 아래로 착 붙는 느낌 (v-offset: 3px, blur: 1px)
-        boxShadow: isOwned ? "0 3px 1px rgba(0, 0, 0, 0.3)" : "none",
+    // 3. 그림자: 💡 핵심! 이제 보유 여부와 상관없이 똑같은 입체감을 줍니다.
+    boxShadow: "0 3px 1px rgba(0, 0, 0, 0.3)",
 
-        // 3. 테두리: 이미지 특유의 얇고 진한 선
-        border: "1px solid",
-        borderColor: isOwned ? "#666" : "#BBB",
-    };
+    // 4. 테두리: 미보유 시에도 형태가 잘 보이도록 조금 더 진한 회색(#999) 적용
+    border: "1px solid",
+    borderColor: isOwned ? "#666" : "#999",
+};
 
     return (
         <span
             style={{
                 ...style,
-                padding: "6px 15px",
+                padding: "3px 7px",
                 borderRadius: "20px",
-                fontSize: "13px",
+                fontSize: "12px",
                 fontWeight: "600",
                 display: "inline-flex", // 체크와 글자를 나란히 배치
                 alignItems: "center",
@@ -32,7 +34,12 @@ export default function RecipeIngredientMark({ ingredients }) {
         >
             {/* ✅ 보유 중일 때만 체크 표시 추가 */}
             {isOwned && (
-                <span style={{ fontSize: "12px", marginBottom: "1px" }}>
+                <span style={{
+                    fontSize: "12px",
+                    marginBottom: "1px",
+                    color: "#34C759", // 💡 여기에 원하는 색상 코드를 넣으세요!
+                    fontWeight: "bold" // 체크를 좀 더 또렷하게 보이게 하려면 추가
+                }}>
                     ✔
                 </span>
             )}

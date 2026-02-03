@@ -102,7 +102,7 @@ function RecipeCardContent({ recipe }) {
                 }}></div>
 
                 <div className="ingredients">
-                    <div className="label" style={{ fontSize: '11px', color: '#999', marginBottom: '8px' }}>
+                    <div className="label" style={{ fontSize: '11px', fontWeight: '550' ,color: '#000000', marginBottom: '8px' }}>
                         필요한 재료
                     </div>
 
