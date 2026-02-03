@@ -1,26 +1,30 @@
 /**
- * 날짜 관련 유틸리티
- */
-
-/**
  * 날짜로부터 경과 일수 계산 및 상태 정보 반환
  * @param {string|Date} createDate - 생성 날짜
- * @returns {{text: string, color: string, opacity: number, isTrash: boolean}}
+ * @returns {{text: string, bgColor: string, textColor: string, opacity: number, isTrash: boolean}}
  */
 export const getDaysInfo = (createDate) => {
   if (!createDate) {
-    return { text: "D+0", color: "#34C759", opacity: 1.0, isTrash: false };
+    // 기본값 (파스텔 초록 테마)
+    return { text: "D+0", bgColor: "#E8F5E9", textColor: "#2E7D32", opacity: 1.0, isTrash: false };
   }
 
   const days = Math.floor(
     (new Date() - new Date(createDate)) / (1000 * 60 * 60 * 24)
   );
 
-  const getColor = (d) => {
-    if (d < 7) return "#34C759";   // 초록색 - 신선
-    if (d <= 14) return "#FFD60A"; // 노랑색 - 주의
-    if (d <= 29) return "#FF9F0A"; // 주황색 - 경고
-    return "#DBDBDB";              // 회색 - 폐기 필요
+  // ✅ 레시피 페이지의 파스텔톤 시스템과 100% 일치시킨 색상 로직
+  const getBadgeStyle = (d) => {
+    if (d < 7) {
+      return { bg: "#E8F5E9", text: "#2E7D32" }; // 연초록 (신선)
+    }
+    if (d <= 14) {
+      return { bg: "#FFFDE7", text: "#FBC02D" }; // 연노랑 (주의)
+    }
+    if (d <= 29) {
+      return { bg: "#FFF3E0", text: "#EF6C00" }; // 연주황 (경고)
+    }
+    return { bg: "#F5F5F5", text: "#9E9E9E" };   // 연회색 (폐기 필요)
   };
 
   const getOpacity = (d) => {
@@ -31,20 +35,13 @@ export const getDaysInfo = (createDate) => {
     return 1.0;
   };
 
+  const style = getBadgeStyle(days);
+
   return {
     text: `D+${days}`,
-    color: getColor(days),
+    bgColor: style.bg,    // ✅ Home.jsx에서 사용할 배경색
+    textColor: style.text, // ✅ Home.jsx에서 사용할 글자색
     opacity: getOpacity(days),
     isTrash: days >= 30,
   };
-};
-
-/**
- * 날짜 문자열 포맷팅 (YYYY-MM-DD)
- * @param {string} dateString - ISO 날짜 문자열
- * @returns {string} 포맷된 날짜
- */
-export const formatDate = (dateString) => {
-  if (!dateString) return "-";
-  return dateString.split("T")[0];
 };
