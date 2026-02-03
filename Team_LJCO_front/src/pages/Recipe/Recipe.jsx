@@ -4,10 +4,10 @@ import axios from "axios";
 import { Global } from "@emotion/react"; 
 import { fontImport, s as commonS } from "../Home/styles"; 
 import { s as recipeS } from "./styles"; 
-import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
+import RecipeSearchModal from "../../components/recipe/RecipeSearchModal";
 import { useNavigate, useLocation } from "react-router-dom"; 
 import Pagination from "../../components/common/Pagination";
-import RecipeIngredientMark from "./RacipeIngredientMark";
+import RecipeIngredientMark from "../../components/recipe/RacipeIngredientMark";
 
 // ✅ 1. 컴포넌트 외부에서 공통으로 쓰이는 헬퍼 함수들을 최상단에 배치 (Hoisting 에러 방지)
 const getLevelText = (level) => {

@@ -1,5 +1,5 @@
 /** @jsxImportSource @emotion/react */
-import RecipeIngredientMark from "../../pages/Recipe/RacipeIngredientMark";
+import RecipeIngredientMark from "./RacipeIngredientMark";
 
 // ✅ 1. 컴포넌트 외부에서 사용하는 헬퍼 함수들은 상단에 배치하는 것이 좋습니다.
 /* 난이도 텍스트 반환 */
