@@ -24,11 +24,12 @@ public class UserIngredientService {
     /**
      * 사용자 보유 재료 전체 조회
      */
-    public FridgeHomeResponse getUserIngredients(Long userId,int limit) {
+    public FridgeHomeResponse getUserIngredients(Long userId, int limit) {
+        // ✅ 페이징 없이 전체 조회
         List<UserIngredient> userIngredients = userIngredientMapper.selectUserIngredients(userId);
 
         int expired15Count = userIngredientMapper.countExpiredIngredients(userId);
-        List <UserIngredientResponse> userIngredientResponseList = userIngredientMapper.getMatchedRecipes(userId, limit);
+        List<UserIngredientResponse> userIngredientResponseList = userIngredientMapper.getMatchedRecipes(userId, limit);
 
         int totalCount = userIngredientResponseList.isEmpty() ? 0 : userIngredientResponseList.get(0).getTotalCount();
 
@@ -38,8 +39,6 @@ public class UserIngredientService {
                 .matchedRecipeCount(totalCount)
                 .matchedRecipeList(userIngredientResponseList)
                 .build();
-
-
     }
 
     /**
