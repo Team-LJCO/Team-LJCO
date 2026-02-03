@@ -3,14 +3,24 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { s } from "./styles";
 import { getColorByDay } from "../../utils/colorUtils";
+import { useUseRecipeIngredientsMutation } from "../../queries/useIngredients";
 
 function RecipeSearchModal({ recipe, onClose }) {
     const [steps, setSteps] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const useIngredientsMutation = useUseRecipeIngredientsMutation();
+
     // 매치율 텍스트 로직
     const matchRate = Number(recipe?.matchRate ?? 0);
     
+    const handleCompleteCook = () => {
+        if (window.confirm("요리를 완료하셨나요? 사용된 식재료가 냉장고에서 삭제됩니다.")) {
+            // 백엔드 컨트롤러에서 @AuthenticationPrincipal을 사용하므로 rcpId만 보냅니다.
+            useIngredientsMutation.mutate({ rcpId: recipe.rcpId });
+            onClose(); // 처리 후 모달 닫기
+        }
+    };
     const getMatchRateText = (rate) => {
         if (rate <= 0) return '재료를 구매하셔야 해요!';
         if (rate < 50) return '조금만 더 있으면 돼요';
@@ -43,7 +53,29 @@ function RecipeSearchModal({ recipe, onClose }) {
     return (
         <div css={s.detailOverlay} onClick={onClose}>
             <div css={s.detailContent} onClick={(e) => e.stopPropagation()}>
-                <button className="back-btn" onClick={onClose}>← 검색 결과로 돌아가기</button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <button className="back-btn" onClick={onClose}>← 검색 결과로 돌아가기</button>
+                    
+                    <button 
+                        onClick={handleCompleteCook}
+                        style={{
+                            padding: '10px 18px',
+                            backgroundColor: '#ff7043',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '12px',
+                            fontWeight: '900',
+                            fontSize: '14px',
+                            cursor: 'pointer',
+                            boxShadow: '0 4px 10px rgba(255, 112, 67, 0.3)',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f4511e'}
+                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ff7043'}
+                    >
+                        🍳 요리 완료 (재료 차감)
+                    </button>
+                </div>
                 
                 {/* 1. Header: 이름 및 정보 */}
                 <div style={{ marginBottom: '20px' }}>
