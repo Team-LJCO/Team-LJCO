@@ -98,29 +98,46 @@ export const s = {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 8px;
+    gap: 8px; /* 아이콘과 글자 간격 */
     font-size: 14px;
     cursor: pointer;
     white-space: nowrap;
-    transition: all 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* 💡 태블릿 반응형 (768px 이하) */
-    @media (max-width: 768px) {
-      padding: 10px 15px;
-      font-size: 16px;
-      gap: 0;
+    svg {
+      transition: transform 0.2s ease;
     }
 
-    /* 💡 모바일 반응형 (600px 이하) - 이모지만 남기기 */
-    @media (max-width: 600px) {
-      width: 45px;
-      height: 45px;
-      padding: 0;
-      border-radius: 50%;
+    &:hover {
+      background: ${isPrimary ? "#E65A2D" : "#FBDDC8"};
+      transform: translateY(-2px);
       
-      /* 텍스트(span)만 숨기고 이모지는 유지 */
+      svg {
+        transform: scale(1.1);
+      }
+    }
+
+    /* 태블릿 반응형 */
+    @media (max-width: 768px) {
+      padding: 10px 15px;
+      font-size: 15px;
+      gap: 6px;
+    }
+
+    /* 모바일 반응형 */
+    @media (max-width: 600px) {
+      width: 42px;
+      height: 42px;
+      padding: 0;
+      border-radius: 14px;
+      
       .btn-text {
         display: none;
+      }
+      
+      svg {
+        width: 20px;
+        height: 20px;
       }
     }
   `,
@@ -151,6 +168,11 @@ export const s = {
     align-items: flex-end;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
 
+    /* 창이 768px 이하로 줄어들 때 패딩 조절 */
+    @media (max-width: 768px) {
+      padding: 20px;
+    }
+
     .info {
       display: flex;
       flex-direction: column;
@@ -163,6 +185,7 @@ export const s = {
       display: flex;
       align-items: center;
       gap: 8px;
+      white-space: nowrap; /* 글자 줄바꿈 방지 */
     }
 
     .count {
@@ -170,6 +193,11 @@ export const s = {
       font-weight: 800;
       color: #333;
       line-height: 0.8;
+
+      /* 창이 좁아지면 숫자 크기를 살짝 줄여서 공간 확보 */
+      @media (max-width: 850px) {
+        font-size: 40px;
+      }
     }
 
     .icon-wrap {
@@ -181,6 +209,11 @@ export const s = {
       justify-content: center;
       align-items: center;
       font-size: 32px;
+
+      /* 핵심: 창이 700px 이하로 줄어들면 이모티콘 박스 숨기기 */
+      @media (max-width: 700px) {
+        display: none;
+      }
     }
   `,
 
@@ -391,19 +424,30 @@ export const s = {
     gap: 12px;
     cursor: pointer;
     box-shadow: 0 10px 25px rgba(255, 87, 34, 0.4);
+    z-index: 9999; /* ✅ 핵심: 식재료 카드(D+0)보다 위에 오도록 높은 값 설정 */
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateX(-50%) translateY(-5px);
+      box-shadow: 0 15px 30px rgba(255, 87, 34, 0.5);
+    }
 
     .circle {
       background: #FFFFFF;
       color: #FF5722;
-      width: 26px;
-      height: 26px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 20px;
+      /* font-size 삭제 */
+      
+      svg {
+        width: 16px;
+        height: 16px;
+      }
     }
-    
   `,
     summaryCardClickable: css`
     cursor: pointer;
