@@ -16,8 +16,8 @@ import java.util.UUID;
 @Service
 public class ImageService {
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    @Value("${user.dir}")
+    private String projectPath;
 
     @Value("${file.base-url}")
     private String baseUrl;
@@ -33,10 +33,11 @@ public class ImageService {
         validateFile(file);
 
         // 업로드 디렉토리 생성
-        File directory = new File(uploadDir);
-        if (!directory.exists()) {
-            directory.mkdirs();
-        }
+        Path uploadDirPath = Paths.get(projectPath, "uploads", "images");
+        try {
+            // 경로가 존재하지 않으면 자동으로 전체 폴더 경로 생성
+            Files.createDirectories(uploadDirPath);
+        } catch (IOException e) {}
 
         // 원본 파일명과 확장자 추출
         String originalFilename = file.getOriginalFilename();
@@ -46,15 +47,17 @@ public class ImageService {
         String newFilename = UUID.randomUUID().toString() + "." + extension;
 
         // 파일 저장
-        Path filePath = Paths.get(uploadDir, newFilename);
-        Files.write(filePath, file.getBytes());
+        Path filePath = uploadDirPath.resolve(newFilename);
+        try {
+            file.transferTo(filePath);
+        } catch (IOException e) {}
 
         // URL 반환
         return baseUrl + "/images/" + newFilename;
     }
 
     public void deleteImage(String filename) throws IOException {
-        Path filePath = Paths.get(uploadDir, filename);
+        Path filePath = Paths.get(projectPath, "uploads", "images", filename);
         Files.deleteIfExists(filePath);
     }
 

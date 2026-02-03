@@ -5,7 +5,7 @@ WORKDIR /app
 COPY ${JAR_FILE} /app/app.jar
 
 # uploads는 볼륨 마운트로 관리 (docker run -v ./uploads:/app/uploads)
-VOLUME /app/uploads
+COPY uploads /app/uploads
 
 EXPOSE 8080
 
