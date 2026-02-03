@@ -20,6 +20,14 @@
         </association>
     </resultMap>
 
+    <delete id="deleteMatchingIngredients">
+        DELETE FROM user_ingredients  WHERE user_id = #{userId}
+        AND ing_id IN (
+        SELECT ing_id
+        FROM rcp_ing  WHERE rcp_id = #{rcpId}
+        )
+    </delete>
+
     <resultMap id="IngredientsByUser"
                type="com.korit.team_ljco.dto.UserIngredientResponse">
         <id property="rcpId" column="rcp_id"/>
@@ -127,6 +135,7 @@
             #{userId}, #{ingId}, #{userIngAmt}
         )
     </insert>
+
 
     <!-- 사용자 재료 수정 -->
     <update id="updateUserIngredient" parameterType="com.korit.team_ljco.entity.UserIngredient">

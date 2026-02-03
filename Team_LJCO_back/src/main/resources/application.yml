@@ -4,10 +4,10 @@ spring:
     group:
       dev: dev, common, secret-dev
       prod: prod-server, common, secret-prod
-      keun: prod-server, common, secret-prod
-      hyeokjun: prod-server, common, secret-prod
-      minseok: prod-server, common, secret-prod
-      hyeonjung: prod-server, common, secret-prod
+      keun: keun-server, common, secret-prod
+      hyeokjun: hyeokjun-server, common, secret-prod
+      minseok: minseok-server, common, secret-prod
+      hyeonjung: hyeonjung-server, common, secret-prod
 
 --- 
 spring:
@@ -28,16 +28,60 @@ app:
 spring:
   config:
     activate:
-      on-profile: prod-server
+      on-profile: keun-server
 
 domain:
   name:
     http: http://oxoxox.store
-    https: http://oxoxox.store
+    https: https://oxoxox.store
 
 app:
   cors:
-    allowed-origins: http://oxoxox.store
+    allowed-origins: https://oxoxox.store
+
+---
+spring:
+  config:
+    activate:
+      on-profile: hyeokjun-server
+
+domain:
+  name:
+    http: http://kakakao.store
+    https: https://kakakao.store
+
+app:
+  cors:
+    allowed-origins: https://kakakao.store
+
+---
+spring:
+  config:
+    activate:
+      on-profile: minseok-server
+
+domain:
+  name:
+    http: http://fridgemate.store
+    https: http://fridgemate.store
+
+app:
+  cors:
+    allowed-origins: http://fridgemate.store
+---
+spring:
+  config:
+    activate:
+      on-profile: hyeonjung-server
+
+domain:
+  name:
+    http: http://xoxoxo.store
+    https: https://xoxoxo.store
+
+app:
+  cors:
+    allowed-origins: https://xoxoxo.store
 
 ---
 

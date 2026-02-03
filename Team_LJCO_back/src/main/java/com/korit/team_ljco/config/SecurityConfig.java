@@ -58,6 +58,8 @@ public class SecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
 
+                                .requestMatchers("/api/user/ingredients/use-recipe/**").authenticated()
+
                                 // SecurityConfig.java의 71~74번 라인 근처 수정
 // 3. 공개 API - 재료, 레시피 (인증 불필요)
                                 .requestMatchers(

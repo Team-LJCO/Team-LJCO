@@ -28,6 +28,17 @@ public class UserIngredientController {
         return ResponseEntity.ok(fridgeHomeResponse);
     }
 
+
+    @PostMapping("/use-recipe/{rcpId}") // API 경로 설정
+    public ResponseEntity<?> useIngredients(
+            @AuthenticationPrincipal PrincipalUser principalUser, // 로그인 정보에서 userId 추출
+            @PathVariable Long rcpId) {
+
+        // principalUser가 null인지 체크하는 로직이 있으면 더 안전합니다.
+        userIngredientService.useRecipeIngredients(principalUser.getUserId(), rcpId);
+        return ResponseEntity.ok().build();
+    }
+
     /**
      * 사용자 재료 ID로 조회
      */
