@@ -15,6 +15,7 @@ jobs:
           if [ "${{ github.ref }}" == "refs/heads/deploy-hyeonjung" ]; then
             echo "GCP_VM_HOST=${{ secrets.GCP_VM_HOST_HYEONJUNG }}" >> $GITHUB_ENV
             echo "GCP_VM_USERNAME=${{ secrets.GCP_VM_USERNAME_HYEONJUNG }}" >> $GITHUB_ENV
+            echo "ACTIVE_PROFILE=hyeonjung" >> $GITHUB_ENV
             {
               echo "GCP_VM_SSHKEY<<EOF"
               echo "${{ secrets.GCP_VM_SSHKEY_HYEONJUNG }}"
@@ -35,6 +36,7 @@ jobs:
           elif [ "${{ github.ref }}" == "refs/heads/deploy-hyeokjun" ]; then
             echo "GCP_VM_HOST=${{ secrets.GCP_VM_HOST_HYEOKJUN }}" >> $GITHUB_ENV
             echo "GCP_VM_USERNAME=${{ secrets.GCP_VM_USERNAME_HYEOKJUN }}" >> $GITHUB_ENV
+            echo "ACTIVE_PROFILE=hyeokjun" >> $GITHUB_ENV
             {
               echo "GCP_VM_SSHKEY<<EOF"
               echo "${{ secrets.GCP_VM_SSHKEY_HYEOKJUN }}"
@@ -55,6 +57,7 @@ jobs:
           elif [ "${{ github.ref }}" == "refs/heads/deploy-minseok" ]; then
             echo "GCP_VM_HOST=${{ secrets.GCP_VM_HOST_MINSEOK }}" >> $GITHUB_ENV
             echo "GCP_VM_USERNAME=${{ secrets.GCP_VM_USERNAME_MINSEOK }}" >> $GITHUB_ENV
+            echo "ACTIVE_PROFILE=minseok" >> $GITHUB_ENV
             {
               echo "GCP_VM_SSHKEY<<EOF"
               echo "${{ secrets.GCP_VM_SSHKEY_MINSEOK }}"
@@ -75,6 +78,7 @@ jobs:
           elif [ "${{ github.ref }}" == "refs/heads/deploy-Keun" ]; then
             echo "GCP_VM_HOST=${{ secrets.GCP_VM_HOST_KEUN }}" >> $GITHUB_ENV
             echo "GCP_VM_USERNAME=${{ secrets.GCP_VM_USERNAME_KEUN }}" >> $GITHUB_ENV
+            echo "ACTIVE_PROFILE=keun" >> $GITHUB_ENV
             {
               echo "GCP_VM_SSHKEY<<EOF"
               echo "${{ secrets.GCP_VM_SSHKEY_KEUN }}"
