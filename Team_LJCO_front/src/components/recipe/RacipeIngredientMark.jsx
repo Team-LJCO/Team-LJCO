@@ -1,49 +1,87 @@
+/** @jsxImportSource @emotion/react */
+import dayjs from 'dayjs';
+
 export default function RecipeIngredientMark({ ingredients }) {
-    const whatColor = ingredients.matchedColor;
-    const isOwned = whatColor !== "N";
+    const { ingName, matchedIngId, createdAt, ingCatId } = ingredients;
 
-    const style = {
-    // 1. 배경색: 보유 시 흰색, 미보유 시 부드러운 회색 (#EEEEEE)
-    backgroundColor: isOwned ? "#ffffff" : "#eeeeee",
-    
-    // 2. 글자색: 요청하신 대로 미보유 시에도 검정색 계열(#333)로 또렷하게
-    color: isOwned ? "#000000" : "#333333",
+    // ★★★ 색상 결정 로직 (순서 중요!)
+    const getIngredientColor = () => {
+        // 1) 미보유 재료: 무조건 회색(N) - 최우선 체크!
+        if (!matchedIngId || !createdAt) {
+            return 'N';
+        }
 
-    // 3. 그림자: 💡 핵심! 이제 보유 여부와 상관없이 똑같은 입체감을 줍니다.
-    boxShadow: "0 3px 1px rgba(0, 0, 0, 0.3)",
+        // 2) 보유한 재료 중 양념/소스류(17번): 항상 초록(G)
+        if (ingCatId === 17) {
+            return 'G';
+        }
 
-    // 4. 테두리: 미보유 시에도 형태가 잘 보이도록 조금 더 진한 회색(#999) 적용
-    border: "1px solid",
-    borderColor: isOwned ? "#666" : "#999",
-};
+        // 3) 신선식품 카테고리 목록
+        const freshCategories = [
+            1,   // 소고기
+            13,  // 돼지고기
+            9,   // 닭고기
+            12,  // 해산물
+            15,  // 육류
+            6,   // 달걀/유제품
+            2,   // 채소
+            8,   // 과일
+            3,   // 버섯
+            5    // 가공식품류
+        ];
+
+        // 4) 보유한 신선식품만 날짜 체크
+        if (freshCategories.includes(ingCatId)) {
+            const daysPassed = dayjs().diff(dayjs(createdAt), 'day');
+
+            // 10일 이상 경과: 빨강(R)
+            if (daysPassed >= 10) {
+                return 'R';
+            }
+        }
+
+        // 5) 기본값: 초록(G) (10일 미만 or 기타 카테고리)
+        return 'G';
+    };
+
+    const matchedColor = getIngredientColor();
+
+    // 색상 매핑
+    const colorMap = {
+        G: {
+            bg: '#E8F5E9',
+            text: '#2E7D32',
+            border: '#C8E6C9'
+        },
+        R: {
+            bg: '#FFEBEE',
+            text: '#C62828',
+            border: '#FFCDD2'
+        },
+        N: {
+            bg: '#FAFAFA',
+            text: '#BDBDBD',
+            border: '#EEEEEE'
+        }
+    };
+
+    const colors = colorMap[matchedColor] || colorMap.N;
 
     return (
         <span
             style={{
-                ...style,
-                padding: "3px 7px",
-                borderRadius: "20px",
-                fontSize: "12px",
-                fontWeight: "600",
-                display: "inline-flex", // 체크와 글자를 나란히 배치
-                alignItems: "center",
-                gap: "1px",             // 체크와 글자 사이 간격
-                margin: "1px",
-                cursor: "default",
+                backgroundColor: colors.bg,
+                color: colors.text,
+                border: `1px solid ${colors.border}`,
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '13px',
+                fontWeight: '500',
+                display: 'inline-block',
+                margin: '2px'
             }}
         >
-            {/* ✅ 보유 중일 때만 체크 표시 추가 */}
-            {isOwned && (
-                <span style={{
-                    fontSize: "12px",
-                    marginBottom: "1px",
-                    color: "#34C759", // 💡 여기에 원하는 색상 코드를 넣으세요!
-                    fontWeight: "bold" // 체크를 좀 더 또렷하게 보이게 하려면 추가
-                }}>
-                    ✔
-                </span>
-            )}
-            {ingredients.ingName}
+            {ingName}
         </span>
     );
-}   
+}
