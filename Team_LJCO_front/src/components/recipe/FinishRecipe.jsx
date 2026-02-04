@@ -35,29 +35,49 @@ const FinishRecipe = ({ ingredients = [], onFinish, onAddMissing, onClose }) => 
     }, [selectedItems, ingredients]);
 
     // ✅ 서버 통신 및 액션 핸들러
-    const handleAction = async (type) => {
-        const { toDelete, toAdd } = selectedDetails;
-        try {
-            if (type === 'ALL') {
-                if (toDelete.length > 0) await onFinish(toDelete);
-                if (toAdd.length > 0) await onAddMissing(toAdd);
-                alert("냉장고 정리가 완료되었습니다! ✨");
-            } else if (type === 'ADD_ONLY') {
-                await onAddMissing(toAdd);
-                alert("선택한 재료가 냉장고에 추가되었습니다! ✅");
-            } else if (type === 'COUPANG') {
-                if (toAdd.length > 0) {
-                    window.open(`https://www.coupang.com/np/search?q=${encodeURIComponent(toAdd[0])}`, '_blank');
-                    return;
-                }
+const handleAction = async (type) => {
+    const { toDelete, toAdd } = selectedDetails;
+    
+    console.log("🔍 handleAction 호출됨");
+    console.log("Type:", type);
+    console.log("toDelete:", toDelete);
+    console.log("toAdd:", toAdd);
+    console.log("onFinish 함수:", onFinish);
+    console.log("onAddMissing 함수:", onAddMissing);
+    
+    try {
+        if (type === 'ALL') {
+            if (toDelete.length > 0 && onFinish) {
+                console.log("✅ onFinish 호출 시도:", toDelete);
+                await onFinish(toDelete);
+                console.log("✅ onFinish 완료");
             }
-            if (onClose) onClose();
-            window.location.reload(); // 데이터 동기화를 위해 새로고침
-        } catch (err) {
-            console.error("Action 처리 중 오류:", err);
-            alert("처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+            if (toAdd.length > 0 && onAddMissing) {
+                console.log("✅ onAddMissing 호출 시도:", toAdd);
+                await onAddMissing(toAdd);
+                console.log("✅ onAddMissing 완료");
+            }
+            alert("냉장고 정리가 완료되었습니다! ✨");
+        } else if (type === 'ADD_ONLY') {
+            if (onAddMissing) {
+                console.log("✅ onAddMissing 호출 시도 (ADD_ONLY):", toAdd);
+                await onAddMissing(toAdd);
+                console.log("✅ onAddMissing 완료");
+            }
+            alert("선택한 재료가 냉장고에 추가되었습니다! ✅");
+        } else if (type === 'COUPANG') {
+            if (toAdd.length > 0) {
+                window.open(`https://www.coupang.com/np/search?q=${encodeURIComponent(toAdd[0])}`, '_blank');
+                return;
+            }
         }
-    };
+        if (onClose) onClose();
+    } catch (err) {
+        console.error("❌ Action 처리 중 오류:", err);
+        console.error("❌ 에러 상세:", err.response?.data || err.message);
+        alert("처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+    }
+};
 
     return (
         <div css={s.finishContainer}>

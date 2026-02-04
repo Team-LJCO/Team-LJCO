@@ -4,13 +4,9 @@ import axios from "axios";
 import { s } from "./styles";
 import FinishRecipe from "./FinishRecipe";
 
-function RecipeSearchModal({ recipe, onFinish, onAddMissing, onClose }) {
+export default function RecipeSearchModal({ recipe, onFinish, onAddMissing, onClose }) {
     const [steps, setSteps] = useState([]);
     const [loading, setLoading] = useState(true);
-
-    // ✅ [확인용] 데이터가 어떻게 들어오는지 콘솔에 찍어보세요.
-    // F12 개발자 도구 콘솔창에서 rcpIngredients나 ingredients가 있는지 확인!
-    console.log("전달된 레시피 데이터:", recipe);
 
     useEffect(() => {
         if (typeof document !== "undefined" && document.body) {
@@ -27,7 +23,11 @@ function RecipeSearchModal({ recipe, onFinish, onAddMissing, onClose }) {
             try {
                 const stepRes = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/recipes/${recipe.rcpId}/steps`);
                 setSteps(stepRes.data || []);
-            } catch (err) { console.error("데이터 로드 실패", err); } finally { setLoading(false); }
+            } catch (err) { 
+                console.error("데이터 로드 실패", err); 
+            } finally { 
+                setLoading(false); 
+            }
         };
         fetchRecipeData();
     }, [recipe?.rcpId]);
@@ -56,11 +56,7 @@ function RecipeSearchModal({ recipe, onFinish, onAddMissing, onClose }) {
                 <div className="recipe-sidebar">
                     {!loading && (
                         <FinishRecipe
-                            /* 💡 [가장 중요] 서버 응답 필드명 매핑 
-                               서버에서 'ingredients'로 줄 수도 있고 'rcpIngredients'로 줄 수도 있습니다.
-                               둘 다 확인해서 데이터를 넘겨주도록 수정했습니다.
-                            */
-                            ingredients={recipe?.ingredients || recipe?.rcpIngredients || []} 
+                            ingredients={recipe?.userIngredients || recipe?.ingredients || recipe?.rcpIngredients || []} 
                             onFinish={onFinish}
                             onAddMissing={onAddMissing}
                             onClose={onClose}
@@ -71,5 +67,3 @@ function RecipeSearchModal({ recipe, onFinish, onAddMissing, onClose }) {
         </div>
     );
 }
-
-export default RecipeSearchModal;
