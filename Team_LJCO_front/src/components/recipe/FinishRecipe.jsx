@@ -6,14 +6,13 @@ import { IoExitOutline, IoCartOutline, IoCheckmarkCircleOutline } from "react-ic
 const FinishRecipe = ({ ingredients = [], onFinish, onAddMissing, onClose }) => {
     const [selectedItems, setSelectedItems] = useState([]);
     const [hoveredItem, setHoveredItem] = useState(null);
+    const [isProcessing, setIsProcessing] = useState(false); // ✅ 로딩 상태 추가
 
-    // ✅ 데이터 유효성 검사 및 정렬 로직 (부족한 재료 'N'이 뒤로 가게 설정)
     const sortedIngredients = useMemo(() => {
         if (!Array.isArray(ingredients)) return [];
         return [...ingredients].sort((a, b) => (a.matchedColor === 'N' ? 1 : -1));
     }, [ingredients]);
 
-    // ✅ 아이템 선택/해제 토글
     const toggleItem = (name) => {
         if (!name) return;
         setSelectedItems(prev => 
@@ -21,47 +20,62 @@ const FinishRecipe = ({ ingredients = [], onFinish, onAddMissing, onClose }) => 
         );
     };
 
-    // ✅ 선택된 아이템들을 '비울 것(Delete)'과 '채울 것(Add)'으로 분리
     const selectedDetails = useMemo(() => {
         const toDelete = selectedItems.filter(name => {
             const target = ingredients.find(ing => ing.ingName === name);
-            return target && target.matchedColor !== 'N'; // 매칭된 재료 (주황색 테마)
+            return target && target.matchedColor !== 'N';
         });
         const toAdd = selectedItems.filter(name => {
             const target = ingredients.find(ing => ing.ingName === name);
-            return target && target.matchedColor === 'N'; // 부족한 재료 (파란색 테마)
+            return target && target.matchedColor === 'N';
         });
         return { toDelete, toAdd };
     }, [selectedItems, ingredients]);
 
-    // ✅ 서버 통신 및 액션 핸들러
+    // ✅ 수정된 액션 핸들러 (새로고침 제거, 순차 처리 보장)
     const handleAction = async (type) => {
         const { toDelete, toAdd } = selectedDetails;
+        
+        // 쿠팡 바로가기는 서버 통신 없이 바로 실행
+        if (type === 'COUPANG') {
+            if (toAdd.length > 0) {
+                window.open(`https://www.coupang.com/np/search?q=${encodeURIComponent(toAdd[0])}`, '_blank');
+            }
+            return;
+        }
+
+        setIsProcessing(true); // 로딩 시작
+
         try {
             if (type === 'ALL') {
-                if (toDelete.length > 0) await onFinish(toDelete);
-                if (toAdd.length > 0) await onAddMissing(toAdd);
+                // 순차적으로 처리 (삭제 → 추가)
+                if (toDelete.length > 0) {
+                    await onFinish(toDelete);
+                }
+                if (toAdd.length > 0) {
+                    await onAddMissing(toAdd);
+                }
                 alert("냉장고 정리가 완료되었습니다! ✨");
             } else if (type === 'ADD_ONLY') {
                 await onAddMissing(toAdd);
                 alert("선택한 재료가 냉장고에 추가되었습니다! ✅");
-            } else if (type === 'COUPANG') {
-                if (toAdd.length > 0) {
-                    window.open(`https://www.coupang.com/np/search?q=${encodeURIComponent(toAdd[0])}`, '_blank');
-                    return;
-                }
             }
-            if (onClose) onClose();
-            window.location.reload(); // 데이터 동기화를 위해 새로고침
+
+            // ✅ 서버 통신 완료 후 모달 닫기 (새로고침 삭제)
+            if (onClose) {
+                onClose(); // 모달 닫기 → Home.jsx의 쿼리 무효화가 자동 실행됨
+            }
+
         } catch (err) {
             console.error("Action 처리 중 오류:", err);
             alert("처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+        } finally {
+            setIsProcessing(false); // 로딩 종료
         }
     };
 
     return (
         <div css={s.finishContainer}>
-            {/* 상단 텍스트 가이드 */}
             <div className="text-section">
                 <h3 className="finish-title">냉장고 정리 ✨</h3>
                 <p className="finish-desc">
@@ -74,7 +88,6 @@ const FinishRecipe = ({ ingredients = [], onFinish, onAddMissing, onClose }) => 
                 </p>
             </div>
 
-            {/* 재료 리스트 영역 */}
             <div className="ingredient-list">
                 {sortedIngredients.length === 0 ? (
                     <div style={{ width: '100%', padding: '60px 20px', textAlign: 'center', color: '#bbb', fontWeight: '800' }}>
@@ -82,10 +95,10 @@ const FinishRecipe = ({ ingredients = [], onFinish, onAddMissing, onClose }) => 
                     </div>
                 ) : (
                     sortedIngredients.map((ing, idx) => {
-                        const isMissing = ing.matchedColor === 'N'; // 부족한 재료 여부
+                        const isMissing = ing.matchedColor === 'N';
                         const isChecked = selectedItems.includes(ing.ingName);
                         const isHovered = hoveredItem === ing.ingName;
-                        const themeColor = isMissing ? '33, 150, 243' : '255, 112, 67'; // 파랑 vs 주황
+                        const themeColor = isMissing ? '33, 150, 243' : '255, 112, 67';
 
                         return (
                             <div key={idx} className="ing-card"
@@ -117,21 +130,48 @@ const FinishRecipe = ({ ingredients = [], onFinish, onAddMissing, onClose }) => 
                 )}
             </div>
 
-            {/* 하단 버튼 액션 영역 */}
             <div className="bottom-action">
                 {selectedItems.length === 0 ? (
-                    <button className="complete-btn default" onClick={onClose}>그대로 완료하기</button>
+                    <button 
+                        className="complete-btn default" 
+                        onClick={onClose}
+                        disabled={isProcessing}
+                    >
+                        그대로 완료하기
+                    </button>
                 ) : (selectedDetails.toDelete.length > 0 && selectedDetails.toAdd.length > 0) ? (
-                    <button className="complete-btn finish" onClick={() => handleAction('ALL')}>냉장고 정리 하기 ✨</button>
+                    <button 
+                        className="complete-btn finish" 
+                        onClick={() => handleAction('ALL')}
+                        disabled={isProcessing}
+                    >
+                        {isProcessing ? "처리 중..." : "냉장고 정리 하기 ✨"}
+                    </button>
                 ) : selectedDetails.toDelete.length > 0 ? (
-                    <button className="complete-btn finish" onClick={() => handleAction('ALL')}>{selectedDetails.toDelete.length}개의 재료 비우기</button>
+                    <button 
+                        className="complete-btn finish" 
+                        onClick={() => handleAction('ALL')}
+                        disabled={isProcessing}
+                    >
+                        {isProcessing ? "처리 중..." : `${selectedDetails.toDelete.length}개의 재료 비우기`}
+                    </button>
                 ) : (
                     <div className="btn-row">
-                        <button className="complete-btn add" onClick={() => handleAction('ADD_ONLY')} style={{ flex: 1.2 }}>
-                            {selectedDetails.toAdd.length}개의 재료 추가
+                        <button 
+                            className="complete-btn add" 
+                            onClick={() => handleAction('ADD_ONLY')} 
+                            style={{ flex: 1.2 }}
+                            disabled={isProcessing}
+                        >
+                            {isProcessing ? "추가 중..." : `${selectedDetails.toAdd.length}개의 재료 추가`}
                         </button>
                         {selectedDetails.toAdd.length === 1 && (
-                            <button className="complete-btn shop" onClick={() => handleAction('COUPANG')} style={{ flex: 0.8 }}>
+                            <button 
+                                className="complete-btn shop" 
+                                onClick={() => handleAction('COUPANG')} 
+                                style={{ flex: 0.8 }}
+                                disabled={isProcessing}
+                            >
                                 장보기 🛒
                             </button>
                         )}

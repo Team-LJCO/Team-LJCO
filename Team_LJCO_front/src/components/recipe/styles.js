@@ -158,19 +158,26 @@ export const s = {
                 box-shadow: 0 4px 12px rgba(33, 150, 243, 0.15); 
             }
 
+            /* ✅ disabled 상태 스타일 추가 */
+            &:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+                transform: none !important;
+            }
+
             &:hover:not(:disabled) {
                 transform: translateY(-2px);
                 box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
                 filter: brightness(1.05);
             }
 
-            &.shop:hover {
+            &.shop:hover:not(:disabled) {
                 background-color: #e3f2fd;
                 box-shadow: 0 8px 20px rgba(33, 150, 243, 0.25);
                 color: #1976d2;
             }
 
-            &:active { transform: translateY(1px); }
+            &:active:not(:disabled) { transform: translateY(1px); }
         }
 
         .btn-row { display: flex; gap: 10px; width: 100%; }

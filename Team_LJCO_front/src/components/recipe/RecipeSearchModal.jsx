@@ -8,9 +8,8 @@ function RecipeSearchModal({ recipe, onFinish, onAddMissing, onClose }) {
     const [steps, setSteps] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // ✅ [확인용] 데이터가 어떻게 들어오는지 콘솔에 찍어보세요.
-    // F12 개발자 도구 콘솔창에서 rcpIngredients나 ingredients가 있는지 확인!
     console.log("전달된 레시피 데이터:", recipe);
+    console.log("전달된 핸들러 확인:", { onFinish, onAddMissing, onClose }); // ✅ 디버깅용
 
     useEffect(() => {
         if (typeof document !== "undefined" && document.body) {
@@ -27,25 +26,64 @@ function RecipeSearchModal({ recipe, onFinish, onAddMissing, onClose }) {
             try {
                 const stepRes = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/recipes/${recipe.rcpId}/steps`);
                 setSteps(stepRes.data || []);
-            } catch (err) { console.error("데이터 로드 실패", err); } finally { setLoading(false); }
+            } catch (err) { 
+                console.error("데이터 로드 실패", err); 
+            } finally { 
+                setLoading(false); 
+            }
         };
         fetchRecipeData();
     }, [recipe?.rcpId]);
+
+    // ✅ 핸들러가 없을 경우 기본 함수 제공 (에러 방지)
+    const handleFinish = onFinish || (async () => {
+        console.warn("onFinish 핸들러가 전달되지 않았습니다.");
+    });
+
+    const handleAddMissing = onAddMissing || (async () => {
+        console.warn("onAddMissing 핸들러가 전달되지 않았습니다.");
+    });
 
     return (
         <div css={s.detailOverlay} onClick={onClose}>
             <div css={s.detailContent} onClick={(e) => e.stopPropagation()}>
                 <div className="recipe-body">
                     <button className="back-btn" onClick={onClose}>← 뒤로가기</button>
-                    <h2 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '20px' }}>{recipe?.rcpName}</h2>
-                    <img src={recipe?.rcpImgUrl} alt="main" style={{ width: '100%', height: '400px', objectFit: 'cover', borderRadius: '25px', marginBottom: '35px' }} />
+                    <h2 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '20px' }}>
+                        {recipe?.rcpName}
+                    </h2>
+                    <img 
+                        src={recipe?.rcpImgUrl} 
+                        alt="main" 
+                        style={{ 
+                            width: '100%', 
+                            height: '400px', 
+                            objectFit: 'cover', 
+                            borderRadius: '25px', 
+                            marginBottom: '35px' 
+                        }} 
+                    />
                     <h3 style={{ fontSize: '24px', fontWeight: '900' }}>🍳 조리 순서</h3>
-                    {loading ? <p>로딩 중...</p> : (
+                    {loading ? (
+                        <p>로딩 중...</p>
+                    ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '40px', marginTop: '20px' }}>
                             {steps.map((step) => (
                                 <div key={step.stepId}>
-                                    <div style={{ fontWeight: '900', color: '#ff7043' }}>STEP {step.stepNo}</div>
-                                    {step.stepImgUrl && <img src={step.stepImgUrl} style={{ width: '100%', borderRadius: '20px', margin: '15px 0' }} alt="step" />}
+                                    <div style={{ fontWeight: '900', color: '#ff7043' }}>
+                                        STEP {step.stepNo}
+                                    </div>
+                                    {step.stepImgUrl && (
+                                        <img 
+                                            src={step.stepImgUrl} 
+                                            style={{ 
+                                                width: '100%', 
+                                                borderRadius: '20px', 
+                                                margin: '15px 0' 
+                                            }} 
+                                            alt="step" 
+                                        />
+                                    )}
                                     <p>{step.stepDesc}</p>
                                 </div>
                             ))}
@@ -56,13 +94,9 @@ function RecipeSearchModal({ recipe, onFinish, onAddMissing, onClose }) {
                 <div className="recipe-sidebar">
                     {!loading && (
                         <FinishRecipe
-                            /* 💡 [가장 중요] 서버 응답 필드명 매핑 
-                               서버에서 'ingredients'로 줄 수도 있고 'rcpIngredients'로 줄 수도 있습니다.
-                               둘 다 확인해서 데이터를 넘겨주도록 수정했습니다.
-                            */
-                            ingredients={recipe?.ingredients || recipe?.rcpIngredients || []} 
-                            onFinish={onFinish}
-                            onAddMissing={onAddMissing}
+                            ingredients={recipe?.ingredients || recipe?.rcpIngredients || recipe?.userIngredients || []}
+                            onFinish={handleFinish}  // ✅ 안전한 핸들러 전달
+                            onAddMissing={handleAddMissing}  // ✅ 안전한 핸들러 전달
                             onClose={onClose}
                         />
                     )}

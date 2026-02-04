@@ -6,8 +6,11 @@ export default function CookableRecipesModal({
   recipes = [],
   onClose,
   onSelectRecipe,
+  onFinish,        // ✅ 추가
+  onAddMissing,    // ✅ 추가
 }) {
   const handleSelect = (recipe) => {
+    // ✅ 레시피 선택 시 핸들러들도 함께 전달
     onSelectRecipe?.(recipe);
     onClose?.();
   };
@@ -26,7 +29,6 @@ export default function CookableRecipesModal({
         padding: 16,
       }}
     >
-
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
@@ -36,24 +38,26 @@ export default function CookableRecipesModal({
           display: "flex",           
           flexDirection: "column",
           padding: 16,
-            borderRadius: 20
+          borderRadius: 20
         }}
       >
-
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>요리 가능 레시피</div>
-          <button onClick={onClose}
+          <button 
+            onClick={onClose}
             style={{
-            border: "none",
-            background: "#ff7043",
-            color: "#fff",
-            padding: "6px 14px",
-            borderRadius: 9999,
-            cursor: "pointer",
-            fontSize: 13,
-            fontWeight: 600,
-        }}
-  >닫기</button>
+              border: "none",
+              background: "#ff7043",
+              color: "#fff",
+              padding: "6px 14px",
+              borderRadius: 9999,
+              cursor: "pointer",
+              fontSize: 13,
+              fontWeight: 600,
+            }}
+          >
+            닫기
+          </button>
         </div>
 
         <hr />
@@ -76,9 +80,8 @@ export default function CookableRecipesModal({
                   css={recipeS.recipeCard}
                   onClick={() => handleSelect(r)}
                   style={{
-                cursor: "pointer",
-                }}
-
+                    cursor: "pointer",
+                  }}
                 >
                   <RecipeCardContent
                     recipe={{
