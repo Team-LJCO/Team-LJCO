@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: @active.profile@
+    active: dev
     group:
       dev: dev, common, secret-dev
       prod: prod-server, common, secret-prod
