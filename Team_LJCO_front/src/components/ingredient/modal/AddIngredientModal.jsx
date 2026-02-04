@@ -41,7 +41,7 @@ function AddIngredientModal({ onClose }) {
                 
                 <input 
                     css={s.searchBox} 
-                    placeholder="재료 이름을 입력하세요 (예: 간소고기)" 
+                    placeholder="재료 이름을 입력하세요 (예: 삼겹살)" 
                     value={keyword} 
                     onChange={(e) => setKeyword(e.target.value)}
                     autoFocus

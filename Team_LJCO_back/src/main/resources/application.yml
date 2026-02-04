@@ -63,11 +63,11 @@ spring:
 domain:
   name:
     http: http://fridgemate.store
-    https: http://fridgemate.store
+    https: https://fridgemate.store
 
 app:
   cors:
-    allowed-origins: http://fridgemate.store
+    allowed-origins: https://fridgemate.store
 
 ---
 spring:

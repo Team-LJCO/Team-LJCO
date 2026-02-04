@@ -20,14 +20,6 @@
         </association>
     </resultMap>
 
-    <delete id="deleteMatchingIngredients">
-        DELETE FROM user_ingredients  WHERE user_id = #{userId}
-        AND ing_id IN (
-        SELECT ing_id
-        FROM rcp_ing  WHERE rcp_id = #{rcpId}
-        )
-    </delete>
-
     <resultMap id="IngredientsByUser"
                type="com.korit.team_ljco.dto.UserIngredientResponse">
         <id property="rcpId" column="rcp_id"/>
@@ -42,50 +34,43 @@
         </collection>
     </resultMap>
 
-
-
     <select id="countExpiredIngredients" parameterType="long" resultType="int">
-        select count(*)
-        from user_ingredients ui
-        where ui.user_id = #{userId}
-        and datediff(current_date, ui.created_at) >= 15
+        SELECT count(*)
+        FROM user_ingredients ui
+        WHERE ui.user_id = #{userId}
+        AND DATEDIFF(CURRENT_DATE, ui.created_at) >= 15
     </select>
 
-    <select id="getMatchedRecipes"  resultMap="IngredientsByUser">
-        select
-            r.rcp_id,
-            r.rcp_name,
-            r.rcp_img_url,
-            r.rcp_view_count,
-            r.level,
-            r.total_count,
-            i.ing_id,
-            i.ing_name
-        from
+    <select id="getMatchedRecipes" resultMap="IngredientsByUser">
+        SELECT
+        r.rcp_id,
+        r.rcp_name,
+        r.rcp_img_url,
+        r.rcp_view_count,
+        r.level,
+        r.total_count,
+        i.ing_id,
+        i.ing_name
+        FROM
         (
-        select
-            rcp.rcp_id,
-            rcp.rcp_name,
-            rcp.rcp_img_url,
-            rcp.rcp_view_count,
-            rcp.level,
-            count(*) over() as total_count
-        from rcp rcp
-        join rcp_ing ri
-        on ri.rcp_id = rcp.rcp_id
-        left join user_ingredients ui
-        on ui.user_id = #{userId}
-        and ui.ing_id = ri.ing_id
-        group by
-            rcp.rcp_id, rcp.rcp_name,rcp.rcp_img_url, rcp.rcp_view_count, rcp.level
-        having count(distinct ui.ing_id) = count(distinct ri.ing_id)
-        order by rcp.rcp_view_count desc
-        limit #{limit}
+        SELECT
+        rcp.rcp_id,
+        rcp.rcp_name,
+        rcp.rcp_img_url,
+        rcp.rcp_view_count,
+        rcp.level,
+        count(*) over() as total_count
+        FROM rcp rcp
+        JOIN rcp_ing ri ON ri.rcp_id = rcp.rcp_id
+        LEFT JOIN user_ingredients ui ON ui.user_id = #{userId} AND ui.ing_id = ri.ing_id
+        GROUP BY
+        rcp.rcp_id, rcp.rcp_name, rcp.rcp_img_url, rcp.rcp_view_count, rcp.level
+        HAVING count(distinct ui.ing_id) = count(distinct ri.ing_id)
+        ORDER BY rcp.rcp_view_count DESC
+        LIMIT #{limit}
         ) r
-        join rcp_ing ri
-        on ri.rcp_id = r.rcp_id
-        join ingredients i
-        on i.ing_id = ri.ing_id
+        JOIN rcp_ing ri ON ri.rcp_id = r.rcp_id
+        JOIN ingredients i ON i.ing_id = ri.ing_id
     </select>
 
 
@@ -95,47 +80,33 @@
         SELECT
         ui.user_ing_id, ui.user_id, ui.ing_id, ui.user_ing_amt,
         ui.created_at, ui.updated_at,
-        i.ing_name, i.ing_cat_id, i.ing_img_url
+        i.ing_name, i.ing_cat_id, i.ing_img_url,
+        DATEDIFF(CURRENT_DATE, ui.created_at) AS diff_days
         FROM user_ingredients ui
         INNER JOIN ingredients i ON ui.ing_id = i.ing_id
         WHERE ui.user_id = #{userId}
         ORDER BY
-        -- 1순위: 요청하신 그룹별 우선순위
+        CASE WHEN DATEDIFF(CURRENT_DATE, ui.created_at) = 0 THEN 0 ELSE 1 END ASC,
         CASE i.ing_cat_id
-        WHEN 1  THEN 1  -- 소고기
-        WHEN 13 THEN 2  -- 돼지고기
-        WHEN 9  THEN 3  -- 닭고기
-        -- 그룹 4: 해산물, 육류, 달걀/유제품 (동일 가중치 4 부여)
-        WHEN 12 THEN 4
-        WHEN 15 THEN 4
-        WHEN 6  THEN 4
-        -- 그룹 5: 채소, 과일, 버섯 (동일 가중치 5 부여)
-        WHEN 2  THEN 5
-        WHEN 8  THEN 5
-        WHEN 3  THEN 5
-        WHEN 5  THEN 6  -- 가공식품류
-        -- 그룹 7: 건어물, 쌀, 곡류, 콩/견과류 (동일 가중치 7 부여)
-        WHEN 10 THEN 7
-        WHEN 7  THEN 7
-        WHEN 16 THEN 7
-        WHEN 11 THEN 7
-        -- 그룹 8: 밀가루/전분, 양념/소스류
-        WHEN 14 THEN 8
-        WHEN 17 THEN 8
+        WHEN 1  THEN 1   WHEN 13 THEN 1   WHEN 9  THEN 1
+        WHEN 12 THEN 1   WHEN 15 THEN 1   WHEN 6  THEN 1
+        WHEN 2  THEN 1   WHEN 3  THEN 1   WHEN 8  THEN 1
+        WHEN 5  THEN 2
+        WHEN 10 THEN 3   WHEN 7  THEN 3   WHEN 16 THEN 3   WHEN 11 THEN 3
+        WHEN 14 THEN 4   WHEN 17 THEN 4
         ELSE 99
         END ASC,
-        -- 2순위: 같은 그룹 내에서는 등록일이 오래된 순(D+ 높은 순)
-        ui.created_at ASC
+        diff_days DESC
     </select>
 
 
 
     <!-- ID로 사용자 재료 조회 -->
     <select id="selectUserIngredientById" parameterType="long" resultMap="UserIngredientResultMap">
-        SELECT 
-            ui.user_ing_id, ui.user_id, ui.ing_id, ui.user_ing_amt,
-            ui.created_at, ui.updated_at,
-            i.ing_name, i.ing_cat_id, i.ing_img_url
+        SELECT
+        ui.user_ing_id, ui.user_id, ui.ing_id, ui.user_ing_amt,
+        ui.created_at, ui.updated_at,
+        i.ing_name, i.ing_cat_id, i.ing_img_url
         FROM user_ingredients ui
         INNER JOIN ingredients i ON ui.ing_id = i.ing_id
         WHERE ui.user_ing_id = #{userIngId}
@@ -143,10 +114,10 @@
 
     <!-- 사용자와 재료로 조회 -->
     <select id="selectUserIngredientByUserAndIng" resultMap="UserIngredientResultMap">
-        SELECT 
-            ui.user_ing_id, ui.user_id, ui.ing_id, ui.user_ing_amt,
-            ui.created_at, ui.updated_at,
-            i.ing_name, i.ing_cat_id, i.ing_img_url
+        SELECT
+        ui.user_ing_id, ui.user_id, ui.ing_id, ui.user_ing_amt,
+        ui.created_at, ui.updated_at,
+        i.ing_name, i.ing_cat_id, i.ing_img_url
         FROM user_ingredients ui
         INNER JOIN ingredients i ON ui.ing_id = i.ing_id
         WHERE ui.user_id = #{userId} AND ui.ing_id = #{ingId}
@@ -155,33 +126,51 @@
     <!-- 사용자 재료 등록 -->
     <insert id="insertUserIngredient" parameterType="com.korit.team_ljco.entity.UserIngredient"
             useGeneratedKeys="true" keyProperty="userIngId">
-        INSERT INTO user_ingredients (
-            user_id, ing_id, user_ing_amt
-        ) VALUES (
-            #{userId}, #{ingId}, #{userIngAmt}
-        )
+        INSERT INTO user_ingredients (user_id, ing_id, user_ing_amt)
+        VALUES (#{userId}, #{ingId}, #{userIngAmt})
     </insert>
 
+    <!--재료 목록받아서 추가-->
+    <insert id="insertIngredientsByNames">
+        INSERT INTO user_ingredients (user_id, ing_id, user_ing_amt, created_at)
+        SELECT #{userId}, ing_id, 1.00, CURRENT_TIMESTAMP
+        FROM ingredients
+        WHERE ing_name IN
+        <foreach collection="ingredientNames" item="name" open="(" separator="," close=")">
+            #{name}
+        </foreach>
+    </insert>
 
     <!-- 사용자 재료 수정 -->
     <update id="updateUserIngredient" parameterType="com.korit.team_ljco.entity.UserIngredient">
         UPDATE user_ingredients
-        SET
-            user_ing_amt = #{userIngAmt},
-            updated_at = CURRENT_TIMESTAMP
+        SET user_ing_amt = #{userIngAmt}, updated_at = CURRENT_TIMESTAMP
         WHERE user_ing_id = #{userIngId}
     </update>
 
     <!-- 사용자 재료 삭제 -->
     <delete id="deleteUserIngredient" parameterType="long">
-        DELETE FROM user_ingredients
-        WHERE user_ing_id = #{userIngId}
+        DELETE FROM user_ingredients WHERE user_ing_id = #{userIngId}
     </delete>
 
     <!-- 사용자의 모든 재료 삭제 -->
     <delete id="deleteUserIngredientsByUser" parameterType="long">
+        DELETE FROM user_ingredients WHERE user_id = #{userId}
+    </delete>
+
+    <!--재료 목록받아서 삭제-->
+    <delete id="deleteIngredientsByNames">
+
         DELETE FROM user_ingredients
         WHERE user_id = #{userId}
+        AND ing_id IN (
+        SELECT ing_id
+        FROM ingredients
+        WHERE ing_name IN
+        <foreach collection="ingredientNames" item="name" open="(" separator="," close=")">
+            #{name}
+        </foreach>
+        )
     </delete>
 
     <!-- 사용자 재료 수 -->

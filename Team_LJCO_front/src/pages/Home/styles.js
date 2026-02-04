@@ -1,7 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { css, keyframes } from "@emotion/react";
 
-// 💡 냉장고 캐릭터 흔들림 애니메이션
 const refrigeratorShake = keyframes`
   0% { transform: rotate(0deg); }
   25% { transform: rotate(-3deg); }
@@ -10,11 +9,9 @@ const refrigeratorShake = keyframes`
   100% { transform: rotate(0deg); }
 `;
 
-export const    fontImport = css`
+export const fontImport = css`
   @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 `;
-
-
 
 export const s = {
   wrapper: css`
@@ -22,6 +19,32 @@ export const s = {
     min-height: 100vh;
     padding: 20px;
     font-family: 'Pretendard', sans-serif;
+    position: relative;
+  `,
+
+  /* --- 관리자 퀵 버튼 (⚙️) --- */
+  adminFab: css`
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    width: 50px;
+    height: 50px;
+    background: #FFFFFF;
+    border: 1px solid #eee;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: rotate(90deg);
+      background: #FCE9DD;
+    }
   `,
 
   container: css`
@@ -40,12 +63,15 @@ export const s = {
     align-items: center;
     gap: 15px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    
-    /* 6번: 반응형 조율 */
-    @media (max-width: 768px) {
-      padding: 10px 15px;
-      gap: 10px;
-    }
+    @media (max-width: 768px) { padding: 10px 15px; }
+  `,
+
+  searchContainer: css`
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   `,
 
   logo: css`
@@ -56,36 +82,16 @@ export const s = {
     align-items: center;
     gap: 10px;
     cursor: pointer;
-    flex-shrink: 0; /* 로고 크기 유지 */
-
-    /* 6번: 모바일에서 텍스트 숨기기 */
-    @media (max-width: 600px) {
-      font-size: 0; 
-      .logo-box { font-size: 18px; }
-    }
-
-    .logo-box {
-      background: #FF7043;
-      width: 35px;
-      height: 35px;
-      border-radius: 12px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #FFFFFF;
-      font-size: 18px;
-    }
+    flex-shrink: 0;
+    @media (max-width: 600px) { font-size: 0; .logo-box { font-size: 18px; } }
+    .logo-box { background: #FF7043; width: 35px; height: 35px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: #FFFFFF; }
   `,
 
   navGroup: css`
     display: flex;
     gap: 8px;
     flex-shrink: 0;
-
-    /* 6번: 버튼 간격 및 텍스트 조율 */
-    @media (max-width: 768px) {
-      gap: 4px;
-    }
+    @media (max-width: 768px) { gap: 4px; }
   `,
 
   pillBtn: (isPrimary) => css`
@@ -102,48 +108,13 @@ export const s = {
     font-size: 14px;
     cursor: pointer;
     white-space: nowrap;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-
-    svg {
-      transition: transform 0.2s ease;
-    }
-
-    &:hover {
-      background: ${isPrimary ? "#E65A2D" : "#FBDDC8"};
-      transform: translateY(-2px);
-      
-      svg {
-        transform: scale(1.1);
-      }
-    }
-
-    /* 태블릿 반응형 */
-    @media (max-width: 768px) {
-      padding: 10px 15px;
-      font-size: 15px;
-      gap: 6px;
-    }
-
-    /* 모바일 반응형 */
-    @media (max-width: 600px) {
-      width: 42px;
-      height: 42px;
-      padding: 0;
-      border-radius: 14px;
-      
-      .btn-text {
-        display: none;
-      }
-      
-      svg {
-        width: 20px;
-        height: 20px;
-      }
-    }
+    transition: all 0.2s ease;
+    @media (max-width: 768px) { padding: 10px 15px; font-size: 16px; }
+    @media (max-width: 600px) { width: 45px; height: 45px; padding: 0; border-radius: 50%; .btn-text { display: none; } }
   `,
 
   recipeSearch: css`
-    flex: 1;
+    width: 100%;
     background: #FFFFFF;
     border: 1px solid #FF704333;
     border-radius: 25px;
@@ -152,11 +123,11 @@ export const s = {
     outline: none;
   `,
 
-  // 대시보드 카드 그리드
   dashboardGrid: css`
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
+    @media (max-width: 768px) { grid-template-columns: 1fr; }
   `,
 
   summaryCard: css`
@@ -167,65 +138,26 @@ export const s = {
     justify-content: space-between;
     align-items: flex-end;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-
-    /* 창이 768px 이하로 줄어들 때 패딩 조절 */
-    @media (max-width: 768px) {
-      padding: 20px;
-    }
-
-    .info {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .label {
-      font-size: 16px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      white-space: nowrap; /* 글자 줄바꿈 방지 */
-    }
-
-    .count {
-      font-size: 55px;
-      font-weight: 800;
-      color: #333;
-      line-height: 0.8;
-
-      /* 창이 좁아지면 숫자 크기를 살짝 줄여서 공간 확보 */
-      @media (max-width: 850px) {
-        font-size: 40px;
-      }
-    }
-
-    .icon-wrap {
-      width: 65px;
-      height: 65px;
-      background: #FFF5F2;
-      border-radius: 22px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 32px;
-
-      /* 핵심: 창이 700px 이하로 줄어들면 이모티콘 박스 숨기기 */
-      @media (max-width: 700px) {
-        display: none;
-      }
-    }
+    .info { display: flex; flex-direction: column; gap: 12px; }
+    .label { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .count { font-size: 55px; font-weight: 800; color: #333; line-height: 0.8; }
+    .icon-wrap { width: 65px; height: 65px; background: #FFF5F2; border-radius: 22px; display: flex; justify-content: center; align-items: center; font-size: 32px; }
   `,
 
-  
+  summaryCardClickable: css`
+    cursor: pointer;
+    transition: 0.15s ease;
+    &:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06); }
+    &:active { transform: translateY(-1px) scale(0.99); }
+  `,
 
-  // 식재료 리스트 섹션
   listSection: css`
     background: #FFFFFF;
     border-radius: 40px;
     padding: 40px;
     min-height: 400px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+    @media (max-width: 768px) { padding: 25px; }
   `,
 
   sectionTitle: css`
@@ -236,16 +168,9 @@ export const s = {
     display: flex;
     align-items: center;
     gap: 12px;
-
-    .square {
-      width: 14px;
-      height: 14px;
-      background: #FF7043;
-      border-radius: 4px;
-    }
+    .square { width: 14px; height: 14px; background: #FF7043; border-radius: 4px; }
   `,
 
-  // 목록 내 검색창
   searchBarWrapper: css`
     position: relative;
     margin-bottom: 30px;
@@ -262,15 +187,8 @@ export const s = {
     font-size: 14px;
     outline: none;
     transition: 0.2s;
-
-    &::placeholder {
-      color: #FF704388;
-    }
-
-    &:focus {
-      border-color: #FF7043;
-      box-shadow: 0 0 8px #FF704311;
-    }
+    &::placeholder { color: #FF704388; }
+    &:focus { border-color: #FF7043; box-shadow: 0 0 8px #FF704311; }
   `,
 
   searchIcon: css`
@@ -280,62 +198,34 @@ export const s = {
     font-size: 16px;
   `,
 
-  // 식재료 그리드
   grid: css`
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 25px;
   `,
 
-  // 개별 음식 카드
   foodCard: css`
     background: #FFFFFF;
     border: 1px solid #F0F0F0;
     border-radius: 24px;
-    padding: 20px 10px;
+    padding: 15px 10px 12px 10px; 
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
     transition: 0.3s;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-    min-height: 200px;
+    min-height: 160px; 
 
     &:hover {
       transform: translateY(-5px);
       box-shadow: 0 15px 30px rgba(255, 111, 67, 0.2);
-
-      .delete-target {
-        opacity: 1;
-        visibility: visible;
-      }
+      .delete-target { opacity: 1; visibility: visible; }
     }
 
-    img {
-      width: 150px;
-      height: 100px;
-      object-fit: contain; /* 💡 사진 왜곡 방지 */
-      margin-bottom: 15px;
-    }
-
-    .name {
-      font-weight: 700;
-      color: #333;
-      font-size: 17px;
-      margin-top: auto;
-    }
-
-    .badge {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      color: #FFFFFF;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 4px 12px;
-      border-radius: 12px;
-      z-index: 10;
-    }
+    img { width: 140px; height: 90px; object-fit: contain; margin-bottom: 5px; }
+    .name { font-weight: 700; color: #333; font-size: 16px; margin-top: 5px; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .badge { position: absolute; top: 12px; left: 12px; color: #FFFFFF; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 10px; z-index: 10; }
   `,
 
   deleteBtn: css`
@@ -358,14 +248,9 @@ export const s = {
     transition: 0.2s;
     opacity: 0;
     visibility: hidden;
-
-    &:hover {
-      background: #D32F2F;
-      transform: scale(1.1);
-    }
+    &:hover { background: #D32F2F; transform: scale(1.1); }
   `,
 
-  // 빈 상태 스타일
   emptyState: css`
     display: flex;
     flex-direction: column;
@@ -373,40 +258,11 @@ export const s = {
     justify-content: center;
     padding: 40px 0;
     text-align: center;
-
-    .refrigerator-img {
-      width: 220px;
-      height: auto;
-      margin-bottom: 20px;
-      animation: ${refrigeratorShake} 2s ease-in-out infinite;
-    }
-
-    .bubble {
-      background: #FFFFFF;
-      border: 2px solid #FF7043;
-      border-radius: 20px;
-      padding: 15px 25px;
-      position: relative;
-      margin-bottom: 30px;
-      font-size: 18px;
-      font-weight: 700;
-      color: #333;
-      box-shadow: 0 4px 15px rgba(255, 111, 67, 0.1);
-    }
-
-    .bubble::after {
-      content: '';
-      position: absolute;
-      bottom: -12px;
-      left: 50%;
-      transform: translateX(-50%);
-      border-width: 12px 12px 0;
-      border-style: solid;
-      border-color: #FF7043 transparent transparent;
-    }
+    .refrigerator-img { width: 220px; height: auto; margin-bottom: 20px; animation: ${refrigeratorShake} 2s ease-in-out infinite; }
+    .bubble { background: #FFFFFF; border: 2px solid #FF7043; border-radius: 20px; padding: 15px 25px; position: relative; margin-bottom: 30px; font-size: 18px; font-weight: 700; color: #333; box-shadow: 0 4px 15px rgba(255, 111, 67, 0.1); }
+    .bubble::after { content: ''; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); border-width: 12px 12px 0; border-style: solid; border-color: #FF7043 transparent transparent; }
   `,
 
-  // 플로팅 버튼 (FAB)
   fab: css`
     position: fixed;
     bottom: 40px;
@@ -424,44 +280,6 @@ export const s = {
     gap: 12px;
     cursor: pointer;
     box-shadow: 0 10px 25px rgba(255, 87, 34, 0.4);
-    z-index: 9999; /* ✅ 핵심: 식재료 카드(D+0)보다 위에 오도록 높은 값 설정 */
-    transition: all 0.2s ease;
-
-    &:hover {
-      transform: translateX(-50%) translateY(-5px);
-      box-shadow: 0 15px 30px rgba(255, 87, 34, 0.5);
-    }
-
-    .circle {
-      background: #FFFFFF;
-      color: #FF5722;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      /* font-size 삭제 */
-      
-      svg {
-        width: 16px;
-        height: 16px;
-      }
-    }
+    .circle { background: #FFFFFF; color: #FF5722; width: 26px; height: 26px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; }
   `,
-    summaryCardClickable: css`
-    cursor: pointer;
-    transition: 0.15s ease;
-
-    &:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
-    }
-
-    &:active {
-      transform: translateY(-1px) scale(0.99);
-    }
-  `,
-
-  
 };
