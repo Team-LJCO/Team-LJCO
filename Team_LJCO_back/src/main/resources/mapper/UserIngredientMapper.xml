@@ -147,8 +147,6 @@
         DELETE FROM user_ingredients WHERE user_id = #{userId}
     </delete>
 
-
-
     <!--재료 목록받아서 삭제-->
     <delete id="deleteIngredientsByNames">
 
