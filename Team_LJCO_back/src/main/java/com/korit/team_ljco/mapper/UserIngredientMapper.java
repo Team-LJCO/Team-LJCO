@@ -37,4 +37,14 @@ public interface UserIngredientMapper {
     
     // 사용자 재료 통계
     int countUserIngredients(Long userId);
+
+    // 선택 재료 추가
+    int insertIngredientsByNames(
+            @Param("userId") Long userId,
+            @Param("ingredientNames") List<String> ingredientNames
+    );
+
+    // 선택 재료 삭제
+    int deleteIngredientsByNames(@Param("userId") Long userId, @Param("ingredientNames") List<String> ingredientNames);
+
 }

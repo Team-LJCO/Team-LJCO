@@ -65,7 +65,7 @@ const IngredientManagement = () => {
   const updateMutation = useUpdateIngredientMutation();
   const deleteMutation = useDeleteIngredientMutation();
 
-  // 데이터 추출 (API 응답이 배열 또는 객체 형태일 수 있음)
+  // 데이터 추출
   const getIngredientsArray = (data) => {
     if (!data) return [];
     if (Array.isArray(data)) return data;
@@ -75,7 +75,7 @@ const IngredientManagement = () => {
 
   const categories = categoriesQuery.data || [];
 
-  // 클라이언트 사이드 필터링 - 재료명 또는 카테고리명에 검색어 포함 여부
+  // 클라이언트 사이드 필터링
   const allIngredients = useMemo(() => {
     const ingredients = getIngredientsArray(ingredientsQuery.data);
     if (!searchTerm) return ingredients;
@@ -123,27 +123,18 @@ const IngredientManagement = () => {
     }
   };
 
-  // 삭제 모달 열기/닫기
-  const openDeleteModal = (ingId, ingName) => {
-    setDeleteModal({ isOpen: true, ingId, ingName });
-  };
+  const openDeleteModal = (ingId, ingName) => setDeleteModal({ isOpen: true, ingId, ingName });
+  const closeDeleteModal = () => setDeleteModal({ isOpen: false, ingId: null, ingName: '' });
 
-  const closeDeleteModal = () => {
-    setDeleteModal({ isOpen: false, ingId: null, ingName: '' });
-  };
-
-  // 재료 삭제 확인
   const confirmDelete = async () => {
     try {
       await deleteMutation.mutateAsync(deleteModal.ingId);
       closeDeleteModal();
     } catch (error) {
-      console.error('재료 삭제 실패:', error);
       alert('재료 삭제에 실패했습니다.');
     }
   };
 
-  // 추가 모달 열기/닫기
   const openAddModal = () => {
     setAddModal({
       isOpen: true,
@@ -156,17 +147,10 @@ const IngredientManagement = () => {
   };
 
   const closeAddModal = () => {
-    setAddModal({
-      isOpen: false,
-      ingName: '',
-      ingCatId: '',
-      imgType: 'category',
-      ingImgUrl: '',
-    });
+    setAddModal({ isOpen: false, ingName: '', ingCatId: '', imgType: 'category', ingImgUrl: '' });
     setImagePreview(null);
   };
 
-  // 수정 모달 열기/닫기
   const openEditModal = (ingredient) => {
     setEditModal({
       isOpen: true,
@@ -177,115 +161,64 @@ const IngredientManagement = () => {
   };
 
   const closeEditModal = () => {
-    setEditModal({
-      isOpen: false,
-      ingId: null,
-      ingName: '',
-      ingImgUrl: '',
-    });
+    setEditModal({ isOpen: false, ingId: null, ingName: '', ingImgUrl: '' });
   };
 
-  // 수정 모달 입력 변경
   const handleEditModalChange = (e) => {
     const { name, value } = e.target;
     setEditModal((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 재료 수정 확인
   const confirmEdit = async () => {
-    if (!editModal.ingName.trim()) {
-      alert('재료명을 입력해주세요.');
-      return;
-    }
-
+    if (!editModal.ingName.trim()) return alert('재료명을 입력해주세요.');
     try {
       await updateMutation.mutateAsync({
         ingId: editModal.ingId,
-        ingredientData: {
-          ingName: editModal.ingName,
-          ingImgUrl: editModal.ingImgUrl || null,
-        },
+        ingredientData: { ingName: editModal.ingName, ingImgUrl: editModal.ingImgUrl || null },
       });
       closeEditModal();
     } catch (error) {
-      console.error('재료 수정 실패:', error);
       alert('재료 수정에 실패했습니다.');
     }
   };
 
-  // 이미지 파일 업로드 처리
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-    if (!file) return;
-
-    // 이미지 파일 타입 검증
-    if (!file.type.startsWith('image/')) {
-      alert('이미지 파일만 업로드 가능합니다.');
-      return;
-    }
-
-    // 파일 크기 제한 (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('파일 크기는 5MB 이하여야 합니다.');
-      return;
-    }
-
+    if (!file || !file.type.startsWith('image/') || file.size > 5 * 1024 * 1024) return;
     setImageUploading(true);
     try {
       const result = await uploadImage(file);
       setAddModal((prev) => ({ ...prev, ingImgUrl: result.imageUrl }));
-      setImagePreview({
-        url: result.imageUrl,
-        name: file.name,
-      });
+      setImagePreview({ url: result.imageUrl, name: file.name });
     } catch (error) {
-      console.error('이미지 업로드 실패:', error);
       alert('이미지 업로드에 실패했습니다.');
     } finally {
       setImageUploading(false);
     }
   };
 
-  // 이미지 미리보기 제거
   const handleRemoveImage = () => {
     setAddModal((prev) => ({ ...prev, ingImgUrl: '' }));
     setImagePreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  // 추가 모달 입력 변경
   const handleAddModalChange = (e) => {
     const { name, value } = e.target;
     setAddModal((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 선택한 카테고리의 이미지 URL 가져오기
   const getCategoryImgUrl = (catId) => {
     const category = categories.find((cat) => cat.ingCatId === parseInt(catId));
     return category ? category.ingCatImgUrl : null;
   };
 
-  // 재료 추가 확인
   const confirmAdd = async () => {
-    if (!addModal.ingName.trim()) {
-      alert('재료명을 입력해주세요.');
-      return;
-    }
-    if (!addModal.ingCatId) {
-      alert('카테고리를 선택해주세요.');
-      return;
-    }
-
+    if (!addModal.ingName.trim() || !addModal.ingCatId) return alert('필수 항목을 입력하세요.');
     let imgUrl = null;
-    if (addModal.imgType === 'category') {
-      imgUrl = getCategoryImgUrl(addModal.ingCatId);
-    } else if (addModal.imgType === 'upload' && addModal.ingImgUrl) {
-      imgUrl = addModal.ingImgUrl;
-    } else if (addModal.imgType === 'url' && addModal.ingImgUrl.trim()) {
-      imgUrl = addModal.ingImgUrl.trim();
-    }
+    if (addModal.imgType === 'category') imgUrl = getCategoryImgUrl(addModal.ingCatId);
+    else if (addModal.imgType === 'upload' && addModal.ingImgUrl) imgUrl = addModal.ingImgUrl;
+    else if (addModal.imgType === 'url' && addModal.ingImgUrl.trim()) imgUrl = addModal.ingImgUrl.trim();
 
     try {
       await createMutation.mutateAsync({
@@ -295,27 +228,16 @@ const IngredientManagement = () => {
       });
       closeAddModal();
     } catch (error) {
-      console.error('재료 추가 실패:', error);
       alert('재료 추가에 실패했습니다.');
     }
   };
 
-  // 페이지 변경
-  const handlePageChange = (newPage) => {
-    setPagination((prev) => ({ ...prev, page: newPage }));
-  };
+  const handlePageChange = (newPage) => setPagination((prev) => ({ ...prev, page: newPage }));
 
-  // 초기화
   const handleReset = () => {
     setInputValue('');
     setSearchTerm('');
     setPagination((prev) => ({ ...prev, page: 0 }));
-  };
-
-  // 날짜 포맷
-  const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    return dateString.split('T')[0];
   };
 
   // 테이블 컬럼 정의
@@ -359,7 +281,8 @@ const IngredientManagement = () => {
         >
           {categories.map((cat) => (
             <option key={cat.ingCatId} value={cat.ingCatId}>
-              {cat.ingCatName}
+              {/* 테이블 내 셀렉트 박스 표시 수정 */}
+              {`[${cat.ingCatId}] / ${cat.ingCatName}`}
             </option>
           ))}
         </select>
@@ -370,13 +293,7 @@ const IngredientManagement = () => {
       title: '수정',
       dataIndex: 'ingId',
       render: (value, record) => (
-        <button
-          css={S.editBtn}
-          onClick={() => openEditModal(record)}
-          disabled={updateMutation.isPending}
-        >
-          수정
-        </button>
+        <button css={S.editBtn} onClick={() => openEditModal(record)} disabled={updateMutation.isPending}>수정</button>
       ),
     },
     {
@@ -384,13 +301,7 @@ const IngredientManagement = () => {
       title: '삭제',
       dataIndex: 'ingId',
       render: (value, record) => (
-        <button
-          css={TableS.deleteBtn}
-          onClick={() => openDeleteModal(value, record.ingName)}
-          disabled={deleteMutation.isPending}
-        >
-          삭제
-        </button>
+        <button css={TableS.deleteBtn} onClick={() => openDeleteModal(value, record.ingName)} disabled={deleteMutation.isPending}>삭제</button>
       ),
     },
   ];
@@ -398,9 +309,7 @@ const IngredientManagement = () => {
   return (
     <div css={S.ingredientManagement}>
       <PageHeader title="재료 관리">
-        <button css={S.addBtn} onClick={openAddModal}>
-          재료 추가
-        </button>
+        <button css={S.addBtn} onClick={openAddModal}>재료 추가</button>
       </PageHeader>
 
       <SearchBar
@@ -425,7 +334,7 @@ const IngredientManagement = () => {
         onChange={(newPage) => handlePageChange(newPage - 1)}
       />
 
-      {/* 삭제 확인 모달 */}
+      {/* 삭제 모달 */}
       <ConfirmModal
         isOpen={deleteModal.isOpen}
         title="재료 삭제"
@@ -435,7 +344,7 @@ const IngredientManagement = () => {
         onCancel={closeDeleteModal}
       />
 
-      {/* 재료 수정 모달 */}
+      {/* 수정 모달 */}
       <FormModal
         isOpen={editModal.isOpen}
         title="재료 수정"
@@ -445,29 +354,15 @@ const IngredientManagement = () => {
       >
         <div css={ModalS.formGroup}>
           <label htmlFor="edit-ingName">재료명</label>
-          <input
-            type="text"
-            id="edit-ingName"
-            name="ingName"
-            value={editModal.ingName}
-            onChange={handleEditModalChange}
-            placeholder="재료명 입력"
-          />
+          <input type="text" id="edit-ingName" name="ingName" value={editModal.ingName} onChange={handleEditModalChange} />
         </div>
         <div css={ModalS.formGroup}>
           <label htmlFor="edit-ingImgUrl">이미지 URL</label>
-          <input
-            type="text"
-            id="edit-ingImgUrl"
-            name="ingImgUrl"
-            value={editModal.ingImgUrl}
-            onChange={handleEditModalChange}
-            placeholder="이미지 URL 입력"
-          />
+          <input type="text" id="edit-ingImgUrl" name="ingImgUrl" value={editModal.ingImgUrl} onChange={handleEditModalChange} />
         </div>
       </FormModal>
 
-      {/* 재료 추가 모달 */}
+      {/* 추가 모달 */}
       <FormModal
         isOpen={addModal.isOpen}
         title="재료 추가"
@@ -477,14 +372,7 @@ const IngredientManagement = () => {
       >
         <div css={ModalS.formGroup}>
           <label htmlFor="ingName">재료명</label>
-          <input
-            type="text"
-            id="ingName"
-            name="ingName"
-            value={addModal.ingName}
-            onChange={handleAddModalChange}
-            placeholder="재료명 입력"
-          />
+          <input type="text" id="ingName" name="ingName" value={addModal.ingName} onChange={handleAddModalChange} />
         </div>
         <div css={ModalS.formGroup}>
           <label htmlFor="ingCatId">카테고리</label>
@@ -496,45 +384,31 @@ const IngredientManagement = () => {
           >
             {categories.map((cat) => (
               <option key={cat.ingCatId} value={cat.ingCatId}>
-                {cat.ingCatName}
+                {/* 추가 모달 내 셀렉트 박스 표시 수정 */}
+                {`[${cat.ingCatId}] / ${cat.ingCatName}`}
               </option>
             ))}
           </select>
         </div>
+        
+        {/* 이미지 업로드 관련 UI (라디오 버튼 등) */}
         <div css={ModalS.formGroup}>
           <label>이미지</label>
           <div css={ModalS.radioGroup}>
             <label css={ModalS.radioLabel}>
-              <input
-                type="radio"
-                name="imgType"
-                value="category"
-                checked={addModal.imgType === 'category'}
-                onChange={handleAddModalChange}
-              />
+              <input type="radio" name="imgType" value="category" checked={addModal.imgType === 'category'} onChange={handleAddModalChange} />
               <span>카테고리 이미지 사용</span>
             </label>
             <label css={ModalS.radioLabel}>
-              <input
-                type="radio"
-                name="imgType"
-                value="upload"
-                checked={addModal.imgType === 'upload'}
-                onChange={handleAddModalChange}
-              />
+              <input type="radio" name="imgType" value="upload" checked={addModal.imgType === 'upload'} onChange={handleAddModalChange} />
               <span>파일 업로드</span>
             </label>
             <label css={ModalS.radioLabel}>
-              <input
-                type="radio"
-                name="imgType"
-                value="url"
-                checked={addModal.imgType === 'url'}
-                onChange={handleAddModalChange}
-              />
+              <input type="radio" name="imgType" value="url" checked={addModal.imgType === 'url'} onChange={handleAddModalChange} />
               <span>URL 직접 입력</span>
             </label>
           </div>
+
           {addModal.imgType === 'upload' && (
             <div css={ModalS.imageUploadContainer}>
               {!imagePreview ? (
@@ -542,14 +416,7 @@ const IngredientManagement = () => {
                   <label css={ModalS.imageUploadLabel}>
                     <span css={ModalS.imageUploadIcon}>📷</span>
                     <span>{imageUploading ? '업로드 중...' : '클릭하여 이미지 선택'}</span>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      disabled={imageUploading}
-                      css={ModalS.hiddenFileInput}
-                    />
+                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} disabled={imageUploading} css={ModalS.hiddenFileInput} />
                   </label>
                 </div>
               ) : (
@@ -559,23 +426,13 @@ const IngredientManagement = () => {
                     <span>{imagePreview.name}</span>
                     <span>업로드 완료</span>
                   </div>
-                  <button type="button" onClick={handleRemoveImage} css={ModalS.imageRemoveBtn}>
-                    삭제
-                  </button>
+                  <button type="button" onClick={handleRemoveImage} css={ModalS.imageRemoveBtn}>삭제</button>
                 </div>
               )}
             </div>
           )}
           {addModal.imgType === 'url' && (
-            <input
-              type="text"
-              id="ingImgUrl"
-              name="ingImgUrl"
-              value={addModal.ingImgUrl}
-              onChange={handleAddModalChange}
-              placeholder="이미지 URL 입력"
-              css={ModalS.urlInput}
-            />
+            <input type="text" id="ingImgUrl" name="ingImgUrl" value={addModal.ingImgUrl} onChange={handleAddModalChange} placeholder="이미지 URL 입력" css={ModalS.urlInput} />
           )}
         </div>
       </FormModal>

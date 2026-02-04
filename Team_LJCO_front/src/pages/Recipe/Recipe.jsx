@@ -1,14 +1,12 @@
 /** @jsxImportSource @emotion/react */
-import { useState, useEffect } from "react";
-import { api } from "../../configs/axiosConfig";
+import { useState, useEffect, useCallback } from "react"; // ✅ useCallback 추가
+import axios from "axios";
 import { Global } from "@emotion/react"; 
 import { fontImport, s } from "../Home/styles";
 import { s as recipeS } from "./styles"; 
-import RecipeSearchModal from "../../components/recipeModal/RecipeSearchModal";
+import RecipeSearchModal from "../../components/recipe/RecipeSearchModal";
 import { useNavigate, useLocation } from "react-router-dom"; 
 import Pagination from "../../components/common/Pagination";
-import RecipeIngredientMark from "./RacipeIngredientMark";
-import { getLevelText } from "../../components/recipe/RecipeCard";
 import RecipeCardContent from "../../components/recipe/RecipeCardContent";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -55,6 +53,7 @@ function Recipe() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [sort, setSort] = useState("VIEW_DESC");
+    const [refreshTrigger, setRefreshTrigger] = useState(0); // ✅ 추가
 
     const [isLogin] = useState(!!localStorage.getItem("accessToken")); 
     const [recipes, setRecipes] = useState([]);
@@ -64,40 +63,94 @@ function Recipe() {
     const [isRecipeModalOpen, setIsRecipeModalOpen] = useState(false);
     const [selectedRecipe, setSelectedRecipe] = useState(null);
 
-    useEffect(() => {
+    // ✅ fetchRecipes를 useEffect 밖으로 분리
+    const fetchRecipes = useCallback(async () => {
         const urlParams = new URLSearchParams(location.search);
         const urlPage = Number(urlParams.get("page") ?? 1);
         const urlKeyword = urlParams.get("keyword");
         const urlSort = urlParams.get("sort") ?? "VIEW_DESC";
+        
         setSort(urlSort);
         setPage(urlPage);
+        setLoading(true);
         
-        const fetchRecipes = async () => {
-            setLoading(true);
-            const currentUserId = localStorage.getItem("userId");
+        const token = localStorage.getItem("accessToken");
+        const currentUserId = localStorage.getItem("userId");
 
-            try {
-                const res = await api.get("/api/recipes", {
-                    params: {
-                        page: urlPage,
-                        userId: currentUserId,
-                        keyword: urlKeyword || undefined,
-                        sort: urlSort,
-                    },
-                });
-                const data = res.data;
-                setRecipes(Array.isArray(data.recipes) ? data.recipes : []);
-                setTotalPages(typeof data.totalPages === "number" ? data.totalPages : 0);
+        try {
+            const url = `${import.meta.env.VITE_API_BASE_URL}/api/recipes`;
+            const res = await axios.get(url, {
+                params: { 
+                    page: urlPage, 
+                    userId: currentUserId, 
+                    keyword: urlKeyword || undefined,
+                    sort: urlSort,
+                },
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = res.data;
+            setRecipes(Array.isArray(data.recipes) ? data.recipes : []);
+            setTotalPages(typeof data.totalPages === "number" ? data.totalPages : 0);
 
-            } catch (err) {
-                console.error("데이터 로딩 실패:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchRecipes();
+        } catch (err) {
+            console.error("데이터 로딩 실패:", err);
+        } finally {
+            setLoading(false);
+        }
     }, [location.search]);
+
+    // ✅ refreshTrigger 의존성 추가
+    useEffect(() => {
+        fetchRecipes();
+    }, [fetchRecipes, refreshTrigger]);
+
+    // ✅ 재료 삭제 핸들러 추가
+    const handleFinishRecipe = useCallback(async (usedItems) => {
+        console.log("🔥 Recipe.jsx - handleFinishRecipe 실행:", usedItems);
+        try {
+            const token = localStorage.getItem("accessToken");
+            await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/user/ingredients/names`, {
+                headers: { "Authorization": `Bearer ${token}` },
+                data: usedItems
+            });
+            
+            // ✅ 쿼리 무효화 (Home.jsx 데이터 갱신)
+            queryClient.invalidateQueries({ queryKey: ['ingredients'] });
+            queryClient.invalidateQueries({ queryKey: ['fridgeHome'] });
+            
+            console.log("✅ 재료 삭제 성공");
+        } catch (error) {
+            console.error("❌ 재료 삭제 실패:", error);
+            throw error;
+        }
+    }, [queryClient]);
+
+    // ✅ 재료 추가 핸들러 추가
+    const handleAddMissingIngredients = useCallback(async (missingItems) => {
+        console.log("🔥 Recipe.jsx - handleAddMissingIngredients 실행:", missingItems);
+        try {
+            const token = localStorage.getItem("accessToken");
+            await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/user/ingredients/names`, missingItems, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            
+            // ✅ 쿼리 무효화 (Home.jsx 데이터 갱신)
+            queryClient.invalidateQueries({ queryKey: ['ingredients'] });
+            queryClient.invalidateQueries({ queryKey: ['fridgeHome'] });
+            
+            console.log("✅ 재료 추가 성공");
+        } catch (error) {
+            console.error("❌ 재료 추가 실패:", error);
+            throw error;
+        }
+    }, [queryClient]);
+
+    // ✅ 모달 닫기 시 refreshTrigger 증가 (Recipe 페이지 데이터 갱신)
+    const handleCloseModal = useCallback(() => {
+        setIsRecipeModalOpen(false);
+        setSelectedRecipe(null);
+        setRefreshTrigger(prev => prev + 1); // ✅ 트리거 증가로 재로딩
+    }, []);
 
     const handleSort = (sort) => {
         const params = new URLSearchParams(location.search);
@@ -154,13 +207,11 @@ function Recipe() {
                         </div>
                     </div>
 
-                    {/* 2. 메인 배너 */}
                     <div css={recipeS.banner}>
                         <div className="tag">🔥 오늘의 추천</div>
                         <h2>냉장고 재료로 만드는<br/>특별한 요리</h2>
                     </div>
 
-                    {/* 3. 정렬 버튼 (배너 아래로 이동됨) */}
                     <div css={recipeS.controlBar}>
                         <button css={recipeS.sortBtn(sort === "VIEW_DESC")} onClick={() => handleSort("VIEW_DESC")}>
                             👁️ 조회수순
@@ -173,7 +224,6 @@ function Recipe() {
                         </button>
                     </div>
 
-                    {/* 4. 레시피 그리드 */}
                     <div css={recipeS.recipeGrid}>
                         {recipes.map((recipe, index) => (
                             <div 
@@ -192,7 +242,6 @@ function Recipe() {
                         추가 레시피 로딩 중...</div>}
                     </div>
 
-                    {/* 5. 페이지네이션 */}
                     <Pagination
                         page={page}
                         totalPages={totalPages}
@@ -204,14 +253,13 @@ function Recipe() {
                     />
                 </div>
 
-                {/* 6. 모달 */}
+                {/* ✅ onFinish와 onAddMissing 전달 */}
                 {isRecipeModalOpen && (
                     <RecipeSearchModal 
-                        recipe={selectedRecipe} 
-                        onClose={() => {
-                            setIsRecipeModalOpen(false);
-                            setSelectedRecipe(null);
-                        }} 
+                        recipe={selectedRecipe}
+                        onFinish={handleFinishRecipe}
+                        onAddMissing={handleAddMissingIngredients}
+                        onClose={handleCloseModal}
                     />
                 )}
             </div>
